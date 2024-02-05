@@ -61,3 +61,13 @@ Devices:  dict[str, int] = {
     "SLZB-06p7":3,
     "SLZB-06p10":4,
 }
+
+class Events(Enum):
+    API2_WIFISCANSTATUS = 0
+    ESP_UPD_done = 1
+    EVENT_INET_STATE = 2
+    LOG_STR = 3
+    ZB_FW_err = 4
+    ZB_FW_info = 5
+    ZB_FW_prgs = 6
+    ZB_ENERGY_SCAN_DONE = 7

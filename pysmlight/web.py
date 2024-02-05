@@ -7,6 +7,7 @@ from .const import (
     PARAM_LIST,
     Actions,
     Commands,
+    Events,
     Pages
 )
 from . import secrets
@@ -120,14 +121,14 @@ class Api2:
 
     async def scan_wifi(self):
         print("Scanning wifi")
-        self.sse.register_callback("API2_WIFISCANSTATUS", self.wifi_callback)
+        self.sse.register_callback(Events.API2_WIFISCANSTATUS.name, self.wifi_callback)
         params = {'action':Actions.API_STARTWIFISCAN.value}
         await self.client.get(params)
 
     def wifi_callback(self, msg):
         print("WIFI callback")
         print(msg.dump())
-        self.sse.deregister_callback("API2_WIFISCANSTATUS")
+        self.sse.deregister_callback(Events.API2_WIFISCANSTATUS.name)
 
 """
 Initialise a client for Server Sent Events (SSE) to receive events from the SLZB-06x
@@ -137,7 +138,7 @@ class sseClient:
         self.url = f"http://{host}/events"
         #HA should register callbacks but for testing include this here
         # self.cb = {"*": self.msg_callback}
-        self.cb = {"EVENT_INET_STATE": self.msg_callback}
+        self.cb = {Events.EVENT_INET_STATE.name: self.msg_callback}
 
     async def client(self):
         async for event_msg in aiosseclient(self.url):
@@ -146,14 +147,14 @@ class sseClient:
             if "*" in self.cb.keys():
                 self.cb["*"](event_msg)
 
-    def register_callback(self, event, cb):
+    def register_callback(self, event:Events, cb):
         # Catch all callback
         if event is None:
             self.cb["*"] = cb
         # allow to register callbacks per event type
         self.cb[event] = cb
 
-    def deregister_callback(self, event):
+    def deregister_callback(self, event:Events):
         # allow to deregister callbacks per event type
         if event in self.cb.keys():
             del self.cb[event]
