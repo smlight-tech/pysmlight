@@ -83,11 +83,13 @@ class FwClient(webClient):
             return json.loads(res)
 
 class Api2:
-    def __init__(self, client) -> None:
+    def __init__(self, client, sse=None) -> None:
         if client is None:
             self.client = webClient(host)
         else:
             self.client = client
+        if sse:
+            self.sse = sse
 
     """Extract Respvaluesarr json from page repsonse header"""
     async def get_page(self, page:Pages) -> dict | None:
@@ -116,6 +118,16 @@ class Api2:
             params = {'action':Actions.API_FLASH_ESP.value, 'fwUrl':fw_url}
         await self.client.get(params)
 
+    async def scan_wifi(self):
+        print("Scanning wifi")
+        self.sse.register_callback("API2_WIFISCANSTATUS", self.wifi_callback)
+        params = {'action':Actions.API_STARTWIFISCAN.value}
+        await self.client.get(params)
+
+    def wifi_callback(self, msg):
+        print("WIFI callback")
+        print(msg.dump())
+        self.sse.deregister_callback("API2_WIFISCANSTATUS")
 
 """
 Initialise a client for Server Sent Events (SSE) to receive events from the SLZB-06x
@@ -160,7 +172,8 @@ async def main():
     # fwc.close()
 
     async with webClient(host) as client:
-        api=Api2(client)
+        api=Api2(client, sse)
+        await api.scan_wifi()
 
         data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
         print(data)
