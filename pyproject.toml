@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "pysmlight"
+version = "0.0.1"
+repository = "https://github.com/smlight-workspace/python-wrapper"
+license = "MIT"
+description = "A library implemnting API control of the SLZB-06 LAN Coordinators."
+authors = ["Tim Lunn <tl@smlight.tech>"]
+readme = "README.md"
+keywords = ["smlight", "slzb-06", "zigbee"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+aiohttp = "^3.9"
+aiosseclient = "0.1.1"
+
+[tool.poetry.scripts]
+sm-cli = "pysmlight.web:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
