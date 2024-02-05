@@ -12,8 +12,12 @@ from .const import (
 )
 from . import secrets
 import json
+import logging
 import time
 
+
+logging.basicConfig(level=logging.DEBUG)
+_LOGGER = logging.getLogger(__name__)
 
 start = time.time()
 # host = "slzb-06m.local"
@@ -30,10 +34,10 @@ class webClient:
     async def async_init(self):
         if self.host != "smlight.tech":
             if await self.check_auth_needed():
-                print("Authentication required")
+                _LOGGER.info("Authentication required")
                 self.auth = aiohttp.BasicAuth(secrets.apiuser, secrets.apipass)
         self.session = aiohttp.ClientSession(headers=self.headers, auth=self.auth)
-        print("Session created")
+        _LOGGER.info("Session created")
 
     async def check_auth_needed(self):
         async with aiohttp.ClientSession() as asession:
@@ -120,14 +124,14 @@ class Api2:
         await self.client.get(params)
 
     async def scan_wifi(self):
-        print("Scanning wifi")
+        _LOGGER.debug("Scanning wifi")
         self.sse.register_callback(Events.API2_WIFISCANSTATUS.name, self.wifi_callback)
         params = {'action':Actions.API_STARTWIFISCAN.value}
         await self.client.get(params)
 
     def wifi_callback(self, msg):
-        print("WIFI callback")
-        print(msg.dump())
+        _LOGGER.debug("WIFI callback")
+        _LOGGER.info(msg.dump())
         self.sse.deregister_callback(Events.API2_WIFISCANSTATUS.name)
 
 """
@@ -160,7 +164,7 @@ class sseClient:
             del self.cb[event]
 
     def msg_callback(self, msg):
-        print(msg.dump())
+        _LOGGER.info(msg.dump())
 
 """ For initial testing only. HA integration will directly load modules/classes as required"""
 async def main():
