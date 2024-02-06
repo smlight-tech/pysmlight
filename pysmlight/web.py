@@ -24,7 +24,7 @@ start = time.time()
 host = secrets.host
 
 class webClient:
-    def __init__(self, host):
+    def __init__(self, host=None):
         self.auth = None
         self.headers={'Content-Type': 'application/json; charset=utf-8'}
         self.host = host
@@ -35,12 +35,23 @@ class webClient:
         if self.host != "smlight.tech":
             if await self.check_auth_needed():
                 _LOGGER.info("Authentication required")
-                self.auth = aiohttp.BasicAuth(secrets.apiuser, secrets.apipass)
+                #fallback to hardcoded test credentials
+                if self.auth is None:
+                    self.auth = aiohttp.BasicAuth(secrets.apiuser, secrets.apipass)
         self.session = aiohttp.ClientSession(headers=self.headers, auth=self.auth)
         _LOGGER.info("Session created")
 
+    """Pass in credentials and check auth is successful"""
+    async def authenticate(self, user:str, password:str):
+        self.auth = aiohttp.BasicAuth(user, password)
+        return not await self.check_auth_needed()
+
+    """
+    Check if we have valid authentication credentials for the device
+    Returns True if authentication is required and/or failed
+    """
     async def check_auth_needed(self):
-        async with aiohttp.ClientSession() as asession:
+        async with aiohttp.ClientSession(auth=self.auth) as asession:
             response = await asession.get(self.url)
             return response.status == 401
 
@@ -53,6 +64,10 @@ class webClient:
                 return hdr
             else:
                 return await response.text(encoding='utf-8')
+
+    def set_host(self, host):
+        self.host = host
+        self.url = f"http://{host}/api2"
 
     async def close(self):
         if self.session is not None:
