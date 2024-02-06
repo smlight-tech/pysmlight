@@ -10,7 +10,7 @@ from .const import (
     Events,
     Pages
 )
-from . import secrets
+
 import json
 import logging
 import time
@@ -21,7 +21,6 @@ _LOGGER = logging.getLogger(__name__)
 
 start = time.time()
 # host = "slzb-06m.local"
-host = secrets.host
 
 class webClient:
     def __init__(self, host=None):
@@ -183,6 +182,7 @@ class sseClient:
 
 """ For initial testing only. HA integration will directly load modules/classes as required"""
 async def main():
+    host = secrets.host
     sse = sseClient(host)
     asyncio.create_task(sse.client())
 
@@ -208,5 +208,7 @@ async def main():
     duration = time.time() - start
     print(f"duration {duration}")
 
+secrets = None
 if __name__ == "__main__":
+    from . import secrets
     asyncio.run(main())
