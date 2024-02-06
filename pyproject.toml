@@ -9,9 +9,10 @@ readme = "README.md"
 keywords = ["smlight", "slzb-06", "zigbee"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
-aiohttp = "^3.9"
+python = "^3.11"
+aiohttp = "3.9.1"
 aiosseclient = "0.1.1"
+attrs = "23.1.0"
 
 [tool.poetry.scripts]
 sm-cli = "pysmlight.web:main"
