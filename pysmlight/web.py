@@ -10,9 +10,10 @@ from .const import (
     Events,
     Pages
 )
-
+from .payload import Payload
 import json
 import logging
+
 import time
 
 
@@ -124,6 +125,10 @@ class Api2:
         if sse:
             self.sse = sse
 
+    async def get_device_payload(self) -> Payload:
+        data = await self.get_page(Pages.API2_PAGE_DASHBOARD)
+        res = Payload(data)
+
     """Extract Respvaluesarr json from page repsonse header"""
     async def get_page(self, page:Pages) -> dict | None:
         params = {'action':Actions.API_GET_PAGE.value, 'pageId':page.value}
@@ -210,6 +215,8 @@ async def main():
         await api.scan_wifi()
 
         data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
+        payload = Payload(data)
+        print(payload.model, payload.MAC, payload.sw_version, payload.zb_version, payload.mode, payload.uptime)
         print(data)
 
         res = await api.get_param('coordMode')
