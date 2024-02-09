@@ -40,19 +40,33 @@ class webClient:
         self.session = aiohttp.ClientSession(headers=self.headers, auth=self.auth)
         _LOGGER.info("Session created")
 
-    """Pass in credentials and check auth is successful"""
+    
     async def authenticate(self, user:str, password:str):
+        """Pass in credentials and check auth is successful"""
         self.auth = aiohttp.BasicAuth(user, password)
         return not await self.check_auth_needed()
 
+    async def check_connect(self):
+        if self.host:
+            try:
+                async with aiohttp.ClientSession() as asession:
+                    response = await asession.get(f"http://{self.host}/metrics")
+                    return response.status == 200
+            except aiohttp.client_exceptions.ClientConnectorError:
+                _LOGGER.debug("Connection error")
+        return False
     """
     Check if we have valid authentication credentials for the device
     Returns True if authentication is required and/or failed
     """
     async def check_auth_needed(self):
-        async with aiohttp.ClientSession(auth=self.auth) as asession:
-            response = await asession.get(self.url)
-            return response.status == 401
+        try:
+            async with aiohttp.ClientSession(auth=self.auth) as asession:
+                response = await asession.get(self.url)
+                return response.status == 401
+        except aiohttp.client_exceptions.ClientConnectorError:
+            _LOGGER.debug("Connection error")
+            exit()
 
     async def get(self, params):
         if self.session is None:
@@ -102,7 +116,7 @@ class FwClient(webClient):
             return json.loads(res)
 
 class Api2:
-    def __init__(self, client, sse=None) -> None:
+    def __init__(self, host, client, sse=None) -> None:
         if client is None:
             self.client = webClient(host)
         else:
@@ -192,7 +206,7 @@ async def main():
     # fwc.close()
 
     async with webClient(host) as client:
-        api=Api2(client, sse)
+        api=Api2(host, client, sse)
         await api.scan_wifi()
 
         data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
