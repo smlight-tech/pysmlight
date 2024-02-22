@@ -10,6 +10,7 @@ from .const import (
     Events,
     Pages
 )
+from .exceptions import (SmlightConnectionError, SmlightAuthError)
 from .payload import Payload
 import json
 import logging
@@ -24,11 +25,11 @@ start = time.time()
 # host = "slzb-06m.local"
 
 class webClient:
-    def __init__(self, host=None):
+    def __init__(self, host, session=None):
         self.auth = None
         self.headers={'Content-Type': 'application/json; charset=utf-8'}
         self.host = host
-        self.session = None
+        self.session = session
         self.url = f"http://{host}/api2"
 
     async def async_init(self):
@@ -38,7 +39,11 @@ class webClient:
                 #fallback to hardcoded test credentials
                 if self.auth is None:
                     self.auth = aiohttp.BasicAuth(secrets.apiuser, secrets.apipass)
-        self.session = aiohttp.ClientSession(headers=self.headers, auth=self.auth)
+        if self.session:
+            self.session.update_headers(self.headers)
+            self.session.update_auth(self.auth)
+        else:
+            self.session = aiohttp.ClientSession(headers=self.headers, auth=self.auth)
         _LOGGER.info("Session created")
 
     
@@ -67,7 +72,6 @@ class webClient:
                 return response.status == 401
         except aiohttp.client_exceptions.ClientConnectorError:
             _LOGGER.debug("Connection error")
-            exit()
 
     async def get(self, params):
         if self.session is None:
@@ -117,9 +121,9 @@ class FwClient(webClient):
             return json.loads(res)
 
 class Api2:
-    def __init__(self, host, client, sse=None) -> None:
+    def __init__(self, host, *, client=None, session=None, sse=None) -> None:
         if client is None:
-            self.client = webClient(host)
+            self.client = webClient(host, self.session)
         else:
             self.client = client
         if sse:
@@ -128,6 +132,7 @@ class Api2:
     async def get_device_payload(self) -> Payload:
         data = await self.get_page(Pages.API2_PAGE_DASHBOARD)
         res = Payload(data)
+        return res
 
     """Extract Respvaluesarr json from page repsonse header"""
     async def get_page(self, page:Pages) -> dict | None:
@@ -210,25 +215,28 @@ async def main():
     # fwc = FwClient()
     # fwc.close()
 
-    async with webClient(host) as client:
-        api=Api2(host, client, sse)
-        await api.scan_wifi()
+    client = webClient(host)
+    res = await client.authenticate(secrets.apiuser, secrets.apipass)
+    _LOGGER.debug("Auth: %s", res)
+    # async with webClient(host) as client:
+    api=Api2(host, client, sse)
+    await api.scan_wifi()
 
-        data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
-        payload = Payload(data)
-        print(payload.model, payload.MAC, payload.sw_version, payload.zb_version, payload.mode, payload.uptime)
-        print(data)
+    data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
+    payload = Payload(data)
+    print(payload.model, payload.MAC, payload.sw_version, payload.zb_version, payload.mode, payload.uptime)
+    print(data)
 
-        res = await api.get_param('coordMode')
-        print(MODE_LIST[int(res)])
+    res = await api.get_param('coordMode')
+    print(MODE_LIST[int(res)])
 
-        while time.time() - start < 5:
-            await asyncio.sleep(1)
-            res = await api.get_param('inetState')
+    while time.time() - start < 5:
+        await asyncio.sleep(1)
+        res = await api.get_param('inetState')
 
     duration = time.time() - start
     print(f"duration {duration}")
-
+    await client.close()
 secrets = None
 if __name__ == "__main__":
     from . import secrets
