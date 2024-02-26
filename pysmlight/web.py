@@ -60,6 +60,7 @@ class webClient:
                     return response.status == 200
             except aiohttp.client_exceptions.ClientConnectorError:
                 _LOGGER.debug("Connection error")
+                raise SmlightConnectionError
         return False
     """
     Check if we have valid authentication credentials for the device
@@ -72,6 +73,7 @@ class webClient:
                 return response.status == 401
         except aiohttp.client_exceptions.ClientConnectorError:
             _LOGGER.debug("Connection error")
+            raise SmlightAuthError
 
     async def get(self, params):
         if self.session is None:
