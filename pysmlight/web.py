@@ -30,55 +30,65 @@ class webClient:
         self.headers={'Content-Type': 'application/json; charset=utf-8'}
         self.host = host
         self.session = session
-        self.url = f"http://{host}/api2"
+
+        if self.session:
+            #can we modify the passed in session from HA or override at request?
+            self.session.headers.add('Content-Type', 'application/json; charset=utf-8')
+            # self.session.update_headers(self.headers)
+        self.set_urls()
 
     async def async_init(self):
+        if not self.session:
+            self.session = aiohttp.ClientSession(headers=self.headers, auth=self.auth)
         if self.host != "smlight.tech":
             if await self.check_auth_needed():
                 _LOGGER.info("Authentication required")
                 #fallback to hardcoded test credentials
                 if self.auth is None:
                     self.auth = aiohttp.BasicAuth(secrets.apiuser, secrets.apipass)
-        if self.session:
-            self.session.update_headers(self.headers)
-            self.session.update_auth(self.auth)
-        else:
-            self.session = aiohttp.ClientSession(headers=self.headers, auth=self.auth)
+
         _LOGGER.info("Session created")
 
     
     async def authenticate(self, user:str, password:str):
         """Pass in credentials and check auth is successful"""
         self.auth = aiohttp.BasicAuth(user, password)
-        return not await self.check_auth_needed()
+        return not await self.check_auth_needed(True)
 
-    async def check_connect(self):
-        if self.host:
-            try:
-                async with aiohttp.ClientSession() as asession:
-                    response = await asession.get(f"http://{self.host}/metrics")
-                    return response.status == 200
-            except aiohttp.client_exceptions.ClientConnectorError:
-                _LOGGER.debug("Connection error")
-                raise SmlightConnectionError
-        return False
-    """
-    Check if we have valid authentication credentials for the device
-    Returns True if authentication is required and/or failed
-    """
-    async def check_auth_needed(self):
+    # async def check_connect(self):
+    #     if self.host:
+    #         try:
+    #             async with aiohttp.ClientSession() as asession:
+    #                 response = await asession.get(self.metrics_url)
+    #                 return response.status == 200
+    #         except aiohttp.client_exceptions.ClientConnectorError:
+    #             _LOGGER.debug("Connection error")
+    #             raise SmlightConnectionError
+    #     return False
+
+    async def check_auth_needed(self, authenticate=False):
+        """
+        Check if we have valid authentication credentials for the device
+        Raises error on Connection or Auth failure
+        """
+        auth = None
+        if authenticate:
+            auth = self.auth
+
         try:
-            async with aiohttp.ClientSession(auth=self.auth) as asession:
-                response = await asession.get(self.url)
-                return response.status == 401
+            async with self.session.get(self.url, auth=auth) as response:
+                if response.status == 401:
+                    raise SmlightAuthError("Authentication Error")
         except aiohttp.client_exceptions.ClientConnectorError:
             _LOGGER.debug("Connection error")
-            raise SmlightAuthError
+            raise SmlightConnectionError("Connection failed")
 
     async def get(self, params):
         if self.session is None:
-            self.session = aiohttp.ClientSession(headers=self.headers, auth=self.auth)
-        async with self.session.get(self.url, params=params) as response:
+            self.session = aiohttp.ClientSession(headers=self.headers)
+        async with self.session.get(
+                self.url, headers=self.headers,params=params, auth=self.auth
+                ) as response:
             hdr = response.headers.get('respValuesArr')
             if hdr or (params and int(params['action']) == Actions.API_GET_PAGE.value):
                 return hdr
@@ -87,7 +97,11 @@ class webClient:
 
     def set_host(self, host):
         self.host = host
-        self.url = f"http://{host}/api2"
+        self.set_urls()
+
+    def set_urls(self):
+        self.url = f"http://{self.host}/api2"
+        self.metrics_url = f"http://{self.host}/metrics"
 
     async def close(self):
         if self.session is not None:
@@ -217,11 +231,15 @@ async def main():
     # fwc = FwClient()
     # fwc.close()
 
-    client = webClient(host)
+    client = webClient(host,aiohttp.ClientSession())
+    try:
+        await client.async_init()
+    except SmlightAuthError:
+        _LOGGER.debug("auth failed")
     res = await client.authenticate(secrets.apiuser, secrets.apipass)
     _LOGGER.debug("Auth: %s", res)
     # async with webClient(host) as client:
-    api=Api2(host, client, sse)
+    api=Api2(host, client=client, sse=sse)
     await api.scan_wifi()
 
     data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
