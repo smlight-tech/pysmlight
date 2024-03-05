@@ -7,6 +7,7 @@ from .const import (
     PARAM_LIST,
     Actions,
     Commands,
+    Devices,
     Events,
     Pages
 )
@@ -127,14 +128,17 @@ class FwClient(webClient):
         self.url = f"https://{host}/flasher/firmware/bin/slzb06x/ota.php"
 
     # mode: (ESP|ZB)
-    async def get(self, mode):
+    async def get(self, device:str = None, mode:str = "ESP"):
         if self.session is None:
             self.session = aiohttp.ClientSession(headers=self.headers, auth=None)
 
         params = {'type':mode}
         async with self.session.get(self.url, params=params) as response:
             res = await response.text(encoding='utf-8')
-            return json.loads(res)
+        data = json.loads(res)
+        if mode == "ZB" and device is not None:
+            return data[str(Devices[device])]
+        return data
 
 class Api2:
     def __init__(self, host, *, client=None, session=None, sse=None) -> None:
@@ -150,8 +154,8 @@ class Api2:
         res = Payload(data)
         return res
 
-    """Extract Respvaluesarr json from page repsonse header"""
     async def get_page(self, page:Pages) -> dict | None:
+        """Extract Respvaluesarr json from page repsonse header"""
         params = {'action':Actions.API_GET_PAGE.value, 'pageId':page.value}
         res = await self.client.get(params)
         data = json.loads(res)
@@ -227,7 +231,8 @@ async def main():
     asyncio.create_task(sse.client())
 
     async with FwClient() as fwc:
-        res = await fwc.get("ZB")
+        res = await fwc.get(device="SLZB-06p7", mode="ZB")
+        print(res)
     # fwc = FwClient()
     # fwc.close()
 
