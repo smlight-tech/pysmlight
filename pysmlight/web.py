@@ -122,9 +122,9 @@ https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php?type=(ESP|ZB)
 
 """
 class FwClient(webClient):
-    def __init__(self):
+    def __init__(self, session):
         host = "smlight.tech"
-        super().__init__(host)
+        super().__init__(host, session=session)
         self.url = f"https://{host}/flasher/firmware/bin/slzb06x/ota.php"
 
     # mode: (ESP|ZB)
@@ -194,6 +194,7 @@ class Api2:
 
 """
 Initialise a client for Server Sent Events (SSE) to receive events from the SLZB-06x
+Will switch sse to https://github.com/JelleZijlstra/aiohttp-sse-client2
 """ 
 class sseClient:
     def __init__(self, host):
@@ -226,17 +227,18 @@ class sseClient:
 
 """ For initial testing only. HA integration will directly load modules/classes as required"""
 async def main():
+    master_session = aiohttp.ClientSession()
     host = secrets.host
     sse = sseClient(host)
     asyncio.create_task(sse.client())
 
-    async with FwClient() as fwc:
+    async with FwClient(master_session) as fwc:
         res = await fwc.get(device="SLZB-06p7", mode="ZB")
         print(res)
     # fwc = FwClient()
     # fwc.close()
 
-    client = webClient(host,aiohttp.ClientSession())
+    client = webClient(host, master_session)
     try:
         await client.async_init()
     except SmlightAuthError:
