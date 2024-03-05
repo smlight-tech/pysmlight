@@ -143,14 +143,12 @@ class FwClient(webClient):
             return data[str(Devices[device])]
         return data
 
-class Api2:
-    def __init__(self, host, *, client=None, session=None, sse=None) -> None:
+class Api2(webClient):
+    def __init__(self, host, *, session=None, sse=None) -> None:
         self.fw_url = f"https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php"
 
-        if client is None:
-            self.client = webClient(host, self.session)
-        else:
-            self.client = client
+        super().__init__(host, session=session)
+
         if sse:
             self.sse = sse
 
@@ -162,7 +160,7 @@ class Api2:
     async def get_firmware_version(self, device:str = None, mode:str = "ESP") -> Dict[str, str]:
         """ Get firmware version for device and mode (ESP|ZB)"""
         params = {'type':mode}
-        response = await self.client.get(params=params, url=self.fw_url)
+        response = await self.get(params=params, url=self.fw_url)
         data = json.loads(response)
         if mode == "ZB" and device is not None:
             return data[str(Devices[device])]
@@ -171,7 +169,7 @@ class Api2:
     async def get_page(self, page:Pages) -> dict | None:
         """Extract Respvaluesarr json from page repsonse header"""
         params = {'action':Actions.API_GET_PAGE.value, 'pageId':page.value}
-        res = await self.client.get(params)
+        res = await self.get(params)
         data = json.loads(res)
         if data:
             return data
@@ -180,7 +178,7 @@ class Api2:
     async def get_param(self, param) -> str | None:
         if param in PARAM_LIST:
             params = {'action':Actions.API_GET_PARAM.value, 'param':param}
-            return await self.client.get(params)
+            return await self.get(params)
         return None
 
     async def get_info(self) ->Dict[str, str]:
@@ -205,7 +203,7 @@ class Api2:
 
     async def set_cmd(self, cmd:Commands) -> None:
         params = {'action':Actions.API_CMD.value, 'param':cmd.value}
-        await self.client.get(params)
+        await self.get(params)
 
     async def fw_update(self, mode, fw_url, fw_type=None, fw_version=None) -> None:
         #Register callback 'ESP_UPD_done'? before calling this
@@ -213,13 +211,13 @@ class Api2:
             params = {'action':Actions.API_FLASH_ZB.value, 'fwUrl':fw_url, 'fwType':fw_type, 'fwVersion':fw_version}
         else:
             params = {'action':Actions.API_FLASH_ESP.value, 'fwUrl':fw_url}
-        await self.client.get(params)
+        await self.get(params)
 
     async def scan_wifi(self):
         _LOGGER.debug("Scanning wifi")
         self.sse.register_callback(Events.API2_WIFISCANSTATUS.name, self.wifi_callback)
         params = {'action':Actions.API_STARTWIFISCAN.value}
-        await self.client.get(params)
+        await self.get(params)
 
     def wifi_callback(self, msg):
         _LOGGER.debug("WIFI callback")
@@ -275,7 +273,7 @@ async def main():
     # fwc = FwClient()
     # fwc.close()
 
-    client = webClient(host, master_session)
+    client = Api2(host, session=master_session, sse=sse)
     try:
         await client.async_init()
     except SmlightAuthError:
@@ -283,7 +281,7 @@ async def main():
     res = await client.authenticate(secrets.apiuser, secrets.apipass)
     _LOGGER.debug("Auth: %s", res)
     # async with webClient(host) as client:
-    api=Api2(host, client=client, sse=sse)
+    api=client
     await api.scan_wifi()
 
     data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
