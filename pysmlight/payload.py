@@ -10,6 +10,8 @@ class Payload:
             self.unpack()
 
     def unpack(self):
+        self.esp32_temp = self.json['esp32Temp']
+        self.zb_temp = self.json['zbTemp']
         self.model = self.json['DEVICE']
         self.MAC = self.json['ethMac']
         self.mode = self.clean(self.json['coordMode'])
@@ -27,5 +29,6 @@ class Payload:
         else:
             text = re.sub(r'\[|\]', '', str)
         return text
+
     def dump(self):
         return self.json
