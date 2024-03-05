@@ -182,11 +182,24 @@ class Api2:
             params = {'action':Actions.API_GET_PARAM.value, 'param':param}
             return await self.client.get(params)
         return None
+
+    async def get_info(self) ->Dict[str, str]:
+        payload = await self.get_device_payload()
+        info = {
+            "MAC": payload.MAC,
+            "model": payload.model,
+            "sw_version": payload.sw_version,
+            "zb_hw": payload.json["zbHw"],
+            "zb_version": payload.zb_version,
+        }
+        return info
+
     async def get_sensors(self) ->Dict[str, str]:
         payload = await self.get_device_payload()
         sensors = {
-            "esp32_temp":payload.esp32_temp,
-            "zb_temp":payload.zb_temp,
+            "esp32_temp": payload.esp32_temp,
+            "zb_temp": payload.zb_temp,
+            "uptime": payload.uptime
         }
         return sensors
 
