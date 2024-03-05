@@ -15,6 +15,7 @@ from .exceptions import (SmlightConnectionError, SmlightAuthError)
 from .payload import Payload
 import json
 import logging
+from typing import Dict
 
 import time
 
@@ -84,14 +85,16 @@ class webClient:
             _LOGGER.debug("Connection error")
             raise SmlightConnectionError("Connection failed")
 
-    async def get(self, params):
+    async def get(self, params, url=None):
         if self.session is None:
             self.session = aiohttp.ClientSession(headers=self.headers)
+        if url is None:
+            url = self.url
         async with self.session.get(
-                self.url, headers=self.headers,params=params, auth=self.auth
+                url, headers=self.headers,params=params, auth=self.auth
                 ) as response:
             hdr = response.headers.get('respValuesArr')
-            if hdr or (params and int(params['action']) == Actions.API_GET_PAGE.value):
+            if hdr is not None and (params and int(params['action']) == Actions.API_GET_PAGE.value):
                 return hdr
             else:
                 return await response.text(encoding='utf-8')
@@ -142,6 +145,8 @@ class FwClient(webClient):
 
 class Api2:
     def __init__(self, host, *, client=None, session=None, sse=None) -> None:
+        self.fw_url = f"https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php"
+
         if client is None:
             self.client = webClient(host, self.session)
         else:
@@ -153,6 +158,15 @@ class Api2:
         data = await self.get_page(Pages.API2_PAGE_DASHBOARD)
         res = Payload(data)
         return res
+
+    async def get_firmware_version(self, device:str = None, mode:str = "ESP") -> Dict[str, str]:
+        """ Get firmware version for device and mode (ESP|ZB)"""
+        params = {'type':mode}
+        response = await self.client.get(params=params, url=self.fw_url)
+        data = json.loads(response)
+        if mode == "ZB" and device is not None:
+            return data[str(Devices[device])]
+        return data
 
     async def get_page(self, page:Pages) -> dict | None:
         """Extract Respvaluesarr json from page repsonse header"""
@@ -232,9 +246,12 @@ async def main():
     sse = sseClient(host)
     asyncio.create_task(sse.client())
 
-    async with FwClient(master_session) as fwc:
-        res = await fwc.get(device="SLZB-06p7", mode="ZB")
-        print(res)
+    # fwc = FwClient(master_session)
+    # res = await fwc.get(device="SLZB-06p7", mode="ZB")
+    # print(res)
+    # async with FwClient(master_session) as fwc:
+    #     res = await fwc.get(device="SLZB-06p7", mode="ZB")
+    #     print(res)
     # fwc = FwClient()
     # fwc.close()
 
@@ -255,6 +272,11 @@ async def main():
     print(data)
 
     res = await api.get_param('coordMode')
+    fw = await api.get_firmware_version(device="SLZB-06p7", mode="ZB")
+    print(fw)
+    sens = await api.get_sensors()
+    print(sens)
+
     print(MODE_LIST[int(res)])
 
     while time.time() - start < 5:
