@@ -158,18 +158,20 @@ class Api2(webClient):
         res = Payload(data)
         return res
 
-    async def get_firmware_version(self, device:str = None, mode:str = "ESP") -> Firmware | list[Firmware] | None:
+    async def get_firmware_version(self, device:str = None, mode:str = "ESP") -> list[Firmware] | None:
         """ Get firmware version for device and mode (ESP|ZB)"""
         params = {'type':mode}
         response = await self.get(params=params, url=self.fw_url)
         data = json.loads(response)
 
         if mode == "ZB" and device is not None:
-            fw = []
-            for d in data[str(Devices[device])]:
-                fw.append(Firmware(mode, d))
-            return fw
-        return Firmware(mode, data)
+            data = data[str(Devices[device])]
+        else:
+            data = data['fw']
+        fw = []
+        for d in data:
+            fw.append(Firmware(mode, d))
+        return fw
 
     async def get_page(self, page:Pages) -> dict | None:
         """Extract Respvaluesarr json from page repsonse header"""
@@ -285,7 +287,7 @@ async def main():
     print(data)
 
     res = await api.get_param('coordMode')
-    fw = await api.get_firmware_version(device="SLZB-06p7", mode="ZB")
+    fw = await api.get_firmware_version(device="SLZB-06p7", mode="ESP")
     print(fw[0])
     sens = await api.get_sensors()
     print(sens)
