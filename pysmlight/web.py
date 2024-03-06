@@ -12,6 +12,7 @@ from .const import (
     Pages
 )
 from .exceptions import (SmlightConnectionError, SmlightAuthError)
+from .models import Firmware, Info, Sensors
 from .payload import Payload
 import json
 import logging
@@ -157,14 +158,18 @@ class Api2(webClient):
         res = Payload(data)
         return res
 
-    async def get_firmware_version(self, device:str = None, mode:str = "ESP") -> Dict[str, str]:
+    async def get_firmware_version(self, device:str = None, mode:str = "ESP") -> Firmware | list[Firmware] | None:
         """ Get firmware version for device and mode (ESP|ZB)"""
         params = {'type':mode}
         response = await self.get(params=params, url=self.fw_url)
         data = json.loads(response)
+
         if mode == "ZB" and device is not None:
-            return data[str(Devices[device])]
-        return data
+            fw = []
+            for d in data[str(Devices[device])]:
+                fw.append(Firmware(mode, d))
+            return fw
+        return Firmware(mode, data)
 
     async def get_page(self, page:Pages) -> dict | None:
         """Extract Respvaluesarr json from page repsonse header"""
@@ -183,22 +188,12 @@ class Api2(webClient):
 
     async def get_info(self) ->Dict[str, str]:
         payload = await self.get_device_payload()
-        info = {
-            "MAC": payload.MAC,
-            "model": payload.model,
-            "sw_version": payload.sw_version,
-            "zb_hw": payload.json["zbHw"],
-            "zb_version": payload.zb_version,
-        }
+        info = Info(payload)
         return info
 
     async def get_sensors(self) ->Dict[str, str]:
         payload = await self.get_device_payload()
-        sensors = {
-            "esp32_temp": payload.esp32_temp,
-            "zb_temp": payload.zb_temp,
-            "uptime": payload.uptime
-        }
+        sensors = Sensors(payload)
         return sensors
 
     async def set_cmd(self, cmd:Commands) -> None:
@@ -291,9 +286,11 @@ async def main():
 
     res = await api.get_param('coordMode')
     fw = await api.get_firmware_version(device="SLZB-06p7", mode="ZB")
-    print(fw)
+    print(fw[0])
     sens = await api.get_sensors()
     print(sens)
+    info = await api.get_info()
+    print(info.sw_version)
 
     print(MODE_LIST[int(res)])
 
