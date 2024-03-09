@@ -148,7 +148,7 @@ class FwClient(webClient):
 class Api2(webClient):
     def __init__(self, host, *, session=None, sse=None) -> None:
         self.fw_url = f"https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php"
-
+        self.cmds = CmdWrapper(self.set_cmd)
         super().__init__(host, session=session)
 
         if sse:
@@ -200,8 +200,9 @@ class Api2(webClient):
         return sensors
 
     async def set_cmd(self, cmd:Commands) -> None:
-        params = {'action':Actions.API_CMD.value, 'param':cmd.value}
-        await self.get(params)
+        params = {'action':Actions.API_CMD.value, 'cmd':cmd.value}
+        res = await self.get(params)
+        return res == 'ok'
 
     async def fw_update(self, mode, fw_url, fw_type=None, fw_version=None) -> None:
         #Register callback 'ESP_UPD_done'? before calling this
@@ -255,6 +256,21 @@ class sseClient:
     def msg_callback(self, msg):
         _LOGGER.info(msg.dump())
 
+class CmdWrapper:
+    def __init__(self, set_cmd):
+        self.set_cmd = set_cmd
+        pass
+
+    async def reboot(self):
+        await self.set_cmd(Commands.CMD_ESP_RES)
+
+    async def zb_bootloader(self):
+        await self.set_cmd(Commands.CMD_ZB_BSL)
+
+    async def zb_restart(self):
+        await self.set_cmd(Commands.CMD_ZB_RST)
+
+
 """ For initial testing only. HA integration will directly load modules/classes as required"""
 async def main():
     master_session = aiohttp.ClientSession()
@@ -281,6 +297,8 @@ async def main():
     # async with webClient(host) as client:
     api=client
     await api.scan_wifi()
+    await client.cmds.zb_bootloader()
+
 
     data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
     payload = Payload(data)
