@@ -9,7 +9,8 @@ from .const import (
     Commands,
     Devices,
     Events,
-    Pages
+    Pages,
+    SETTINGS
 )
 from .exceptions import (SmlightConnectionError, SmlightAuthError)
 from .models import Firmware, Info, Sensors
@@ -17,6 +18,8 @@ from .payload import Payload
 import json
 import logging
 from typing import Dict
+import urllib.parse
+
 
 import time
 
@@ -31,6 +34,7 @@ class webClient:
     def __init__(self, host, session=None):
         self.auth = None
         self.headers={'Content-Type': 'application/json; charset=utf-8'}
+        self.post_headers={'Content-Type': 'application/x-www-form-urlencoded'}
         self.host = host
         self.session = session
 
@@ -101,6 +105,14 @@ class webClient:
             else:
                 return await response.text(encoding='utf-8')
 
+    async def post(self, params):
+        data = urllib.parse.urlencode(params)
+        async with self.session.post(
+                self.setting_url, data=data, headers=self.post_headers, auth=self.auth
+                ) as response:
+            res_str = await response.text(encoding='utf-8')
+            return response.status == 200
+
     def set_host(self, host):
         self.host = host
         self.set_urls()
@@ -108,6 +120,7 @@ class webClient:
     def set_urls(self):
         self.url = f"http://{self.host}/api2"
         self.metrics_url = f"http://{self.host}/metrics"
+        self.setting_url = f"http://{self.host}/settings/saveParams"
 
     async def close(self):
         if self.session is not None:
@@ -176,7 +189,7 @@ class Api2(webClient):
 
     async def get_page(self, page:Pages) -> dict | None:
         """Extract Respvaluesarr json from page repsonse header"""
-        params = {'action':Actions.API_GET_PAGE.value, 'pageId':page.value}
+        params = {'action':Actions.API_GET_PAGE.value, 'page':page.value}
         res = await self.get(params)
         data = json.loads(res)
         if data:
@@ -211,6 +224,16 @@ class Api2(webClient):
         else:
             params = {'action':Actions.API_FLASH_ESP.value, 'fwUrl':fw_url}
         await self.get(params)
+
+    async def get_toggle(self, page: Pages, toggle:str) -> bool:
+        data = await self.get_page(page)
+        return data[toggle]
+
+    async def set_toggle(self, page: Pages, toggle:str, value:bool) -> bool:
+        state = 'on' if value else 'off'
+        params = {'pageId':page.value, toggle:state}
+        res = await self.post(params)
+        return res
 
     async def scan_wifi(self):
         _LOGGER.debug("Scanning wifi")
@@ -298,8 +321,10 @@ async def main():
     api=client
     await api.scan_wifi()
     await client.cmds.zb_bootloader()
-
-
+    gettog = await client.get_toggle(*SETTINGS['DISABLE_LEDS'])
+    print(gettog)
+    tog = await client.set_toggle(*SETTINGS['DISABLE_LEDS'], value=True)
+    print(tog)
     data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
     payload = Payload(data)
     print(payload.model, payload.MAC, payload.sw_version, payload.zb_version, payload.mode, payload.uptime)

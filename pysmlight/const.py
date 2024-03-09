@@ -71,3 +71,9 @@ class Events(Enum):
     ZB_FW_info = 5
     ZB_FW_prgs = 6
     ZB_ENERGY_SCAN_DONE = 7
+
+SETTINGS: dict[str, tuple[Pages, str]] = {
+    "DISABLE_LEDS": (Pages.API2_PAGE_SETTINGS_LED, "disableLeds"),
+    "NIGHT_MODE": (Pages.API2_PAGE_SETTINGS_LED, "nightMode"),
+    "ZB_AUTOUPDATE": (Pages.API2_PAGE_SETTINGS_OTA, "enabled"),
+}
