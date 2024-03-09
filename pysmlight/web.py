@@ -34,10 +34,11 @@ class webClient:
         self.host = host
         self.session = session
 
-        if self.session:
-            #can we modify the passed in session from HA or override at request?
-            self.session.headers.add('Content-Type', 'application/json; charset=utf-8')
-            # self.session.update_headers(self.headers)
+        # we cant modify headers on the passed in session from HA, if needed can be
+        # overriden at request level
+        # if self.session:
+        #     self.session.headers.add('Content-Type', 'application/json; charset=utf-8')
+
         self.set_urls()
 
     async def async_init(self):
