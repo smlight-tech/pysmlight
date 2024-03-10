@@ -119,30 +119,6 @@ class webClient:
     async def __aexit__(self, exc_type, exc, tb):
         await self.close()
 
-""" 
-Client for downloading firmware manifests for SLZB-06
-https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php?type=(ESP|ZB)
-
-"""
-class FwClient(webClient):
-    def __init__(self, session):
-        host = "smlight.tech"
-        super().__init__(host, session=session)
-        self.url = f"https://{host}/flasher/firmware/bin/slzb06x/ota.php"
-
-    # mode: (ESP|ZB)
-    async def get(self, device:str = None, mode:str = "ESP"):
-        if self.session is None:
-            self.session = aiohttp.ClientSession(headers=self.headers, auth=None)
-
-        params = {'type':mode}
-        async with self.session.get(self.url, params=params) as response:
-            res = await response.text(encoding='utf-8')
-        data = json.loads(res)
-        if mode == "ZB" and device is not None:
-            return data[str(Devices[device])]
-        return data
-
 class Api2(webClient):
     def __init__(self, host, *, session=None, sse=None) -> None:
         self.cmds = CmdWrapper(self.set_cmd)
