@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Firmware:
-    mode:str
+    mode:str = None # ESP|ZB
     type:int = False
     notes:str = None
     rev:str = None
@@ -23,15 +23,15 @@ class Firmware:
 
 @dataclass
 class Info:
-    coord_mode: str # Should be Enum
-    device_ip: str
-    fw_channel: str # NEW - beta or stable (based on installed esp firmware)
-    MAC: str
-    model: str
-    sw_version:str
-    zb_hw: str
-    zb_version: str
-    zb_type: str # NEW - should be enum (coordinator, router, thread?)
+    coord_mode: str  = None # Should be Enum
+    device_ip: str  = None 
+    fw_channel: str = None # NEW - beta or stable (based on installed esp firmware)
+    MAC: str  = None 
+    model: str  = None 
+    sw_version:str  = None 
+    zb_hw: str  = None 
+    zb_version: str  = None 
+    zb_type: str = None # NEW - should be enum (coordinator, router, thread?)
 
     def __init__(self, payload):
         self.coord_mode = payload.mode
@@ -43,24 +43,22 @@ class Info:
 
 @dataclass
 class Sensors:
-    esp32_temp: float
-    zb_temp: float
-    mode: str
-    uptime: str # Should be timestamp
-    socket_uptime: str  # Should be timestamp
-    ram_usage: int
-    internet: bool
-    ethernet: bool
-    wifi_connected: bool
-    wifi_status: str # Should be enum (off, client, AP etc)
+    esp32_temp: float = 0
+    zb_temp: float = 0
+    uptime: str = None # Should be timestamp
+    socket_uptime: str = None # Should be timestamp
+    ram_usage: int = None
+    internet: bool = False
+    ethernet: bool = False
+    wifi_connected: bool = False
+    wifi_status: str = None # Should be enum (off, client, AP etc)
 
     #toggle states:
-    disable_led: bool
-    night_mode: bool
-    auto_zigbee: bool
+    disable_led: bool = None
+    night_mode: bool = None
+    auto_zigbee: bool = None
 
     def __init__(self, payload):
         self.esp32_temp = payload.esp32_temp
         self.zb_temp = payload.zb_temp
-        self.mode = payload.mode
         self.uptime = payload.uptime
