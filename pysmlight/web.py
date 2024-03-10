@@ -48,7 +48,7 @@ class webClient:
             if await self.check_auth_needed():
                 _LOGGER.info("Authentication required")
                 #fallback to hardcoded test credentials
-                if self.auth is None:
+                if secrets and self.auth is None:
                     self.auth = aiohttp.BasicAuth(secrets.apiuser, secrets.apipass)
 
         _LOGGER.debug("Session created")
@@ -61,7 +61,8 @@ class webClient:
 
     async def check_auth_needed(self, authenticate=False):
         """
-        Check if we have valid authentication credentials for the device
+        Check if authentication is needed for the device
+        Optionally validate authentication credentials
         Raises error on Connection or Auth failure
         """
         auth = None

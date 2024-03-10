@@ -1,6 +1,7 @@
 from enum import Enum, unique
 
 FW_URL = "https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php"
+
 MODE_LIST: list[str] = [
     "LAN",
     "WiFi",
