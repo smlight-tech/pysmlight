@@ -4,6 +4,7 @@ import aiohttp
 from aiohttp_sse_client2 import client as sse_client
 
 from .const import (
+    FW_URL,
     MODE_LIST,
     PARAM_LIST,
     Actions,
@@ -161,7 +162,6 @@ class FwClient(webClient):
 
 class Api2(webClient):
     def __init__(self, host, *, session=None, sse=None) -> None:
-        self.fw_url = f"https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php"
         self.cmds = CmdWrapper(self.set_cmd)
         super().__init__(host, session=session)
 
@@ -176,7 +176,7 @@ class Api2(webClient):
     async def get_firmware_version(self, device:str = None, mode:str = "ESP") -> list[Firmware] | None:
         """ Get firmware version for device and mode (ESP|ZB)"""
         params = {'type':mode}
-        response = await self.get(params=params, url=self.fw_url)
+        response = await self.get(params=params, url=FW_URL)
         data = json.loads(response)
 
         if mode == "ZB" and device is not None:
