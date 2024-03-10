@@ -24,8 +24,6 @@ from typing import Callable, Dict
 import urllib.parse
 import time
 
-
-logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
 
 start = time.time()
@@ -33,15 +31,13 @@ start = time.time()
 class webClient:
     def __init__(self, host, session=None):
         self.auth = None
+        # we cant modify headers on the passed in session from HA, if needed can be
+        # overriden at request level
         self.headers={'Content-Type': 'application/json; charset=utf-8'}
         self.post_headers={'Content-Type': 'application/x-www-form-urlencoded'}
         self.host = host
         self.session = session
 
-        # we cant modify headers on the passed in session from HA, if needed can be
-        # overriden at request level
-        # if self.session:
-        #     self.session.headers.add('Content-Type', 'application/json; charset=utf-8')
 
         self.set_urls()
 
@@ -55,7 +51,7 @@ class webClient:
                 if self.auth is None:
                     self.auth = aiohttp.BasicAuth(secrets.apiuser, secrets.apipass)
 
-        _LOGGER.info("Session created")
+        _LOGGER.debug("Session created")
 
     
     async def authenticate(self, user:str, password:str):
@@ -236,6 +232,7 @@ class Api2(webClient):
 
 
 class CmdWrapper:
+    """Convienience wrapper for HA when sending commands to the device."""
     def __init__(self, set_cmd):
         self.set_cmd = set_cmd
         pass
@@ -252,6 +249,9 @@ class CmdWrapper:
 
 """ For initial testing only. HA integration will directly load modules/classes as required"""
 async def main():
+    logging.basicConfig(level=logging.DEBUG)
+
+    # HA passes in a session, if not using HA, create a new session for testing
     master_session = aiohttp.ClientSession()
     host = secrets.host
     sse = sseClient(host, master_session)
