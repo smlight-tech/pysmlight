@@ -17,6 +17,7 @@ from .const import (
 from .exceptions import (SmlightConnectionError, SmlightAuthError)
 from .models import Firmware, Info, Sensors
 from .payload import Payload
+from .sse import sseClient
 import json
 import logging
 from typing import Callable, Dict
@@ -232,48 +233,6 @@ class Api2(webClient):
         _LOGGER.debug("WIFI callback")
         _LOGGER.info(msg)
         self.sse.deregister_callback(Events.API2_WIFISCANSTATUS)
-
-class sseClient:
-    """ Initialise a client to receive Server Sent Events (SSE) """
-    def __init__(self, host, session):
-        self.callbacks = {}
-        self.session = session
-        self.url = f"http://{host}/events"
-
-    async def client(self):
-        async with sse_client.EventSource(
-            self.url, session=self.session
-        ) as event_source:
-            try:
-                async for event in event_source:
-                    # _LOGGER.debug(event)
-                    await self.message_hander(event)
-            except ConnectionError:
-                _LOGGER.debug("Connection error")
-
-    async def message_hander(self, event):
-        self.callbacks.get(event.type, lambda x: None)(event)
-        self.callbacks.get("*", lambda x: None)(event)
-
-    def register_callback(self, event:Events, cb: Callable):
-        """ register a callback for a specific event type or all events"""
-        if event.name in self.callbacks:
-            _LOGGER.warning(f"Callback for {event} already exists, overwriting")
-
-        if event is not None:
-            self.callbacks[event.name] = cb
-        else:
-            self.callbacks["*"] = cb
-
-    def deregister_callback(self, event:Events):
-        """ Deregister callbacks per event type """
-        if event is None:
-            self.callbacks.pop("*", None)
-        else:
-            self.callbacks.pop(event.name, None)
-
-    def msg_callback(self, msg):
-        _LOGGER.info(msg.message)
 
 
 class CmdWrapper:
