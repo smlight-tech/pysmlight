@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import asyncio
 import aiohttp
-from aiosseclient import aiosseclient
+from aiohttp_sse_client2 import client as sse_client
+
 from .const import (
     MODE_LIST,
     PARAM_LIST,
@@ -17,7 +18,7 @@ from .models import Firmware, Info, Sensors
 from .payload import Payload
 import json
 import logging
-from typing import Dict
+from typing import Callable, Dict
 import urllib.parse
 
 
@@ -237,47 +238,57 @@ class Api2(webClient):
 
     async def scan_wifi(self):
         _LOGGER.debug("Scanning wifi")
-        self.sse.register_callback(Events.API2_WIFISCANSTATUS.name, self.wifi_callback)
+        self.sse.register_callback(Events.API2_WIFISCANSTATUS, self.wifi_callback)
         params = {'action':Actions.API_STARTWIFISCAN.value}
         await self.get(params)
 
     def wifi_callback(self, msg):
         _LOGGER.debug("WIFI callback")
-        _LOGGER.info(msg.dump())
-        self.sse.deregister_callback(Events.API2_WIFISCANSTATUS.name)
+        _LOGGER.info(msg)
+        self.sse.deregister_callback(Events.API2_WIFISCANSTATUS)
 
-"""
-Initialise a client for Server Sent Events (SSE) to receive events from the SLZB-06x
-Will switch sse to https://github.com/JelleZijlstra/aiohttp-sse-client2
-""" 
 class sseClient:
-    def __init__(self, host):
+    """ Initialise a client to receive Server Sent Events (SSE) """
+    def __init__(self, host, session):
+        self.callbacks = {}
+        self.session = session
         self.url = f"http://{host}/events"
-        #HA should register callbacks but for testing include this here
-        # self.cb = {"*": self.msg_callback}
-        self.cb = {Events.EVENT_INET_STATE.name: self.msg_callback}
 
     async def client(self):
-        async for event_msg in aiosseclient(self.url):
-            if event_msg.event in self.cb.keys():
-                self.cb[event_msg.event](event_msg)
-            if "*" in self.cb.keys():
-                self.cb["*"](event_msg)
+        async with sse_client.EventSource(
+            self.url, session=self.session
+        ) as event_source:
+            try:
+                async for event in event_source:
+                    # _LOGGER.debug(event)
+                    await self.message_hander(event)
+            except ConnectionError:
+                _LOGGER.debug("Connection error")
 
-    def register_callback(self, event:Events, cb):
-        # Catch all callback
-        if event is None:
-            self.cb["*"] = cb
-        # allow to register callbacks per event type
-        self.cb[event] = cb
+    async def message_hander(self, event):
+        self.callbacks.get(event.type, lambda x: None)(event)
+        self.callbacks.get("*", lambda x: None)(event)
+
+    def register_callback(self, event:Events, cb: Callable):
+        """ register a callback for a specific event type or all events"""
+        if event.name in self.callbacks:
+            _LOGGER.warning(f"Callback for {event} already exists, overwriting")
+
+        if event is not None:
+            self.callbacks[event.name] = cb
+        else:
+            self.callbacks["*"] = cb
 
     def deregister_callback(self, event:Events):
-        # allow to deregister callbacks per event type
-        if event in self.cb.keys():
-            del self.cb[event]
+        """ Deregister callbacks per event type """
+        if event is None:
+            self.callbacks.pop("*", None)
+        else:
+            self.callbacks.pop(event.name, None)
 
     def msg_callback(self, msg):
-        _LOGGER.info(msg.dump())
+        _LOGGER.info(msg.message)
+
 
 class CmdWrapper:
     def __init__(self, set_cmd):
@@ -298,7 +309,10 @@ class CmdWrapper:
 async def main():
     master_session = aiohttp.ClientSession()
     host = secrets.host
-    sse = sseClient(host)
+    sse = sseClient(host, master_session)
+    sse.register_callback(Events.EVENT_INET_STATE, lambda x: _LOGGER.info(x.type))
+
+    #in HA this will use hass.async_create_task
     asyncio.create_task(sse.client())
 
     # fwc = FwClient(master_session)
