@@ -23,7 +23,7 @@ class Firmware:
 
 @dataclass
 class Info:
-    coord_mode: str
+    coord_mode: str # Should be Enum
     device_ip: str
     fw_channel: str # NEW - beta or stable (based on installed esp firmware)
     MAC: str
