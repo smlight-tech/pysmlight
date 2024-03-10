@@ -21,8 +21,6 @@ import json
 import logging
 from typing import Callable, Dict
 import urllib.parse
-
-
 import time
 
 
@@ -30,7 +28,6 @@ logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
 
 start = time.time()
-# host = "slzb-06m.local"
 
 class webClient:
     def __init__(self, host, session=None):
@@ -64,17 +61,6 @@ class webClient:
         """Pass in credentials and check auth is successful"""
         self.auth = aiohttp.BasicAuth(user, password)
         return not await self.check_auth_needed(True)
-
-    # async def check_connect(self):
-    #     if self.host:
-    #         try:
-    #             async with aiohttp.ClientSession() as asession:
-    #                 response = await asession.get(self.metrics_url)
-    #                 return response.status == 200
-    #         except aiohttp.client_exceptions.ClientConnectorError:
-    #             _LOGGER.debug("Connection error")
-    #             raise SmlightConnectionError
-    #     return False
 
     async def check_auth_needed(self, authenticate=False):
         """
@@ -312,17 +298,8 @@ async def main():
     sse = sseClient(host, master_session)
     sse.register_callback(Events.EVENT_INET_STATE, lambda x: _LOGGER.info(x.type))
 
-    #in HA this will use hass.async_create_task
+    # in HA this will use hass.async_create_task
     asyncio.create_task(sse.client())
-
-    # fwc = FwClient(master_session)
-    # res = await fwc.get(device="SLZB-06p7", mode="ZB")
-    # print(res)
-    # async with FwClient(master_session) as fwc:
-    #     res = await fwc.get(device="SLZB-06p7", mode="ZB")
-    #     print(res)
-    # fwc = FwClient()
-    # fwc.close()
 
     client = Api2(host, session=master_session, sse=sse)
     try:
@@ -331,17 +308,16 @@ async def main():
         _LOGGER.debug("auth failed")
     res = await client.authenticate(secrets.apiuser, secrets.apipass)
     _LOGGER.debug("Auth: %s", res)
-    # async with webClient(host) as client:
+
     api=client
     await api.scan_wifi()
-    await client.cmds.zb_bootloader()
-    gettog = await client.get_toggle(*SETTINGS['DISABLE_LEDS'])
-    print(gettog)
-    tog = await client.set_toggle(*SETTINGS['DISABLE_LEDS'], value=True)
-    print(tog)
+
+    # gettog = await client.get_toggle(*SETTINGS['DISABLE_LEDS'])
+    # print(gettog)
+    # tog = await client.set_toggle(*SETTINGS['DISABLE_LEDS'], value=True)
+    # print(tog)
+
     data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
-    payload = Payload(data)
-    print(payload.model, payload.MAC, payload.sw_version, payload.zb_version, payload.mode, payload.uptime)
     print(data)
 
     res = await api.get_param('coordMode')
@@ -354,7 +330,7 @@ async def main():
 
     print(MODE_LIST[int(res)])
 
-    while time.time() - start < 5:
+    while time.time() - start < 10:
         await asyncio.sleep(1)
         res = await api.get_param('inetState')
 
