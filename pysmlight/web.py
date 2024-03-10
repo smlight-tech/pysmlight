@@ -124,7 +124,9 @@ class Api2(webClient):
         self.cmds = CmdWrapper(self.set_cmd)
         super().__init__(host, session=session)
 
-        if sse:
+        if session is not None:
+            self.sse = sseClient(host, session)
+        elif sse:
             self.sse = sse
 
     async def get_device_payload(self) -> Payload:
@@ -230,13 +232,12 @@ async def main():
     # HA passes in a session, if not using HA, create a new session for testing
     master_session = aiohttp.ClientSession()
     host = secrets.host
-    sse = sseClient(host, master_session)
-    sse.register_callback(Events.EVENT_INET_STATE, lambda x: _LOGGER.info(x.type))
+
+    client = Api2(host, session=master_session)
+    client.sse.register_callback(Events.EVENT_INET_STATE, lambda x: _LOGGER.info(x.type))
 
     # in HA this will use hass.async_create_task
-    asyncio.create_task(sse.client())
-
-    client = Api2(host, session=master_session, sse=sse)
+    asyncio.create_task(client.sse.client())
     try:
         await client.async_init()
     except SmlightAuthError:
