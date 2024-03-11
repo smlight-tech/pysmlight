@@ -18,7 +18,7 @@ class sseClient:
 
     async def client(self):
         async with sse_client.EventSource(
-            self.url, session=self.session
+            self.url, session=self.session, timeout=None
         ) as event_source:
             try:
                 async for event in event_source:
