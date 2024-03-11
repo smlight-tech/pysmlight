@@ -23,11 +23,11 @@ class sseClient:
             try:
                 async for event in event_source:
                     _LOGGER.debug(event)
-                    await self.message_hander(event)
+                    await self.message_handler(event)
             except ConnectionError:
                 _LOGGER.debug("Connection error")
 
-    async def message_hander(self, event):
+    async def message_handler(self, event):
         self.callbacks.get(event.type, lambda x: None)(event)
         self.callbacks.get("*", lambda x: None)(event)
 
