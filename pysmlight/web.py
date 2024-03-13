@@ -66,16 +66,22 @@ class webClient:
         Raises error on Connection or Auth failure
         """
         auth = None
+        res = False
         if authenticate:
             auth = self.auth
 
         try:
-            async with self.session.get(self.url, auth=auth) as response:
+            params = {'action':Actions.API_GET_PAGE.value, 'page':1}
+            async with self.session.get(self.url, auth=auth, params=params) as response:
                 if response.status == 401:
-                    raise SmlightAuthError("Authentication Error")
+                    res = True
+                    if authenticate:
+                        raise SmlightAuthError("Authentication Error")
         except aiohttp.client_exceptions.ClientConnectorError:
             _LOGGER.debug("Connection error")
             raise SmlightConnectionError("Connection failed")
+
+        return res
 
     async def get(self, params, url=None):
         if self.session is None:
@@ -107,6 +113,8 @@ class webClient:
         self.url = f"http://{self.host}/api2"
         self.metrics_url = f"http://{self.host}/metrics"
         self.setting_url = f"http://{self.host}/settings/saveParams"
+        self.info_url = f"http://{self.host}/ha_info"
+        self.sensor_url = f"http://{self.host}/ha_sensors"
 
     async def close(self):
         if self.session is not None:
