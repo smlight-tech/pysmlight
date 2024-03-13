@@ -197,7 +197,7 @@ class Api2(webClient):
         await self.get(params)
 
     async def get_toggle(self, page: Pages, toggle:str) -> bool:
-        data = await self.get_page(page)
+        data = await self.get_page(page.value)
         return data[toggle]
 
     async def set_toggle(self, page: Pages, toggle:str, value:bool) -> bool:
