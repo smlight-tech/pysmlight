@@ -28,14 +28,8 @@ class sseClient:
                     async for event in event_source:
                         _LOGGER.debug(event)
                         await self.message_handler(event)
-                except asyncio.exceptions.CancelledError:
-                    _LOGGER.debug('async cancelled')
                 except aiohttp.ClientConnectionError:
                     _LOGGER.debug("Client Connection error")
-                except aiohttp.ClientError:
-                    _LOGGER.debug("Client error")
-                except ConnectionError:
-                    _LOGGER.debug("Connection error")
                 else:
                     _LOGGER.debug("Connection closed cleanly")
 
