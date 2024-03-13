@@ -63,6 +63,12 @@ Devices:  dict[str, int] = {
     "SLZB-06p7":3,
     "SLZB-06p10":4,
 }
+ZB_TYPES: dict[int, str] = {
+    -1: "Unknown",
+    0: "Coordinator",
+    1: "Router",
+    2: "RESERVED",
+}
 
 class Events(Enum):
     API2_WIFISCANSTATUS = 0
@@ -79,3 +85,13 @@ SETTINGS: dict[str, tuple[Pages, str]] = {
     "NIGHT_MODE": (Pages.API2_PAGE_SETTINGS_LED, "nightMode"),
     "ZB_AUTOUPDATE": (Pages.API2_PAGE_SETTINGS_OTA, "enabled"),
 }
+
+class WifiStatus(Enum):
+    WL_NO_SHIELD        = 255   # for compatibility with WiFi Shield library
+    WL_IDLE_STATUS      = 0
+    WL_NO_SSID_AVAIL    = 1
+    WL_SCAN_COMPLETED   = 2
+    WL_CONNECTED        = 3
+    WL_CONNECT_FAILED   = 4
+    WL_CONNECTION_LOST  = 5
+    WL_DISCONNECTED     = 6
