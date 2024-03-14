@@ -4,7 +4,7 @@ import aiohttp
 from aiohttp_sse_client2 import client as sse_client
 
 from .const import (
-    FW_URL,
+    FW_DEV_URL,
     MODE_LIST,
     PARAM_LIST,
     Actions,
@@ -146,7 +146,7 @@ class Api2(webClient):
     async def get_firmware_version(self, device:str = None, mode:str = "ESP") -> list[Firmware] | None:
         """ Get firmware version for device and mode (ESP|ZB)"""
         params = {'type':mode}
-        response = await self.get(params=params, url=FW_URL)
+        response = await self.get(params=params, url=FW_DEV_URL)
         data = json.loads(response)
 
         if mode == "ZB" and device is not None:
@@ -157,7 +157,9 @@ class Api2(webClient):
             data = data['fw']
         fw = []
         for d in data:
-            fw.append(Firmware(mode, d))
+            item = Firmware(**d)
+            item.set_mode(mode)
+            fw.append(item)
         return fw
 
     async def get_page(self, page:Pages) -> dict | None:

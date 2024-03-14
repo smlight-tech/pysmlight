@@ -3,23 +3,15 @@ from dataclasses import dataclass
 @dataclass
 class Firmware:
     mode:str = None # ESP|ZB
-    type:int = False
+    type:int = None
     notes:str = None
     rev:str = None
     link:str = None
     ver:str = None
     dev: bool = False
 
-    def __init__(self, mode, json):
+    def set_mode(self, mode):
         self.mode = mode
-        if mode == "ESP":
-            self.dev = json['dev']
-            self.ver = json['ver']
-        else:
-            self.type = int(json['type'])
-        self.notes = json['notes']
-        self.rev = json['rev']
-        self.link = json['link']
 
 @dataclass
 class Info:

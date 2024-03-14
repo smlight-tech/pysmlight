@@ -1,7 +1,7 @@
 from enum import Enum, unique
 
 FW_URL = "https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php"
-
+FW_DEV_URL = "https://smlight.tech/flasher/firmware/bin/slzb06x/ota_dev.php"
 MODE_LIST: list[str] = [
     "LAN",
     "WiFi",
