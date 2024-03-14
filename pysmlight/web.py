@@ -173,15 +173,23 @@ class Api2(webClient):
             return await self.get(params)
         return None
 
-    async def get_info(self) ->Dict[str, str]:
+    async def get_info_old(self) ->Dict[str, str]:
         payload = await self.get_device_payload()
-        info = Info(payload)
-        return info
+        return Info.load_payload(payload)
+
+    async def get_info(self) -> Info:
+        res = await self.get(params=None, url=self.info_url)
+        data = json.loads(res)
+        return Info(**data.get("Info"))
+
+    async def get_sensors_old(self) ->Dict[str, str]:
+        payload = await self.get_device_payload()
+        return Sensors.load_payload(payload)
 
     async def get_sensors(self) ->Dict[str, str]:
-        payload = await self.get_device_payload()
-        sensors = Sensors(payload)
-        return sensors
+        res = await self.get(params=None, url=self.sensor_url)
+        data = json.loads(res)
+        return Sensors(**data.get("Sensors"))
 
     async def set_cmd(self, cmd:Commands) -> None:
         params = {'action':Actions.API_CMD.value, 'cmd':cmd.value}
