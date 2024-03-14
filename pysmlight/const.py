@@ -74,11 +74,12 @@ class Events(Enum):
     API2_WIFISCANSTATUS = 0
     ESP_UPD_done = 1
     EVENT_INET_STATE = 2
-    LOG_STR = 3
-    ZB_FW_err = 4
-    ZB_FW_info = 5
-    ZB_FW_prgs = 6
-    ZB_ENERGY_SCAN_DONE = 7
+    FW_UPD_Done = 3
+    LOG_STR = 4
+    ZB_FW_err = 5
+    ZB_FW_info = 6
+    ZB_FW_prgs = 7
+    ZB_ENERGY_SCAN_DONE = 8
 
 SETTINGS: dict[str, tuple[Pages, str]] = {
     "DISABLE_LEDS": (Pages.API2_PAGE_SETTINGS_LED, "disableLeds"),
