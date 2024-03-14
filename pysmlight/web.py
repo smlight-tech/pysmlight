@@ -150,7 +150,9 @@ class Api2(webClient):
         data = json.loads(response)
 
         if mode == "ZB" and device is not None:
-            data = data[str(Devices[device])]
+            data = data.get(str(Devices[device]), None)
+            if not data:
+                return None
         else:
             data = data['fw']
         fw = []
