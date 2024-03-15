@@ -36,7 +36,8 @@ class Info:
             zb_hw = payload.json['zbHw'],
             zb_version = payload.zb_version
         )
-
+    def __post_init__(self):
+        self.model = self.model.replace('P','p')
 
 @dataclass
 class Sensors:
