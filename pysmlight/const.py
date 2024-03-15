@@ -74,7 +74,7 @@ class Events(Enum):
     API2_WIFISCANSTATUS = 0
     ESP_UPD_done = 1
     EVENT_INET_STATE = 2
-    FW_UPD_Done = 3
+    FW_UPD_done = 3
     LOG_STR = 4
     ZB_FW_err = 5
     ZB_FW_info = 6

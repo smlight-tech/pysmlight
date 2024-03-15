@@ -20,6 +20,7 @@ class Info:
     fw_channel: str = None # NEW - beta or stable (based on installed esp firmware)
     MAC: str  = None
     model: str  = None
+    ram_total: int = None
     sw_version: str  = None
     zb_hw: str  = None
     zb_version: str  = None
@@ -44,7 +45,6 @@ class Sensors:
     uptime: int | str = None # Should be timestamp
     socket_uptime: int | str = None # Should be timestamp
     ram_usage: int = None
-    internet: bool = False
     ethernet: bool = False
     wifi_connected: bool = False
     wifi_status: int | str = None # Should be enum (off, client, AP etc)

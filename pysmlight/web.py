@@ -91,6 +91,8 @@ class webClient:
         async with self.session.get(
                 url, headers=self.headers,params=params, auth=self.auth
                 ) as response:
+            if response.status == 404:
+                return None
             hdr = response.headers.get('respValuesArr')
             if hdr is not None and (params and int(params['action']) == Actions.API_GET_PAGE.value):
                 return hdr
@@ -183,6 +185,9 @@ class Api2(webClient):
 
     async def get_info(self) -> Info:
         res = await self.get(params=None, url=self.info_url)
+        if res is None:
+            res = await self.get_info_old()
+            return res
         data = json.loads(res)
         return Info(**data.get("Info"))
 

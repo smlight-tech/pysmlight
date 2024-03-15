@@ -13,7 +13,7 @@ class Payload:
         self.esp32_temp = self.json['esp32Temp']
         self.zb_temp = self.json['zbTemp']
         self.model = self.json['DEVICE']
-        self.MAC = self.json['ethMac']
+        self.MAC = self.json['ethMac'] if "NC" not in self.json['ethMac'] else self.json['wifiMac']
         self.mode = self.clean(self.json['coordMode'])
         self.sw_version = self.json['BUILD']
         self.zb_version = self.json['zbRev']
