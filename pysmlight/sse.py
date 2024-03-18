@@ -1,25 +1,30 @@
 import logging
-from aiohttp_sse_client2 import client as sse_client
-import aiohttp
-import asyncio
 from typing import Callable
+
+import aiohttp
+from aiohttp_sse_client2 import client as sse_client
+
 from .const import Events
 
 _LOGGER = logging.getLogger(__name__)
 
-#overide logging level aiohttp_sse_client2 library
-aiologger = logging.getLogger('aiohttp_sse_client2')
+# override logging level aiohttp_sse_client2 library
+aiologger = logging.getLogger("aiohttp_sse_client2")
 aiologger.setLevel(logging.INFO)
 
+
 class sseClient:
-    """ Initialise a client to receive Server Sent Events (SSE) """
+    """Initialise a client to receive Server Sent Events (SSE)"""
+
     def __init__(self, host, session):
         self.callbacks = {}
         self.session = session
         self.url = f"http://{host}/events"
 
     async def client(self):
-        timeout = aiohttp.ClientTimeout(total=None, connect=None, sock_connect=None, sock_read=30)
+        timeout = aiohttp.ClientTimeout(
+            total=None, connect=None, sock_connect=None, sock_read=30
+        )
         while True:
             async with sse_client.EventSource(
                 self.url, session=self.session, timeout=timeout
@@ -37,18 +42,20 @@ class sseClient:
         self.callbacks.get(event.type, lambda x: None)(event)
         self.callbacks.get("*", lambda x: None)(event)
 
-    def register_callback(self, event:Events, cb: Callable):
-        """ register a callback for a specific event type or all events"""
+    def register_callback(self, event: Events, cb: Callable):
+        """register a callback for a specific event type or all events"""
         if event and event.name in self.callbacks:
-            _LOGGER.warning(f"Callback for {event} already exists, overwriting")
+            _LOGGER.warning(
+                "Callback for %s already exists, overwriting", event
+            )
 
         if event is not None:
             self.callbacks[event.name] = cb
         else:
             self.callbacks["*"] = cb
 
-    def deregister_callback(self, event:Events):
-        """ Deregister callbacks per event type """
+    def deregister_callback(self, event: Events):
+        """Deregister callbacks per event type"""
         if event is None:
             self.callbacks.pop("*", None)
         else:
