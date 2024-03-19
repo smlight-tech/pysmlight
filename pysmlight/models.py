@@ -20,6 +20,7 @@ class Info:
     coord_mode: int | str | None = None  # Should be Enum
     device_ip: str | None = None
     fw_channel: str | None = None  # NEW - beta or stable
+    MAC: str | None = None
     model: str | None = None
     ram_total: int | None = None
     sw_version: str | None = None
