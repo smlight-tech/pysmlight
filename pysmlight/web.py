@@ -229,7 +229,7 @@ class Api2(webClient):
                 "action": Actions.API_FLASH_ZB.value,
                 "fwUrl": fw_url,
                 "fwType": fw_type,
-                "fwVersion": fw_version,
+                "fwVer": fw_version,
             }
         else:
             params = {"action": Actions.API_FLASH_ESP.value, "fwUrl": fw_url}
