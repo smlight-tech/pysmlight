@@ -8,8 +8,16 @@ from typing import Dict
 
 import aiohttp
 
-from .const import (FW_DEV_URL, MODE_LIST, PARAM_LIST, Actions, Commands,
-                    Devices, Events, Pages)
+from .const import (
+    FW_DEV_URL,
+    FW_URL,
+    PARAM_LIST,
+    Actions,
+    Commands,
+    Devices,
+    Events,
+    Pages,
+)
 from .exceptions import SmlightAuthError, SmlightConnectionError
 from .models import Firmware, Info, Sensors
 from .payload import Payload
@@ -23,10 +31,12 @@ start = time.time()
 class webClient:
     def __init__(self, host, session=None):
         self.auth = None
-        # we can't modify headers on the passed in session from HA, if needed can be
-        # overridden at request level
+        # we can't modify headers on the passed in session from HA,
+        #  if needed can be overridden at request level
         self.headers = {"Content-Type": "application/json; charset=utf-8"}
-        self.post_headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        self.post_headers = {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
         self.host = host
         self.session = session
 
@@ -34,13 +44,17 @@ class webClient:
 
     async def async_init(self):
         if not self.session:
-            self.session = aiohttp.ClientSession(headers=self.headers, auth=self.auth)
+            self.session = aiohttp.ClientSession(
+                headers=self.headers, auth=self.auth
+            )
         if self.host != "smlight.tech":
             if await self.check_auth_needed():
                 _LOGGER.info("Authentication required")
                 # fallback to hardcoded test credentials
                 if secrets and self.auth is None:
-                    self.auth = aiohttp.BasicAuth(secrets.apiuser, secrets.apipass)
+                    self.auth = aiohttp.BasicAuth(
+                        secrets.apiuser, secrets.apipass
+                    )
 
         _LOGGER.debug("Session created")
 
@@ -62,7 +76,9 @@ class webClient:
 
         try:
             params = {"action": Actions.API_GET_PAGE.value, "page": 1}
-            async with self.session.get(self.url, auth=auth, params=params) as response:
+            async with self.session.get(
+                self.url, auth=auth, params=params
+            ) as response:
                 if response.status == 401:
                     res = True
                     if authenticate:
@@ -94,7 +110,10 @@ class webClient:
     async def post(self, params):
         data = urllib.parse.urlencode(params)
         async with self.session.post(
-            self.setting_url, data=data, headers=self.post_headers, auth=self.auth
+            self.setting_url,
+            data=data,
+            headers=self.post_headers,
+            auth=self.auth,
         ) as response:
             await response.text(encoding="utf-8")
             return response.status == 200
@@ -139,11 +158,12 @@ class Api2(webClient):
         return res
 
     async def get_firmware_version(
-        self, device: str = None, mode: str = "ESP"
+        self, device: str | None = None, mode: str = "ESP"
     ) -> list[Firmware] | None:
         """Get firmware version for device and mode (ESP|ZB)"""
         params = {"type": mode}
-        response = await self.get(params=params, url=FW_DEV_URL)
+        url = FW_DEV_URL if mode == "ZB" else FW_URL
+        response = await self.get(params=params, url=url)
         data = json.loads(response)
 
         if mode == "ZB" and device is not None:
@@ -200,7 +220,9 @@ class Api2(webClient):
         res = await self.get(params)
         return res == "ok"
 
-    async def fw_update(self, mode, fw_url, fw_type=None, fw_version=None) -> None:
+    async def fw_update(
+        self, mode, fw_url, fw_type=None, fw_version=None
+    ) -> None:
         # Register callback 'ESP_UPD_done'? before calling this
         if mode == "ZB":
             params = {
@@ -213,9 +235,9 @@ class Api2(webClient):
             params = {"action": Actions.API_FLASH_ESP.value, "fwUrl": fw_url}
         await self.get(params)
 
-    async def get_toggle(self, page: Pages, toggle: str) -> bool:
-        data = await self.get_page(page.value)
-        return data[toggle]
+    # async def get_toggle(self, page: Pages, toggle: str) -> bool:
+    #     data = await self.get_page(page)
+    #     return data[toggle]
 
     async def set_toggle(self, page: Pages, toggle: str, value: bool) -> bool:
         state = "on" if value else "off"
@@ -225,7 +247,9 @@ class Api2(webClient):
 
     async def scan_wifi(self):
         _LOGGER.debug("Scanning wifi")
-        self.sse.register_callback(Events.API2_WIFISCANSTATUS, self.wifi_callback)
+        self.sse.register_callback(
+            Events.API2_WIFISCANSTATUS, self.wifi_callback
+        )
         params = {"action": Actions.API_STARTWIFISCAN.value}
         await self.get(params)
 
@@ -257,56 +281,55 @@ class CmdWrapper:
 async def main():
     logging.basicConfig(level=logging.DEBUG)
 
-    # HA passes in a session, if not using HA, create a new session for testing
-    master_session = aiohttp.ClientSession()
-    host = secrets.host
 
-    client = Api2(host, session=master_session)
-    client.sse.register_callback(
-        Events.EVENT_INET_STATE, lambda x: _LOGGER.info(x.type)
-    )
+#     # HA passes in a session, create a new session for testing
+#     master_session = aiohttp.ClientSession()
+#     host = secrets.host
 
-    # in HA this will use hass.async_create_task
-    asyncio.create_task(client.sse.client())
-    try:
-        await client.async_init()
-    except SmlightAuthError:
-        _LOGGER.debug("auth failed")
-    res = await client.authenticate(secrets.apiuser, secrets.apipass)
-    _LOGGER.debug("Auth: %s", res)
+#     client = Api2(host, session=master_session)
+#     client.sse.register_callback(
+#         Events.EVENT_INET_STATE, lambda x: _LOGGER.info(x.type)
+#     )
 
-    api = client
-    await api.scan_wifi()
+#     # in HA this will use hass.async_create_task
+#     asyncio.create_task(client.sse.client())
+#     try:
+#         await client.async_init()
+#     except SmlightAuthError:
+#         _LOGGER.debug("auth failed")
+#     res = await client.authenticate(secrets.apiuser, secrets.apipass)
+#     _LOGGER.debug("Auth: %s", res)
 
-    # gettog = await client.get_toggle(*SETTINGS['DISABLE_LEDS'])
-    # print(gettog)
-    # tog = await client.set_toggle(*SETTINGS['DISABLE_LEDS'], value=True)
-    # print(tog)
+#     api = client
+#     await api.scan_wifi()
 
-    data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
-    print(data)
+#     # gettog = await client.get_toggle(*SETTINGS['DISABLE_LEDS'])
+#     # print(gettog)
+#     # tog = await client.set_toggle(*SETTINGS['DISABLE_LEDS'], value=True)
+#     # print(tog)
 
-    res = await api.get_param("coordMode")
-    fw = await api.get_firmware_version(device="SLZB-06p7", mode="ESP")
-    print(fw[0])
-    sens = await api.get_sensors()
-    print(sens)
-    info = await api.get_info()
-    print(info.sw_version)
+#     data = await api.get_page(Pages.API2_PAGE_DASHBOARD)
+#     print(data)
 
-    print(MODE_LIST[int(res)])
+#     res = await api.get_param("coordMode")
+#     fw = await api.get_firmware_version(device="SLZB-06p7", mode="ESP")
+#     print(fw[0])
+#     sens = await api.get_sensors()
+#     print(sens)
+#     info = await api.get_info()
+#     print(info.sw_version)
 
-    while time.time() - start < 10:
-        await asyncio.sleep(1)
-        res = await api.get_param("inetState")
+#     print(MODE_LIST[int(res)])
 
-    duration = time.time() - start
-    print(f"duration {duration}")
-    await client.close()
+#     while time.time() - start < 10:
+#         await asyncio.sleep(1)
+#         res = await api.get_param("inetState")
+
+#     duration = time.time() - start
+#     print(f"duration {duration}")
+#     await client.close()
 
 
 secrets = None
 if __name__ == "__main__":
-    import secrets
-
     asyncio.run(main())
