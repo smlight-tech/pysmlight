@@ -99,3 +99,11 @@ class WifiStatus(Enum):
     WL_CONNECT_FAILED = 4
     WL_CONNECTION_LOST = 5
     WL_DISCONNECTED = 6
+
+
+class WifiMode(Enum):
+    WIFI_MODE_NULL = 0  # null mode
+    WIFI_MODE_STA = 1  # WiFi station mode
+    WIFI_MODE_AP = 2  # WiFi soft-AP mode
+    WIFI_MODE_APSTA = 3  # WiFi station + soft-AP mode
+    WIFI_MODE_MAX = 4
