@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysmlight"
-version = "0.0.8"
+version = "0.0.9"
 repository = "https://github.com/smlight-workspace/python-wrapper"
 license = "Apache-2.0"
 description = "A library implemnting API control of the SLZB-06 LAN Coordinators."
