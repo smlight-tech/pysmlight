@@ -1,0 +1,25 @@
+{
+    "fw": [
+      {
+        "rev": "20240229",
+        "ver": "v2.0.18",
+        "dev": false,
+        "notes": "<span>- Support SLZB-06p10 model (</span><a href='https://smlight.tech/product/slzb-06p10/' target='_blank' aria-current='true'><span>link</span></a><span>)</span>",
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/core/slzb-06-v2.0.18-ota.bin"
+      },
+      {
+        "rev": "20240229",
+        "ver": "v2.0.17",
+        "dev": false,
+        "notes": "Button mode switching now takes into account mode switching via the web interface.\r\nWhen you save the settings, the disabled form fields remain disabled after save.\r\nDE locale fix.\r\nFix device type Unknown.\r\nFix save dialog on network page.",
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/core/slzb-06-v2.0.17-ota.bin"
+      },
+      {
+        "rev": "10112023",
+        "ver": "0.9.9",
+        "dev": false,
+        "notes": "release of previous version",
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/core/slzb-06-0.9.9-ota.bin"
+      }
+    ]
+  }

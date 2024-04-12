@@ -1,0 +1,70 @@
+{
+	"4": [
+		{
+			"type": "0",
+			"rev": "20240315",
+			"notes": "Dev firmware\nHW INT",
+			"link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/dev/znp_LP_EM_CC2674P10_SM_tirtos7_ticlangNR.bin"
+		},
+		{
+			"type": "0",
+			"rev": "20240314",
+			"notes": "Dev firmware\nHW EXT",
+			"link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/dev/znp_LP_EM_CC2674P10_SM_tirtos7_ticlangNP.bin"
+		}
+	],
+	"3": [
+		{
+			"type": "0",
+			"rev": "20240301",
+			"notes": "New firmware (solved pairing issues)",
+			"link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/CC2652P7_7p10d_202403014.bin"
+		},
+		{
+			"type": "0",
+			"rev": "20230507",
+			"notes": "Standard (factory) FW",
+			"link": "https://smlight.tech/flasher/firmware/bin/slzb06x/P7_coordinator_20230507.bin"
+		}
+	],
+	"1": [
+		{
+			"type": "0",
+			"rev": "20231030",
+			"notes": "Factory FW",
+			"link": "https://smlight.tech/flasher/firmware/bin/slzb06x/06M_768_0.2.gbl"
+		},
+		{
+			"type": "1",
+			"rev": "20231130",
+			"notes": "Test router firmware, first release",
+			"link": "https://smlight.tech/flasher/firmware/bin/slzb06x/06M_router.gbl"
+		}
+	],
+	"0": [
+	    {
+			"type": "0",
+			"rev": "20240315",
+			"notes": "This firmware switches back to the 6.10 SDK (which 20221226 also used). \nSome improvements which should reduce NWK errors.\n<span>(Discussion: </span><a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/496' target='_blank' aria-current='true'><span>Github</span></a><span>)</span>",
+			"link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06/old-format/cc2652p_coordinator_20240315.bin"
+		},		    
+		{
+			"type": "0",
+			"rev": "20230507",
+			"notes": "Enable child aging to fix issues like #13478 (but not for older Xiaomi devices as they do not implement child aging correctly which gets them kicked out of the network)\nIncrease message timeout from 7 to 8 seconds to increase message delivery success rate for devices using a 7.5 seconds poll interval (#13478)\nImprove performance with larger network\nOptimize table sizes\nIncrease stack_size from 1024 to 8192\nSimpleLink SDK 7.10.00.98",
+			"link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06/old-format/cc2652p_coordinator_20230507.bin"
+		},
+		{
+			"type": "0",
+			"rev": "20221226",
+			"notes": "Improve performance/reliability for larger network (100+ devices)\nIncrease request retry attempts\nIncrease routing table sizes\nSimpleLink SDK 6.10.01.01",
+			"link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06/old-format/cc2652p_coordinator_20221226.bin"
+		},
+		{
+			"type": "1",
+			"rev": "20221102",
+			"notes": "Allow to set transmit power\nFix directly connected Xiaomi devices disconnecting\nSimpleLink SDK 6.30.00.84",
+			"link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06/old-format/cc2652p_router_20221102.bin"
+		}
+	]
+}

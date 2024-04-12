@@ -1,0 +1,16 @@
+{
+    "Sensors": {
+        "esp32_temp": "39.44",
+        "zb_temp": "35.76",
+        "uptime": 700,
+        "socket_uptime": 690,
+        "ram_usage": 91,
+        "fs_used": 192,
+        "ethernet": true,
+        "wifi_connected": false,
+        "wifi_status": 2,
+        "disable_leds": false,
+        "night_mode": false,
+        "auto_zigbee": false
+    }
+}

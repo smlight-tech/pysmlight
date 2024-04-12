@@ -1,0 +1,13 @@
+# Test dependencies
+
+aresponses
+asynctest
+coveralls
+coverage[toml]
+pytest
+pytest-asyncio
+pytest-cov
+pytest-timeout
+freezegun
+ruff==0.0.261
+tomli

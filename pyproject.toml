@@ -1,0 +1,72 @@
+[tool.poetry]
+name = "pysmlight"
+version = "0.0.10"
+repository = "https://github.com/smlight-workspace/pysmlight"
+license = "Apache-2.0"
+description = "A library implemnting API control of the SLZB-06 LAN Coordinators."
+authors = ["Tim Lunn <tl@smlight.tech>"]
+readme = "README.md"
+keywords = ["smlight", "slzb-06", "zigbee"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiohttp = ">=3.9.3"
+aiohttp_sse_client2 = "^0.3.0"
+# attrs = "^23.2.0"
+mashumaro = ">=3.10"
+
+[tool.poetry.scripts]
+sm-cli = "pysmlight.web:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+select = [
+		# Pyflakes
+		"F",
+		# Pycodestyle
+		"E",
+		"W"
+]
+src = ["pysmlight", "tests"]
+
+[tool.pytest.ini_options]
+addopts = "--showlocals --verbose"
+testpaths = ["tests"]
+timeout = 20
+log_format = "%(asctime)s.%(msecs)03d %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+asyncio_mode = "auto"
+
+[tool.mypy]
+check_untyped_defs = true
+show_error_codes = true
+show_error_context = true
+disable_error_code = [
+	"attr-defined",
+	"arg-type",
+]
+
+[tool.isort]
+profile = "black"
+# will group `import x` and `from x import` of the same module.
+force_sort_within_sections = true
+known_first_party = ["universal_silabs_flasher", "tests"]
+forced_separate = "tests"
+combine_as_imports = true
+
+[tool.flake8]
+exclude = [".venv", ".git", ".tox", "docs", "venv", "bin", "lib", "deps", "build"]
+# To work with Black
+max-line-length = 88
+# W503: Line break occurred before a binary operator
+# E203: Whitespace before ':'
+# E501: line too long
+# D202 No blank lines allowed after function docstring
+ignore = ["W503", "E203", "E501", "D202"]
+per-file-ignores = ["tests/*:F811,F401,F403"]
+
+[tool.pyupgrade]
+py37plus = true
