@@ -15,9 +15,6 @@ aiohttp_sse_client2 = "^0.3.0"
 # attrs = "^23.2.0"
 mashumaro = ">=3.10"
 
-[tool.poetry.scripts]
-sm-cli = "pysmlight.web:main"
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -69,4 +66,4 @@ ignore = ["W503", "E203", "E501", "D202"]
 per-file-ignores = ["tests/*:F811,F401,F403"]
 
 [tool.pyupgrade]
-py37plus = true
+py311plus = true
