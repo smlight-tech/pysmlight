@@ -162,7 +162,9 @@ class Api2(webClient):
             self.sse = sseClient(host, session)
         elif sse:
             self.sse = sse
-        self.sse.register_callback(Events.SAVE_PARAMS, self._handle_settings)
+
+        if hasattr(self, "sse") and self.sse is not None:
+            self.sse.register_callback(Events.SAVE_PARAMS, self._handle_settings)
 
     def _handle_settings(self, event: Events) -> None:
         data = json.loads(event.data)
