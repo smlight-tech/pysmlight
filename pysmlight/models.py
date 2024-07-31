@@ -68,11 +68,3 @@ class Sensors(DataClassDictMixin):
     disable_leds: bool | None = None
     night_mode: bool | None = None
     auto_zigbee: bool | None = None
-
-    @classmethod
-    def load_payload(cls, payload):
-        return cls(
-            esp32_temp=payload.esp32_temp,
-            zb_temp=payload.zb_temp,
-            uptime=payload.uptime,
-        )
