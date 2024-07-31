@@ -3,7 +3,7 @@ from collections.abc import Callable
 import json
 import logging
 import time
-from typing import Any, Dict
+from typing import Any, Type
 import urllib.parse
 
 from aiohttp import BasicAuth, ClientSession
@@ -18,6 +18,7 @@ from .const import (
     Devices,
     Events,
     Pages,
+    Settings,
 )
 from .exceptions import SmlightAuthError, SmlightConnectionError
 from .models import Firmware, Info, Sensors
@@ -42,7 +43,7 @@ class webClient:
         self.headers = {"Content-Type": "application/json; charset=utf-8"}
         self.post_headers = {"Content-Type": "application/x-www-form-urlencoded"}
         self.host = host
-        self.session: ClientSession | None = session
+        self.session = session
 
         self.set_urls()
 
@@ -72,7 +73,7 @@ class webClient:
         if self.session is None:
             self.session = ClientSession(headers=self.headers)
 
-        auth = None
+        auth: BasicAuth | None = None
         res = False
         if authenticate:
             auth = self.auth
@@ -90,11 +91,12 @@ class webClient:
 
         return res
 
-    async def get(self, params: Dict[str, Any], url=None) -> str | None:
+    async def get(self, params: dict[str, Any], url: str | None = None) -> str | None:
         if self.session is None:
             self.session = ClientSession(headers=self.headers)
         if url is None:
             url = self.url
+
         async with self.session.get(
             url, headers=self.headers, params=params, auth=self.auth
         ) as response:
@@ -112,6 +114,7 @@ class webClient:
         if self.session is None:
             self.session = ClientSession(headers=self.headers)
         data = urllib.parse.urlencode(params)
+
         async with self.session.post(
             self.setting_url,
             data=data,
@@ -142,7 +145,12 @@ class webClient:
         await self.async_init()
         return self
 
-    async def __aexit__(self, exc_type, exc, tb) -> None:
+    async def __aexit__(
+        self,
+        exc_type: Type[BaseException] | None,
+        exc: BaseException | None,
+        tb: object | None,
+    ) -> None:
         await self.close()
 
 
@@ -154,7 +162,7 @@ class Api2(webClient):
         session: ClientSession | None = None,
         sse: sseClient | None = None,
     ) -> None:
-        self.settings_cb: Dict[str, Callable] = {}
+        self.settings_cb: dict[str, Callable] = {}
         self.cmds = CmdWrapper(self.set_cmd)
         super().__init__(host, session=session)
 
@@ -175,9 +183,8 @@ class Api2(webClient):
                 result.update({setting: changes[setting]})
                 self.settings_cb[setting](result)
 
-    def register_settings_cb(self, setting, cb: Callable) -> None:
-        # callback = partial(cb, setting)
-        self.settings_cb[setting] = cb
+    def register_settings_cb(self, setting: Settings, cb: Callable) -> None:
+        self.settings_cb[setting.value[1]] = cb
 
     async def get_device_payload(self) -> Payload:
         data = await self.get_page(Pages.API2_PAGE_DASHBOARD)
@@ -215,7 +222,7 @@ class Api2(webClient):
             return data
         return None
 
-    async def get_param(self, param) -> str | None:
+    async def get_param(self, param: str) -> str | None:
         if param in PARAM_LIST:
             params = {"action": Actions.API_GET_PARAM.value, "param": param}
             return await self.get(params)
@@ -243,7 +250,13 @@ class Api2(webClient):
         res = await self.get(params)
         return res == "ok"
 
-    async def fw_update(self, mode, fw_url, fw_type=None, fw_version=None) -> None:
+    async def fw_update(
+        self,
+        mode,
+        fw_url: str,
+        fw_type: str | None = None,
+        fw_version: str | None = None,
+    ) -> None:
         # Register callback 'ESP_UPD_done'? before calling this
         if mode == "ZB":
             params = {
@@ -262,13 +275,13 @@ class Api2(webClient):
         res = await self.post(params)
         return res
 
-    async def scan_wifi(self):
+    async def scan_wifi(self) -> None:
         _LOGGER.debug("Scanning wifi")
         self.sse.register_callback(Events.API2_WIFISCANSTATUS, self.wifi_callback)
         params = {"action": Actions.API_STARTWIFISCAN.value}
         await self.get(params)
 
-    def wifi_callback(self, msg):
+    def wifi_callback(self, msg) -> None:
         _LOGGER.debug("WIFI callback")
         _LOGGER.info(msg)
         self.sse.deregister_callback(Events.API2_WIFISCANSTATUS)
@@ -277,17 +290,17 @@ class Api2(webClient):
 class CmdWrapper:
     """Convenience wrapper for HA when sending commands to the device."""
 
-    def __init__(self, set_cmd):
+    def __init__(self, set_cmd: Callable) -> None:
         self.set_cmd = set_cmd
 
-    async def reboot(self):
+    async def reboot(self) -> None:
         await self.set_cmd(Commands.CMD_ESP_RES)
 
-    async def zb_bootloader(self):
+    async def zb_bootloader(self) -> None:
         await self.set_cmd(Commands.CMD_ZB_BSL)
 
-    async def zb_restart(self):
+    async def zb_restart(self) -> None:
         await self.set_cmd(Commands.CMD_ZB_RST)
 
-    async def zb_router(self):
+    async def zb_router(self) -> None:
         await self.set_cmd(Commands.CMD_ZB_ROUTER_RECON)

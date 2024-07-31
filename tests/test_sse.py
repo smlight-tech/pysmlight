@@ -6,7 +6,7 @@ from unittest.mock import Mock
 from aiohttp import ClientSession, web
 from aresponses import ResponsesMockServer
 
-from pysmlight.const import Events
+from pysmlight.const import Events, Settings
 from pysmlight.web import Api2
 
 _LOGGER = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
         client = Api2(host, session=session)
         client.sse.register_callback(Events.LOG_STR, log_message_handler)
         client.sse.register_callback(None, all_message_handler)
-        client.register_settings_cb("disableLeds", settings_message_handler)
+        client.register_settings_cb(Settings.DISABLE_LEDS, settings_message_handler)
         await client.sse.sse_stream()
         assert log_message_handler.call_count == 1
         assert all_message_handler.call_count == 3

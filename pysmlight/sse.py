@@ -16,8 +16,8 @@ aiologger.setLevel(logging.INFO)
 class sseClient:
     """Initialise a client to receive Server Sent Events (SSE)"""
 
-    def __init__(self, host, session):
-        self.callbacks = {}
+    def __init__(self, host: str, session: aiohttp.ClientSession):
+        self.callbacks: dict[str, Callable] = {}
         self.session = session
         self.url = f"http://{host}/events"
         self.timeout = aiohttp.ClientTimeout(
