@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysmlight"
-version = "0.0.11"
+version = "0.0.12"
 repository = "https://github.com/smlight-workspace/pysmlight"
 license = "Apache-2.0"
 description = "A library implementing API control of the SMLIGHT SLZB-06 LAN Coordinators."
@@ -12,7 +12,6 @@ keywords = ["smlight", "slzb-06", "zigbee"]
 python = "^3.11"
 aiohttp = ">=3.9.3"
 aiohttp_sse_client2 = "^0.3.0"
-# attrs = "^23.2.0"
 mashumaro = ">=3.10"
 
 [build-system]
