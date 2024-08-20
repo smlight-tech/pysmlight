@@ -57,7 +57,7 @@ class Sensors(DataClassDictMixin):
     esp32_temp: float = 0
     zb_temp: float = 0
     uptime: int = 0  # Should be timestamp
-    socket_uptime: int = 0  # Should be timestamp
+    socket_uptime: int | None = None  # Should be timestamp
     ram_usage: int | None = None
     fs_used: int | None = None
     ethernet: bool = False
@@ -68,3 +68,7 @@ class Sensors(DataClassDictMixin):
     disable_leds: bool | None = None
     night_mode: bool | None = None
     auto_zigbee: bool | None = None
+
+    def __post_init__(self):
+        if self.socket_uptime is not None and self.socket_uptime <= 0:
+            self.socket_uptime = None
