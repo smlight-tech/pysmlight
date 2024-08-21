@@ -102,6 +102,9 @@ class webClient:
         ) as response:
             if response.status == 404:
                 return None
+            elif response.status == 401:
+                raise SmlightAuthError("Authentication Error")
+
             hdr = response.headers.get("respValuesArr")
             if hdr is not None and (
                 params and int(params["action"]) == Actions.API_GET_PAGE.value
@@ -110,7 +113,7 @@ class webClient:
             else:
                 return await response.text(encoding="utf-8")
 
-    async def post(self, params):
+    async def post(self, params) -> bool:
         if self.session is None:
             self.session = ClientSession(headers=self.headers)
         data = urllib.parse.urlencode(params)
@@ -121,6 +124,10 @@ class webClient:
             headers=self.post_headers,
             auth=self.auth,
         ) as response:
+            if response.status == 404:
+                return False
+            elif response.status == 401:
+                raise SmlightAuthError("Authentication Error")
             await response.text(encoding="utf-8")
             return response.status == 200
 
