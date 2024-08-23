@@ -70,6 +70,7 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
         client = Api2(host, session=session)
         client.sse.register_callback(Events.LOG_STR, log_message_handler)
         client.sse.register_callback(None, all_message_handler)
+
         client.register_settings_cb(Settings.DISABLE_LEDS, settings_message_handler)
         try:
             await client.sse.sse_stream()
@@ -85,9 +86,9 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
         assert cb2 == all_message_handler
 
         assert settings_message_handler.call_count == 1
-        assert settings_message_handler.call_args.args[0] == {
+        assert settings_message_handler.call_args.args[0].to_dict() == {
             "page": 8,
             "origin": "ha",
             "needReboot": False,
-            "disableLeds": True,
+            "setting": {"disableLeds": True},
         }

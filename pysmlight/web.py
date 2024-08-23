@@ -21,7 +21,7 @@ from .const import (
     Settings,
 )
 from .exceptions import SmlightAuthError, SmlightConnectionError
-from .models import Firmware, Info, Sensors
+from .models import Firmware, Info, Sensors, SettingsEvent
 from .payload import Payload
 from .sse import sseClient
 
@@ -185,9 +185,10 @@ class Api2(webClient):
         data = json.loads(event.data)
         changes = data.pop("changes")
         for setting in changes:
+            base = data.copy()
             if setting in self.settings_cb:
-                result = data.copy()
-                result.update({setting: changes[setting]})
+                base["setting"] = {setting: changes[setting]}
+                result = SettingsEvent.from_dict(base)
                 self.settings_cb[setting](result)
 
     def register_settings_cb(self, setting: Settings, cb: Callable) -> None:
