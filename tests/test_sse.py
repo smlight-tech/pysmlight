@@ -3,6 +3,7 @@ from collections.abc import Callable
 import logging
 from unittest.mock import Mock
 
+import aiohttp
 from aiohttp import ClientSession, web
 from aresponses import ResponsesMockServer
 
@@ -55,6 +56,7 @@ async def mock_sse_stream(request):
     async for chunk in event_stream():
         await stream.write(chunk)
     await stream.write_eof()
+    await stream.close()
     return stream
 
 
@@ -69,7 +71,11 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
         client.sse.register_callback(Events.LOG_STR, log_message_handler)
         client.sse.register_callback(None, all_message_handler)
         client.register_settings_cb(Settings.DISABLE_LEDS, settings_message_handler)
-        await client.sse.sse_stream()
+        try:
+            await client.sse.sse_stream()
+        except aiohttp.ClientConnectionError:
+            # avoid SSE client try to reconnect
+            pass
         assert log_message_handler.call_count == 1
         assert all_message_handler.call_count == 3
         cb = client.sse.deregister_callback(Events.LOG_STR)

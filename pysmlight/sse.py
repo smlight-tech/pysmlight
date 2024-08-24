@@ -36,7 +36,7 @@ class sseClient:
                 async for event in event_source:
                     _LOGGER.debug(event)
                     await self.message_handler(event)
-            except aiohttp.ClientConnectionError:
+            except ConnectionError:
                 _LOGGER.debug("Client Connection error")
             else:
                 _LOGGER.debug("Connection closed cleanly")
