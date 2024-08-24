@@ -169,7 +169,7 @@ class Api2(webClient):
         session: ClientSession | None = None,
         sse: sseClient | None = None,
     ) -> None:
-        self.settings_cb: dict[str, Callable] = {}
+        self.settings_cb: dict[Settings, Callable] = {}
         self.cmds = CmdWrapper(self.set_cmd)
         super().__init__(host, session=session)
 
@@ -183,16 +183,26 @@ class Api2(webClient):
 
     def _handle_settings(self, event: Events) -> None:
         data = json.loads(event.data)
-        changes = data.pop("changes")
+        page = Pages(data["page"])
+        changes = data.pop("changes", None)
         for setting in changes:
             base = data.copy()
-            if setting in self.settings_cb:
+            match_cb = next(
+                (
+                    cb
+                    for k, cb in self.settings_cb.items()
+                    if (page, setting) == k.value
+                ),
+                None,
+            )
+
+            if match_cb:
                 base["setting"] = {setting: changes[setting]}
                 result = SettingsEvent.from_dict(base)
-                self.settings_cb[setting](result)
+                match_cb(result)
 
     def register_settings_cb(self, setting: Settings, cb: Callable) -> None:
-        self.settings_cb[setting.value[1]] = cb
+        self.settings_cb[setting] = cb
 
     async def get_device_payload(self) -> Payload:
         data = await self.get_page(Pages.API2_PAGE_DASHBOARD)

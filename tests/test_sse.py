@@ -1,13 +1,14 @@
 import asyncio
 from collections.abc import Callable
 import logging
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import aiohttp
 from aiohttp import ClientSession, web
 from aresponses import ResponsesMockServer
 
 from pysmlight.const import Events, Settings
+from pysmlight.models import SettingsEvent
 from pysmlight.web import Api2
 
 _LOGGER = logging.getLogger(__name__)
@@ -86,9 +87,8 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
         assert cb2 == all_message_handler
 
         assert settings_message_handler.call_count == 1
-        assert settings_message_handler.call_args.args[0].to_dict() == {
-            "page": 8,
-            "origin": "ha",
-            "needReboot": False,
-            "setting": {"disableLeds": True},
-        }
+        assert settings_message_handler.call_args == call(
+            SettingsEvent(
+                page=8, origin="ha", needReboot=False, setting={"disableLeds": True}
+            )
+        )
