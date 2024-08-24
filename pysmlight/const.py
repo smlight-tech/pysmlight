@@ -88,6 +88,7 @@ class Settings(Enum):
     DISABLE_LEDS = (Pages.API2_PAGE_SETTINGS_LED, "disableLeds")
     NIGHT_MODE = (Pages.API2_PAGE_SETTINGS_LED, "nightMode")
     ZB_AUTOUPDATE = (Pages.API2_PAGE_SETTINGS_OTA, "enabled")
+    ENABLE_VPN = (Pages.API2_PAGE_VPN, "enabled")
 
 
 class WifiStatus(Enum):

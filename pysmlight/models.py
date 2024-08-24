@@ -63,11 +63,13 @@ class Sensors(DataClassDictMixin):
     ethernet: bool = False
     wifi_connected: bool = False
     wifi_status: int | str | None = None  # enum (off, client, AP etc)
+    vpn_status: bool = False
 
     # toggle states:
     disable_leds: bool | None = None
     night_mode: bool | None = None
     auto_zigbee: bool | None = None
+    vpn_enabled: bool | None = None
 
     def __post_init__(self):
         if self.socket_uptime is not None and self.socket_uptime <= 0:
