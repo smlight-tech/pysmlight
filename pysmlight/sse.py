@@ -2,7 +2,7 @@ import logging
 from typing import Callable
 
 import aiohttp
-from aiohttp_sse_client2 import client as sse_client
+from aiohttp_sse_client2.client import EventSource, MessageEvent
 
 from .const import Events
 
@@ -29,7 +29,7 @@ class sseClient:
             await self.sse_stream()
 
     async def sse_stream(self):
-        async with sse_client.EventSource(
+        async with EventSource(
             self.url, session=self.session, timeout=self.timeout
         ) as event_source:
             try:
@@ -41,11 +41,11 @@ class sseClient:
             else:
                 _LOGGER.debug("Connection closed cleanly")
 
-    async def message_handler(self, event):
+    async def message_handler(self, event: MessageEvent):
         self.callbacks.get(event.type, lambda x: None)(event)
         self.callbacks.get("*", lambda x: None)(event)
 
-    def register_callback(self, event: Events, cb: Callable):
+    def register_callback(self, event: Events | None, cb: Callable):
         """register a callback for a specific event type or all events"""
         if event and event.name in self.callbacks:
             _LOGGER.warning("Callback for %s already exists, overwriting", event)
@@ -55,7 +55,7 @@ class sseClient:
         else:
             self.callbacks["*"] = cb
 
-    def deregister_callback(self, event: Events) -> Callable:
+    def deregister_callback(self, event: Events | None) -> Callable:
         """Deregister callbacks per event type"""
         cb: Callable
         if event is None:

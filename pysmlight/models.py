@@ -19,7 +19,7 @@ class Firmware(DataClassDictMixin):
 
 @dataclass
 class Info(DataClassDictMixin):
-    coord_mode: int | str | None = None  # Enum
+    coord_mode: int | None = None  # Enum
     device_ip: str | None = None
     fs_total: int | None = None
     fw_channel: str | None = None  # dev, beta or stable
@@ -76,3 +76,11 @@ class Sensors(DataClassDictMixin):
     def __post_init__(self):
         if self.socket_uptime is not None and self.socket_uptime <= 0:
             self.socket_uptime = None
+
+
+@dataclass
+class SettingsEvent(DataClassDictMixin):
+    page: int | None = None
+    origin: str | None = None
+    needReboot: bool = False
+    setting: dict[str, int | bool] | None = None
