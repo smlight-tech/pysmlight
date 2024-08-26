@@ -72,7 +72,7 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
         client.sse.register_callback(Events.LOG_STR, log_message_handler)
         client.sse.register_callback(None, all_message_handler)
 
-        client.register_settings_cb(Settings.DISABLE_LEDS, settings_message_handler)
+        client.sse.register_settings_cb(Settings.DISABLE_LEDS, settings_message_handler)
         try:
             await client.sse.sse_stream()
         except aiohttp.ClientConnectionError:

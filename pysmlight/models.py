@@ -83,4 +83,4 @@ class SettingsEvent(DataClassDictMixin):
     page: int | None = None
     origin: str | None = None
     needReboot: bool = False
-    setting: dict[str, int | bool] | None = None
+    setting: dict[str, bool | int] | None = None
