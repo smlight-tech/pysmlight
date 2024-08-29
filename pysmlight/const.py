@@ -82,6 +82,7 @@ class Events(Enum):
     ZB_FW_info = auto()
     ZB_FW_prgs = auto()
     ZB_ENERGY_SCAN_DONE = auto()
+    CATCH_ALL = 99
 
 
 class Settings(Enum):

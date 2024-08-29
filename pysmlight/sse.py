@@ -19,7 +19,7 @@ class sseClient:
     """Initialise a client to receive Server Sent Events (SSE)"""
 
     def __init__(self, host: str, session: aiohttp.ClientSession):
-        self.callbacks: dict[str, Callable] = {}
+        self.callbacks: dict[Events, Callable] = {}
         self.settings_cb: dict[Settings, Callable] = {}
         self.session = session
         self.url = f"http://{host}/events"
@@ -47,27 +47,25 @@ class sseClient:
                 _LOGGER.debug("Connection closed cleanly")
 
     async def message_handler(self, event: MessageEvent):
-        self.callbacks.get(event.type, lambda x: None)(event)
-        self.callbacks.get("*", lambda x: None)(event)
+        self.callbacks.get(getattr(Events, event.type), lambda x: None)(event)
+        self.callbacks.get(Events.CATCH_ALL, lambda x: None)(event)
 
-    def register_callback(self, event: Events | None, cb: Callable):
+    def register_callback(self, event: Events, cb: Callable) -> Callable[[], None]:
         """register a callback for a specific event type or all events"""
-        if event and event.name in self.callbacks:
+        if event and event in self.callbacks:
             _LOGGER.warning("Callback for %s already exists, overwriting", event)
 
-        if event is not None:
-            self.callbacks[event.name] = cb
-        else:
-            self.callbacks["*"] = cb
+        self.callbacks[event] = cb
 
-    def deregister_callback(self, event: Events | None) -> Callable:
+        def remove_callback():
+            self.deregister_callback(event)
+
+        return remove_callback
+
+    def deregister_callback(self, event: Events) -> None:
         """Deregister callbacks per event type"""
-        cb: Callable
-        if event is None:
-            cb = self.callbacks.pop("*", None)
-        else:
-            cb = self.callbacks.pop(event.name, None)
-        return cb
+        if event in self.callbacks:
+            del self.callbacks[event]
 
     def _handle_settings(self, event: Events) -> None:
         data = json.loads(event.data)
@@ -89,8 +87,16 @@ class sseClient:
                 result = SettingsEvent.from_dict(base)
                 match_cb(result)
 
-    def register_settings_cb(self, setting: Settings, cb: Callable) -> None:
+    def register_settings_cb(
+        self, setting: Settings, cb: Callable
+    ) -> Callable[[], None]:
         self.settings_cb[setting] = cb
 
+        def remove_callback():
+            self.deregister_settings_cb(setting)
+
+        return remove_callback
+
     def deregister_settings_cb(self, setting: Settings) -> None:
-        self.settings_cb.pop(setting)
+        if setting in self.settings_cb:
+            del self.settings_cb[setting]
