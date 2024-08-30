@@ -25,6 +25,13 @@ def prepare_events():
             '"nightMode":false},"needReboot":false}',
             "id": None,
         },
+        {
+            "event": "API2_WIFISCANSTATUS",
+            "data": (
+                '{"wifi":[{"ssid":"WifiAAAA19","rssi":-90,"channel":11,' '"secure":3}]}'
+            ),
+            "id": None,
+        },
     ]
 
     event_stream = []
@@ -70,7 +77,6 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
         client = Api2(host, session=session)
         rem1 = client.sse.register_callback(Events.LOG_STR, log_message_handler)
         rem2 = client.sse.register_callback(Events.CATCH_ALL, all_message_handler)
-
         set1 = client.sse.register_settings_cb(
             Settings.DISABLE_LEDS, settings_message_handler
         )
@@ -81,7 +87,7 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
             pass
 
         assert log_message_handler.call_count == 1
-        assert all_message_handler.call_count == 3
+        assert all_message_handler.call_count == 4
         assert settings_message_handler.call_count == 1
         assert settings_message_handler.call_args == call(
             SettingsEvent(
