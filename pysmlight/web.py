@@ -15,11 +15,6 @@ from .models import Firmware, Info, Sensors
 from .payload import Payload
 from .sse import sseClient
 
-try:
-    from . import secrets
-except ImportError:
-    pass
-
 _LOGGER = logging.getLogger(__name__)
 
 start = time.time()
@@ -37,15 +32,11 @@ class webClient:
 
         self.set_urls()
 
-    async def async_init(self) -> None:
+    async def async_init(self, auth: BasicAuth | None = None) -> None:
+        if auth is not None:
+            self.auth = auth
         if self.session is None:
             self.session = ClientSession(headers=self.headers, auth=self.auth)
-        if self.host != "smlight.tech":
-            if await self.check_auth_needed():
-                _LOGGER.info("Authentication required")
-                # fallback to hardcoded test credentials
-                if secrets and self.auth is None:
-                    self.auth = BasicAuth(secrets.apiuser, secrets.apipass)
 
         _LOGGER.debug("Session created")
 
