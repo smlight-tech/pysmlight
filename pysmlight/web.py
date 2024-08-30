@@ -272,16 +272,20 @@ class Api2(webClient):
         res = await self.post(params)
         return res
 
-    async def scan_wifi(self) -> None:
-        _LOGGER.debug("Scanning wifi")
-        self.sse.register_callback(Events.API2_WIFISCANSTATUS, self.wifi_callback)
+    async def scan_wifi(self, callback: Callable) -> Callable[[], None]:
+        """Initiate scan of wifi networks.
+
+        Args:
+            callback (Callable): Callback function to process scan results
+
+        Returns:
+            Callable[[], None]: Function to clean up callback
+        """
+
+        remove_cb = self.sse.register_callback(Events.API2_WIFISCANSTATUS, callback)
         params = {"action": Actions.API_STARTWIFISCAN.value}
         await self.get(params)
-
-    def wifi_callback(self, msg) -> None:
-        _LOGGER.debug("WIFI callback")
-        _LOGGER.info(msg)
-        self.sse.deregister_callback(Events.API2_WIFISCANSTATUS)
+        return remove_cb
 
 
 class CmdWrapper:
