@@ -1,4 +1,4 @@
-from enum import Enum, auto, unique
+from enum import Enum, IntEnum, auto, unique
 
 FW_URL = "https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php"
 FW_DEV_URL = "https://smlight.tech/flasher/firmware/bin/slzb06x/ota_dev.php"
@@ -40,7 +40,7 @@ class Commands(Enum):
 
 
 @unique
-class Pages(Enum):
+class Pages(IntEnum):
     API2_PAGE_DASHBOARD = 0
     API2_PAGE_MODE = 1
     API2_PAGE_NETWORK = 2
@@ -82,6 +82,7 @@ class Events(Enum):
     ZB_FW_info = auto()
     ZB_FW_prgs = auto()
     ZB_ENERGY_SCAN_DONE = auto()
+    CATCH_ALL = 99
 
 
 class Settings(Enum):

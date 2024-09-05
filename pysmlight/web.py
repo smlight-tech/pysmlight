@@ -18,7 +18,6 @@ from .const import (
     Devices,
     Events,
     Pages,
-    Settings,
 )
 from .exceptions import SmlightAuthError, SmlightConnectionError
 from .models import Firmware, Info, Sensors
@@ -169,7 +168,6 @@ class Api2(webClient):
         session: ClientSession | None = None,
         sse: sseClient | None = None,
     ) -> None:
-        self.settings_cb: dict[str, Callable] = {}
         self.cmds = CmdWrapper(self.set_cmd)
         super().__init__(host, session=session)
 
@@ -177,21 +175,6 @@ class Api2(webClient):
             self.sse = sseClient(host, session)
         elif sse:
             self.sse = sse
-
-        if hasattr(self, "sse") and self.sse is not None:
-            self.sse.register_callback(Events.SAVE_PARAMS, self._handle_settings)
-
-    def _handle_settings(self, event: Events) -> None:
-        data = json.loads(event.data)
-        changes = data.pop("changes")
-        for setting in changes:
-            if setting in self.settings_cb:
-                result = data.copy()
-                result.update({setting: changes[setting]})
-                self.settings_cb[setting](result)
-
-    def register_settings_cb(self, setting: Settings, cb: Callable) -> None:
-        self.settings_cb[setting.value[1]] = cb
 
     async def get_device_payload(self) -> Payload:
         data = await self.get_page(Pages.API2_PAGE_DASHBOARD)

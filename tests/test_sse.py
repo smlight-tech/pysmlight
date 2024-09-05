@@ -1,13 +1,13 @@
 import asyncio
-from collections.abc import Callable
 import logging
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import aiohttp
 from aiohttp import ClientSession, web
 from aresponses import ResponsesMockServer
 
 from pysmlight.const import Events, Settings
+from pysmlight.models import SettingsEvent
 from pysmlight.web import Api2
 
 _LOGGER = logging.getLogger(__name__)
@@ -68,26 +68,29 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
     aresponses.add(host, "/events", "GET", mock_sse_stream)
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        client.sse.register_callback(Events.LOG_STR, log_message_handler)
-        client.sse.register_callback(None, all_message_handler)
-        client.register_settings_cb(Settings.DISABLE_LEDS, settings_message_handler)
+        rem1 = client.sse.register_callback(Events.LOG_STR, log_message_handler)
+        rem2 = client.sse.register_callback(Events.CATCH_ALL, all_message_handler)
+
+        set1 = client.sse.register_settings_cb(
+            Settings.DISABLE_LEDS, settings_message_handler
+        )
         try:
             await client.sse.sse_stream()
         except aiohttp.ClientConnectionError:
             # avoid SSE client try to reconnect
             pass
+
         assert log_message_handler.call_count == 1
         assert all_message_handler.call_count == 3
-        cb = client.sse.deregister_callback(Events.LOG_STR)
-        cb2 = client.sse.deregister_callback(None)
-        assert isinstance(cb, Callable)
-        assert cb == log_message_handler
-        assert cb2 == all_message_handler
-
         assert settings_message_handler.call_count == 1
-        assert settings_message_handler.call_args.args[0] == {
-            "page": 8,
-            "origin": "ha",
-            "needReboot": False,
-            "disableLeds": True,
-        }
+        assert settings_message_handler.call_args == call(
+            SettingsEvent(
+                page=8, origin="ha", needReboot=False, setting={"disableLeds": True}
+            )
+        )
+
+        # remove callbacks
+        rem1()
+        rem2()
+        set1()
+        assert len(client.sse.callbacks) == 1
