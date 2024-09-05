@@ -23,6 +23,7 @@ class Info(DataClassDictMixin):
     device_ip: str | None = None
     fs_total: int | None = None
     fw_channel: str | None = None  # dev, beta or stable
+    legacy_api: int = 0
     MAC: str | None = None
     model: str | None = None
     ram_total: int | None = None
@@ -39,6 +40,7 @@ class Info(DataClassDictMixin):
         return cls(
             # coord_mode=payload.mode,
             device_ip=payload.device_ip,
+            legacy_api=payload.legacy_api,
             MAC=payload.MAC,
             model=payload.model,
             fw_channel="stable",
