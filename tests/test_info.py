@@ -108,6 +108,42 @@ async def test_info_legacy_info(aresponses: ResponsesMockServer) -> None:
         assert info.sw_version == "v2.0.20"
         assert info.zb_hw == "CC2674P10"
         assert info.zb_version == 20240315
+        assert info.legacy_api == 1
+
+
+async def test_info_legacy_info2(aresponses: ResponsesMockServer) -> None:
+    """Test getting legacy device info from devices with old firmware."""
+    headers = {
+        "Content-Type": "application/json",
+        "respValuesArr": json.dumps(
+            json.loads(load_fixture("slzb-06-resparr-0.9.9.json"))
+        ),
+    }
+    aresponses.add(
+        host,
+        "/ha_info",
+        "GET",
+        aresponses.Response(
+            status=404,
+            headers={"Content-Type": "application/json"},
+        ),
+    )
+    aresponses.add(
+        host,
+        "/api2",
+        "GET",
+        aresponses.Response(status=200, headers=headers, text="Some html"),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        info: Info = await client.get_info()
+        assert info
+
+        assert info.device_ip == "192.168.1.157"
+        assert info.MAC == "DD:88:FC:AA:EE:FF"
+        assert info.model == "SLZB-06"
+        assert info.sw_version == "0.9.9"
+        assert info.legacy_api == 2
 
 
 async def test_info_get_firmware_zb(aresponses: ResponsesMockServer) -> None:
