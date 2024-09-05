@@ -225,8 +225,11 @@ class Api2(webClient):
     async def get_info(self) -> Info:
         res = await self.get(params=None, url=self.info_url)
         if res is None:
-            res = await self.get_info_old()
-            return res
+            return await self.get_info_old()
+        elif res == "URL NOT FOUND":
+            self.url = f"http://{self.host}/api"
+            return await self.get_info_old()
+
         data = json.loads(res)
         return Info.from_dict(data["Info"])
 
