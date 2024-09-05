@@ -64,7 +64,8 @@ async def test_auth_is_success(aresponses: ResponsesMockServer) -> None:
 
 
 async def test_with_async(aresponses: ResponsesMockServer) -> None:
-    """Test that authentication has access the API."""
+    """Test async with usage of webClient."""
+    host = "slzb-06p7.local"
     aresponses.add(
         host,
         "/api2",
@@ -75,6 +76,8 @@ async def test_with_async(aresponses: ResponsesMockServer) -> None:
         ),
         repeat=2,
     )
-    async with webClient(host) as client:
+    async with webClient("slzb-06.local") as client:
         assert client.session is not None
+        client.set_host(host)
+        assert client.host == host
         assert await client.check_auth_needed() is False
