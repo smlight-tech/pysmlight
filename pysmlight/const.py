@@ -63,11 +63,12 @@ Devices: dict[str, int] = {
     "SLZB-06p7": 3,
     "SLZB-06p10": 4,
 }
+
 ZB_TYPES: dict[int, str] = {
     -1: "Unknown",
     0: "Coordinator",
     1: "Router",
-    2: "RESERVED",
+    2: "Thread",
 }
 
 
