@@ -1,6 +1,8 @@
 {
     "Info": {
         "wifi_mode": 0,
+        "hostname": "SLZB-06P10",
+        "legacy_api": 0,
         "ram_total": 285,
         "fs_total": 3456,
         "zb_ram_size": 296,
@@ -10,7 +12,7 @@
         "fw_channel": "dev",
         "MAC": "DD:88:FC:AA:EE:FF",
         "model": "SLZB-06P10",
-        "sw_version": "v2.0.20",
+        "sw_version": "v2.5.2",
         "zb_hw": "CC2674P10",
         "zb_version": 20240315,
         "zb_type": 0

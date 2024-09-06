@@ -23,6 +23,7 @@ class Info(DataClassDictMixin):
     device_ip: str | None = None
     fs_total: int | None = None
     fw_channel: str | None = None  # dev, beta or stable
+    hostname: str | None = None
     legacy_api: int = 0
     MAC: str | None = None
     model: str | None = None
