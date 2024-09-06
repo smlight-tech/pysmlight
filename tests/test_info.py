@@ -38,10 +38,12 @@ async def test_info_device_info(aresponses: ResponsesMockServer) -> None:
         assert info.fw_channel == "dev"
         assert info.MAC == "DD:88:FC:AA:EE:FF"
         assert info.model == "SLZB-06p10"
-        assert info.sw_version == "v2.0.20"
+        assert info.sw_version == "v2.5.2"
         assert info.zb_hw == "CC2674P10"
         assert info.zb_version == 20240315
         assert info.zb_type == 0
+        assert info.legacy_api == 0
+        assert info.hostname == "SLZB-06P10"
 
 
 async def test_info_sensors(aresponses: ResponsesMockServer) -> None:
