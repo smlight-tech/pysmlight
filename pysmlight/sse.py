@@ -51,7 +51,8 @@ class sseClient:
 
     async def _message_handler(self, event: MessageEvent) -> None:
         """Match event with callback for event type"""
-        self.callbacks.get(getattr(Events, event.type), lambda x: None)(event)
+        if event_type := getattr(Events, event.type, None):
+            self.callbacks.get(event_type, lambda x: None)(event)
         self.callbacks.get(Events.CATCH_ALL, lambda x: None)(event)
 
     def register_callback(self, event: Events, cb: Callable) -> Callable[[], None]:
