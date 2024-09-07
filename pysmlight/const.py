@@ -9,6 +9,8 @@ PARAM_LIST: list[str] = [
     "zbRev",
     "espRev",
     "inetState",
+    "locale",
+    "newIpAvaiable",
 ]
 
 
@@ -23,6 +25,7 @@ class Actions(Enum):
     API_FLASH_ZB = 6
     API_WIFICONNECTSTAT = 7
     API_FLASH_ESP = 8
+    API_ZHUB = 9
 
 
 @unique
@@ -37,6 +40,10 @@ class Commands(Enum):
     CMD_ZB_LED_PERMIT = 7
     CMD_ZB_LED_DISABLED = 8
     CMD_HARD_RESET = 9
+    CMD_TEMP_CALIB = 10
+    CMD_ZB_IEEE_WRITE = 11
+    CMD_ZB_IEEE_READ_FACTORY = 12
+    CMD_WHTNW_MARK_READ = 13
 
 
 @unique
@@ -53,7 +60,9 @@ class Pages(IntEnum):
     API2_PAGE_SETTINGS_TIME = 9
     API2_PAGE_SETTINGS_SYSTEM_LOG = 10
     API2_PAGE_ABOUT = 11
-    API2_PAGE_WIFI = 12
+    API2_PAGE_FEEDBACK = 12
+    API2_PAGE_ZHUB_DEVICES = 13
+    API2_PAGE_ZHUB_DASHBOARD = 14
 
 
 Devices: dict[str, int] = {
@@ -83,6 +92,7 @@ class Events(Enum):
     ZB_FW_info = auto()
     ZB_FW_prgs = auto()
     ZB_ENERGY_SCAN_DONE = auto()
+    WHTNW = auto()
     CATCH_ALL = 99
 
 
@@ -91,6 +101,13 @@ class Settings(Enum):
     NIGHT_MODE = (Pages.API2_PAGE_SETTINGS_LED, "nightMode")
     ZB_AUTOUPDATE = (Pages.API2_PAGE_SETTINGS_OTA, "enabled")
     ENABLE_VPN = (Pages.API2_PAGE_VPN, "enabled")
+
+
+class SettingsProp(Enum):
+    DISABLE_LEDS = "disable_leds"
+    NIGHT_MODE = "night_mode"
+    ZB_AUTOUPDATE = "auto_zigbee"
+    ENABLE_VPN = "vpn_enabled"
 
 
 class WifiStatus(Enum):
