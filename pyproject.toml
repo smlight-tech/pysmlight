@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysmlight"
-version = "0.0.14"
+version = "0.0.15"
 repository = "https://github.com/smlight-workspace/pysmlight"
 license = "Apache-2.0"
 description = "A library implementing API control of the SMLIGHT SLZB-06 LAN Coordinators."
