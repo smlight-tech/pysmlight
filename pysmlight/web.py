@@ -9,16 +9,7 @@ import urllib.parse
 from aiohttp import BasicAuth, ClientSession
 from aiohttp.client_exceptions import ClientConnectorError
 
-from .const import (
-    FW_DEV_URL,
-    FW_URL,
-    PARAM_LIST,
-    Actions,
-    Commands,
-    Devices,
-    Events,
-    Pages,
-)
+from .const import FW_URL, PARAM_LIST, Actions, Commands, Devices, Events, Pages
 from .exceptions import SmlightAuthError, SmlightConnectionError
 from .models import Firmware, Info, Sensors
 from .payload import Payload
@@ -182,25 +173,32 @@ class Api2(webClient):
         return res
 
     async def get_firmware_version(
-        self, device: str | None = None, mode: str = "ESP"
+        self, channel: str | None, *, device: str | None = None, mode: str = "esp"
     ) -> list[Firmware] | None:
-        """Get firmware version for device and mode (ESP|ZB)"""
-        params = {"type": mode}
-        url = FW_DEV_URL if mode == "ZB" else FW_URL
-        response = await self.get(params=params, url=url)
+        """Get firmware version for device and mode (esp | zigbee)"""
+        fw_type = "ZB" if mode == "zigbee" else "ESP"
+        params = {"type": fw_type}
+        if mode == "zigbee":
+            params["format"] = "slzb"
+
+        response = await self.get(params=params, url=FW_URL)
         data = json.loads(response)
 
-        if mode == "ZB" and device is not None:
+        if mode == "zigbee":
+            assert device is not None
             data = data.get(str(Devices[device]), None)
-            if not data:
-                return None
         else:
             data = data["fw"]
+
+        if data is None:
+            return None
+
         fw = []
         for d in data:
             item = Firmware.from_dict(d)
-            item.set_mode(mode)
-            fw.append(item)
+            if not item.dev or channel == "dev":
+                item.set_mode(fw_type)
+                fw.append(item)
         return fw
 
     async def get_page(self, page: Pages) -> dict | None:
