@@ -243,21 +243,18 @@ class Api2(webClient):
 
     async def fw_update(
         self,
-        mode,
-        fw_url: str,
-        fw_type: str | None = None,
-        fw_version: str | None = None,
+        firmware: Firmware,
     ) -> None:
-        # Register callback 'ESP_UPD_done'? before calling this
-        if mode == "ZB":
+        """Send firmware update command to device"""
+        if firmware.mode == "ZB":
             params = {
                 "action": Actions.API_FLASH_ZB.value,
-                "fwUrl": fw_url,
-                "fwType": fw_type,
-                "fwVer": fw_version,
+                "fwUrl": firmware.link,
+                "fwType": firmware.type,
+                "fwVer": firmware.ver,
             }
         else:
-            params = {"action": Actions.API_FLASH_ESP.value, "fwUrl": fw_url}
+            params = {"action": Actions.API_FLASH_ESP.value, "fwUrl": firmware.link}
         await self.get(params)
 
     async def set_toggle(self, page: Pages, toggle: str, value: bool) -> bool:
