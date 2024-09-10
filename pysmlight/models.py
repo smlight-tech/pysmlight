@@ -40,7 +40,7 @@ class Info(DataClassDictMixin):
     zb_flash_size: int | None = None
     zb_hw: str | None = None
     zb_ram_size: int | None = None
-    zb_version: int | None = None
+    zb_version: str | None = None
     zb_type: int | None = None  # enum (coordinator, router, thread)
 
     @classmethod
@@ -60,6 +60,7 @@ class Info(DataClassDictMixin):
     def __post_init__(self):
         if self.model is not None:
             self.model = self.model.replace("P", "p")
+        self.zb_version = str(self.zb_version)
 
 
 @dataclass
