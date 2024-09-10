@@ -12,6 +12,13 @@ class Firmware(DataClassDictMixin):
     link: str | None = None
     ver: str | None = None
     dev: bool = False
+    prod: bool = True
+    baud: int | None = None
+
+    def __post_init__(self):
+        if self.mode == "ZB":
+            self.ver = self.rev
+            self.dev = not self.prod
 
     def set_mode(self, mode):
         self.mode = mode
@@ -22,7 +29,7 @@ class Info(DataClassDictMixin):
     coord_mode: int | None = None  # Enum
     device_ip: str | None = None
     fs_total: int | None = None
-    fw_channel: str | None = None  # dev, beta or stable
+    fw_channel: str | None = None  # dev, beta or release
     hostname: str | None = None
     legacy_api: int = 0
     MAC: str | None = None
