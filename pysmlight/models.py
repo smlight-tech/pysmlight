@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 from mashumaro import DataClassDictMixin
 
+from .payload import Payload
+
 
 @dataclass
 class Firmware(DataClassDictMixin):
@@ -45,7 +47,7 @@ class Info(DataClassDictMixin):
     zb_type: int | None = None  # enum (coordinator, router, thread)
 
     @classmethod
-    def load_payload(cls, payload):
+    def load_payload(cls, payload: Payload) -> "Info":
         return cls(
             # coord_mode=payload.mode,
             device_ip=payload.device_ip,
@@ -58,7 +60,7 @@ class Info(DataClassDictMixin):
             zb_version=int(payload.zb_version),
         )
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.model is not None:
             self.model = self.model.replace("P", "p")
         self.zb_version = str(self.zb_version)
@@ -83,7 +85,7 @@ class Sensors(DataClassDictMixin):
     auto_zigbee: bool | None = None
     vpn_enabled: bool | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.socket_uptime is not None and self.socket_uptime <= 0:
             self.socket_uptime = None
 
