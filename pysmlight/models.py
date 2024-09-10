@@ -16,7 +16,8 @@ class Firmware(DataClassDictMixin):
     baud: int | None = None
 
     def __post_init__(self):
-        if self.mode == "ZB":
+        # zigbee firmware match key attributes
+        if self.baud is not None:
             self.ver = self.rev
             self.dev = not self.prod
 
