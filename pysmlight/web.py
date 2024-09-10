@@ -198,8 +198,23 @@ class Api2(webClient):
             item = Firmware.from_dict(d)
             if not item.dev or channel == "dev":
                 item.set_mode(fw_type)
+                if fw_type == "ESP":
+                    item.notes = self.format_notes(item)
                 fw.append(item)
         return fw
+
+    def format_notes(self, firmware: Firmware) -> str | None:
+        """Format release notes for esp firmware"""
+        if firmware and firmware.notes:
+            items = firmware.notes.split("\r\n")
+            notes = ""
+            for i, v in enumerate(items):
+                if i and v and not v.startswith("-"):
+                    notes += f"* {v}\n"
+                else:
+                    notes += f"{v}\n\n"
+            return notes
+        return None
 
     async def get_page(self, page: Pages) -> dict | None:
         """Extract Respvaluesarr json from page response header"""
