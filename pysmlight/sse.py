@@ -75,7 +75,11 @@ class sseClient:
     def _handle_settings(self, event: Events) -> None:
         """Process event and match callback for settings changes"""
         data = json.loads(event.data)
-        page = Pages(data["page"])
+        try:
+            page = Pages(data["page"])
+        except ValueError:
+            return
+
         changes = data.pop("changes", None)
         for setting in changes:
             base = data.copy()
