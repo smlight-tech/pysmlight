@@ -264,9 +264,11 @@ class Api2(webClient):
         if firmware.mode == "ZB":
             params = {
                 "action": Actions.API_FLASH_ZB.value,
+                "baud": firmware.baud,
                 "fwUrl": firmware.link,
                 "fwType": firmware.type,
                 "fwVer": firmware.ver,
+                "fwCh": int(not firmware.prod),
             }
         else:
             params = {"action": Actions.API_FLASH_ESP.value, "fwUrl": firmware.link}

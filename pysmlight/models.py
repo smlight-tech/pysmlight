@@ -40,6 +40,7 @@ class Info(DataClassDictMixin):
     ram_total: int | None = None
     sw_version: str | None = None
     wifi_mode: int | None = None  # enum (off, client, AP etc)
+    zb_channel: int | None = None
     zb_flash_size: int | None = None
     zb_hw: str | None = None
     zb_ram_size: int | None = None
