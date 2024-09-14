@@ -9,16 +9,7 @@ import urllib.parse
 from aiohttp import BasicAuth, ClientSession
 from aiohttp.client_exceptions import ClientConnectorError
 
-from .const import (
-    FW_DEV_URL,
-    FW_URL,
-    PARAM_LIST,
-    Actions,
-    Commands,
-    Devices,
-    Events,
-    Pages,
-)
+from .const import FW_URL, PARAM_LIST, Actions, Commands, Devices, Events, Pages
 from .exceptions import SmlightAuthError, SmlightConnectionError
 from .models import Firmware, Info, Sensors
 from .payload import Payload
@@ -182,26 +173,48 @@ class Api2(webClient):
         return res
 
     async def get_firmware_version(
-        self, device: str | None = None, mode: str = "ESP"
+        self, channel: str | None, *, device: str | None = None, mode: str = "esp"
     ) -> list[Firmware] | None:
-        """Get firmware version for device and mode (ESP|ZB)"""
-        params = {"type": mode}
-        url = FW_DEV_URL if mode == "ZB" else FW_URL
-        response = await self.get(params=params, url=url)
+        """Get firmware version for device and mode (esp | zigbee)"""
+        fw_type = "ZB" if mode == "zigbee" else "ESP"
+        params = {"type": fw_type}
+        if mode == "zigbee":
+            params["format"] = "slzb"
+
+        response = await self.get(params=params, url=FW_URL)
         data = json.loads(response)
 
-        if mode == "ZB" and device is not None:
+        if mode == "zigbee":
+            assert device is not None
             data = data.get(str(Devices[device]), None)
-            if not data:
-                return None
         else:
             data = data["fw"]
+
+        if data is None:
+            return None
+
         fw = []
         for d in data:
             item = Firmware.from_dict(d)
-            item.set_mode(mode)
-            fw.append(item)
+            if not item.dev or channel == "dev":
+                item.set_mode(fw_type)
+                if fw_type == "ESP":
+                    item.notes = self.format_notes(item)
+                fw.append(item)
         return fw
+
+    def format_notes(self, firmware: Firmware) -> str | None:
+        """Format release notes for esp firmware"""
+        if firmware and firmware.notes:
+            items = firmware.notes.split("\r\n")
+            notes = ""
+            for i, v in enumerate(items):
+                if i and v and not v.startswith("-"):
+                    notes += f"* {v}\n"
+                else:
+                    notes += f"{v}\n\n"
+            return notes
+        return None
 
     async def get_page(self, page: Pages) -> dict | None:
         """Extract Respvaluesarr json from page response header"""
@@ -245,21 +258,20 @@ class Api2(webClient):
 
     async def fw_update(
         self,
-        mode,
-        fw_url: str,
-        fw_type: str | None = None,
-        fw_version: str | None = None,
+        firmware: Firmware,
     ) -> None:
-        # Register callback 'ESP_UPD_done'? before calling this
-        if mode == "ZB":
+        """Send firmware update command to device"""
+        if firmware.mode == "ZB":
             params = {
                 "action": Actions.API_FLASH_ZB.value,
-                "fwUrl": fw_url,
-                "fwType": fw_type,
-                "fwVer": fw_version,
+                "baud": firmware.baud,
+                "fwUrl": firmware.link,
+                "fwType": firmware.type,
+                "fwVer": firmware.ver,
+                "fwCh": int(not firmware.prod),
             }
         else:
-            params = {"action": Actions.API_FLASH_ESP.value, "fwUrl": fw_url}
+            params = {"action": Actions.API_FLASH_ESP.value, "fwUrl": firmware.link}
         await self.get(params)
 
     async def set_toggle(self, page: Pages, toggle: str, value: bool) -> bool:

@@ -40,7 +40,7 @@ async def test_info_device_info(aresponses: ResponsesMockServer) -> None:
         assert info.model == "SLZB-06p10"
         assert info.sw_version == "v2.5.2"
         assert info.zb_hw == "CC2674P10"
-        assert info.zb_version == 20240315
+        assert info.zb_version == "20240315"
         assert info.zb_type == 0
         assert info.legacy_api == 0
         assert info.hostname == "SLZB-06P10"
@@ -109,7 +109,7 @@ async def test_info_legacy_info(aresponses: ResponsesMockServer) -> None:
         assert info.model == "SLZB-06p10"
         assert info.sw_version == "v2.0.20"
         assert info.zb_hw == "CC2674P10"
-        assert info.zb_version == 20240315
+        assert info.zb_version == "20240315"
         assert info.legacy_api == 1
 
 
@@ -151,7 +151,7 @@ async def test_info_legacy_info2(aresponses: ResponsesMockServer) -> None:
 async def test_info_get_firmware_zb(aresponses: ResponsesMockServer) -> None:
     aresponses.add(
         "smlight.tech",
-        "/flasher/firmware/bin/slzb06x/ota_dev.php",
+        "/flasher/firmware/bin/slzb06x/ota.php",
         "GET",
         aresponses.Response(
             status=200,
@@ -161,13 +161,16 @@ async def test_info_get_firmware_zb(aresponses: ResponsesMockServer) -> None:
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        fw = await client.get_firmware_version("SLZB-06M", "ZB")
+        fw = await client.get_firmware_version(
+            "release", device="SLZB-06M", mode="zigbee"
+        )
         assert fw
+        assert len(fw) == 5
         firmware = fw[0]
-        assert len(firmware.link) > 20
+        assert firmware.link
         assert firmware.mode == "ZB"
         assert firmware.dev is False
-        assert firmware.rev == "20231030"
+        assert firmware.ver == "20240510"
         assert firmware.type == 0
 
 
@@ -184,7 +187,7 @@ async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        fw = await client.get_firmware_version(mode="ESP")
+        fw = await client.get_firmware_version("release", mode="esp")
         assert fw
         firmware = fw[0]
         assert len(firmware.link) > 20

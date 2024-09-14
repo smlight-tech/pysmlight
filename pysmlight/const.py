@@ -2,7 +2,12 @@ from enum import Enum, IntEnum, auto, unique
 
 FW_URL = "https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php"
 FW_DEV_URL = "https://smlight.tech/flasher/firmware/bin/slzb06x/ota_dev.php"
-MODE_LIST: list[str] = ["LAN", "WiFi", "USB"]
+MODE_LIST: dict[int, str] = {
+    0: "eth",
+    1: "wifi",
+    2: "usb",
+    3: "ppp",
+}
 
 PARAM_LIST: list[str] = [
     "coordMode",
@@ -74,10 +79,17 @@ Devices: dict[str, int] = {
 }
 
 ZB_TYPES: dict[int, str] = {
-    -1: "Unknown",
-    0: "Coordinator",
-    1: "Router",
-    2: "Thread",
+    -1: "unknown",
+    0: "coordinator",
+    1: "router",
+    2: "thread",
+}
+
+ZB_CHANNEL: dict[int, str] = {
+    -1: "unknown",
+    0: "stable",
+    1: "dev",
+    2: "custom",  # custom for 06M
 }
 
 
