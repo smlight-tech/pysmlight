@@ -3,10 +3,8 @@ from aiohttp import ClientSession
 from aresponses import ResponsesMockServer
 import pytest
 
-from pysmlight import Api2
 from pysmlight.exceptions import SmlightAuthError
-
-from . import load_fixture
+from pysmlight.web import Api2, webClient
 
 host = "slzb-06.local"
 USER = "admin"
@@ -22,7 +20,6 @@ async def test_auth_not_needed(aresponses: ResponsesMockServer) -> None:
         aresponses.Response(
             status=200,
             headers={"Content-Type": "application/json"},
-            text=load_fixture("slzb-06-info.json"),
         ),
     )
     async with ClientSession() as session:
@@ -41,26 +38,11 @@ async def test_auth_is_required(aresponses: ResponsesMockServer) -> None:
             headers={"Content-Type": "application/json"},
             text="wrong login or password",
         ),
+        repeat=2,
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
         assert await client.check_auth_needed() is True
-
-
-async def test_auth_is_failed(aresponses: ResponsesMockServer) -> None:
-    """Test that authentication has failed to access the API."""
-    aresponses.add(
-        host,
-        "/api2",
-        "GET",
-        aresponses.Response(
-            status=401,
-            headers={"Content-Type": "application/json"},
-            text="wrong login or password",
-        ),
-    )
-    async with ClientSession() as session:
-        client = Api2(host, session=session)
         with pytest.raises(SmlightAuthError):
             await client.authenticate(USER, PASSWORD)
 
@@ -79,3 +61,23 @@ async def test_auth_is_success(aresponses: ResponsesMockServer) -> None:
     async with ClientSession() as session:
         client = Api2(host, session=session)
         assert await client.authenticate(USER, PASSWORD) is True
+
+
+async def test_with_async(aresponses: ResponsesMockServer) -> None:
+    """Test async with usage of webClient."""
+    host = "slzb-06p7.local"
+    aresponses.add(
+        host,
+        "/api2",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+        ),
+        repeat=2,
+    )
+    async with webClient("slzb-06.local") as client:
+        assert client.session is not None
+        client.set_host(host)
+        assert client.host == host
+        assert await client.check_auth_needed() is False

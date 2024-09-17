@@ -1,6 +1,8 @@
 import asyncio
+from collections.abc import Callable
+import json
 import logging
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch
 
 import aiohttp
 from aiohttp import ClientSession, web
@@ -8,6 +10,7 @@ from aresponses import ResponsesMockServer
 
 from pysmlight.const import Events, Settings
 from pysmlight.models import SettingsEvent
+from pysmlight.sse import MessageEvent
 from pysmlight.web import Api2
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,6 +26,13 @@ def prepare_events():
             "event": "SAVE_PARAMS",
             "data": '{"page":8,"origin":"ha","changes":{"disableLeds":true,'
             '"nightMode":false},"needReboot":false}',
+            "id": None,
+        },
+        {
+            "event": "API2_WIFISCANSTATUS",
+            "data": (
+                '{"wifi":[{"ssid":"WifiAAAA19","rssi":-90,"channel":11,' '"secure":3}]}'
+            ),
             "id": None,
         },
     ]
@@ -62,18 +72,31 @@ async def mock_sse_stream(request):
 
 async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
     """Test sse stream handling."""
+    unload: list[Callable] = []
     log_message_handler = Mock()
     all_message_handler = Mock()
     settings_message_handler = Mock()
     aresponses.add(host, "/events", "GET", mock_sse_stream)
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        rem1 = client.sse.register_callback(Events.LOG_STR, log_message_handler)
-        rem2 = client.sse.register_callback(Events.CATCH_ALL, all_message_handler)
-
-        set1 = client.sse.register_settings_cb(
-            Settings.DISABLE_LEDS, settings_message_handler
+        unload.append(client.sse.register_callback(Events.LOG_STR, log_message_handler))
+        unload.append(
+            client.sse.register_callback(Events.CATCH_ALL, all_message_handler)
         )
+        unload.append(
+            client.sse.register_settings_cb(
+                Settings.DISABLE_LEDS, settings_message_handler
+            )
+        )
+
+        def wifi_cb(event: MessageEvent):
+            assert event.data
+            assert event.type == "API2_WIFISCANSTATUS"
+            assert json.loads(event.data)["wifi"]
+
+        with patch("pysmlight.Api2.get", return_value=None):
+            unload.append(await client.scan_wifi(wifi_cb))
+
         try:
             await client.sse.sse_stream()
         except aiohttp.ClientConnectionError:
@@ -81,7 +104,7 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
             pass
 
         assert log_message_handler.call_count == 1
-        assert all_message_handler.call_count == 3
+        assert all_message_handler.call_count == 4
         assert settings_message_handler.call_count == 1
         assert settings_message_handler.call_args == call(
             SettingsEvent(
@@ -90,7 +113,7 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
         )
 
         # remove callbacks
-        rem1()
-        rem2()
-        set1()
+        for remove_cb in unload:
+            remove_cb()
+        unload.clear()
         assert len(client.sse.callbacks) == 1
