@@ -1,9 +1,11 @@
 """Client to receive Server Sent Events (SSE) from the SMLIGHT API."""
+import asyncio
 import json
 import logging
 from typing import Callable
 
 import aiohttp
+from aiohttp.client_exceptions import SocketTimeoutError
 from aiohttp_sse_client2.client import EventSource, MessageEvent
 
 from .const import Events, Pages, Settings
@@ -23,17 +25,30 @@ class sseClient:
         """Initialise the SSE client."""
         self.callbacks: dict[Events, Callable] = {}
         self.settings_cb: dict[Settings, Callable] = {}
+        self.legacy_api = False
         self.session = session
         self.url = f"http://{host}/events"
-        self.timeout = aiohttp.ClientTimeout(
-            total=None, connect=None, sock_connect=None, sock_read=30
-        )
+        self.setTimeout(30)
 
         self.register_callback(Events.SAVE_PARAMS, self._handle_settings)
 
+    def setTimeout(self, timeout: int) -> None:
+        self.timeout = aiohttp.ClientTimeout(
+            total=None, connect=None, sock_connect=None, sock_read=timeout
+        )
+
     async def client(self) -> None:
+        """Run SSE Client"""
+
+        # Increase timeout for legacy API which dont have PING events
+        if self.legacy_api:
+            self.setTimeout(600)
+
         while True:
-            await self.sse_stream()
+            try:
+                await self.sse_stream()
+            except SocketTimeoutError:
+                await asyncio.sleep(5)
 
     async def sse_stream(self) -> None:
         """Process incoming events on the message stream"""

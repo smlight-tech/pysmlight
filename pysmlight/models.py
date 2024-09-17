@@ -55,7 +55,7 @@ class Info(DataClassDictMixin):
             legacy_api=payload.legacy_api,
             MAC=payload.MAC,
             model=payload.model,
-            fw_channel="stable",
+            fw_channel="release",
             sw_version=payload.sw_version,
             zb_hw=payload.zb_hw,
             zb_version=int(payload.zb_version),

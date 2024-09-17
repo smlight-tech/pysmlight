@@ -24,7 +24,7 @@ class Payload:
                 self.model = self.json["DEVICE"].replace("P", "p")
                 self.sw_version = self.json["BUILD"]
                 self.zb_hw = self.json["zbHw"]
-                self.zb_version = self.json["zbRev"]
+                self.zb_version = self.clean(self.json["zbRev"])
             else:
                 # legacy api = 2, 0.9.9 builds
                 self.legacy_api = 2
@@ -32,7 +32,7 @@ class Payload:
                 self.model = self.json["hwRev"].replace("P", "p")
                 self.sw_version = self.json["VERSION"].split(" ")[0]
                 self.zb_hw = None
-                self.zb_version = -1
+                self.zb_version = "-1"
 
     def clean(self, str: str) -> str:
         """
@@ -44,6 +44,8 @@ class Payload:
         if "U_time" in str:
             text = str.replace("[U_time]^  ", "")
             text = text.replace("^", ":")
+        elif "ZB_FW_unk" in str:
+            text = str.replace("[ZB_FW_unk]", "-1")
         else:
             text = re.sub(r"\[|\]", "", str)
         return text

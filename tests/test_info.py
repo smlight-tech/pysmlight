@@ -104,7 +104,7 @@ async def test_info_legacy_info(aresponses: ResponsesMockServer) -> None:
         assert info
 
         assert info.device_ip == "192.168.1.157"
-        assert info.fw_channel == "stable"
+        assert info.fw_channel == "release"
         assert info.MAC == "DD:88:FC:AA:EE:FF"
         assert info.model == "SLZB-06p10"
         assert info.sw_version == "v2.0.20"

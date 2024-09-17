@@ -232,6 +232,7 @@ class Api2(webClient):
         return None
 
     async def get_info_old(self) -> Info:
+        self.sse.legacy_api = True
         payload = await self.get_device_payload()
         return Info.load_payload(payload)
 
