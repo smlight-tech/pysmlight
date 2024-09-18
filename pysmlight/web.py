@@ -8,7 +8,7 @@ from typing import Any, Type
 import urllib.parse
 
 from aiohttp import BasicAuth, ClientSession
-from aiohttp.client_exceptions import ClientConnectorError
+from aiohttp.client_exceptions import ClientConnectionError
 
 from .const import FW_URL, PARAM_LIST, Actions, Commands, Devices, Events, Pages
 from .exceptions import SmlightAuthError, SmlightConnectionError
@@ -67,7 +67,7 @@ class webClient:
                     res = True
                     if authenticate:
                         raise SmlightAuthError("Authentication Error")
-        except ClientConnectorError:
+        except ClientConnectionError:
             _LOGGER.debug("Connection error")
             raise SmlightConnectionError("Connection failed")
 
@@ -79,39 +79,45 @@ class webClient:
         if url is None:
             url = self.url
 
-        async with self.session.get(
-            url, headers=self.headers, params=params, auth=self.auth
-        ) as response:
-            if response.status == 404:
-                return None
-            elif response.status == 401:
-                raise SmlightAuthError("Authentication Error")
+        try:
+            async with self.session.get(
+                url, headers=self.headers, params=params, auth=self.auth
+            ) as response:
+                if response.status == 404:
+                    return None
+                elif response.status == 401:
+                    raise SmlightAuthError("Authentication Error")
 
-            hdr = response.headers.get("respValuesArr")
-            if hdr is not None and (
-                params and int(params["action"]) == Actions.API_GET_PAGE.value
-            ):
-                return hdr
-            else:
-                return await response.text(encoding="utf-8")
+                hdr = response.headers.get("respValuesArr")
+                if hdr is not None and (
+                    params and int(params["action"]) == Actions.API_GET_PAGE.value
+                ):
+                    return hdr
+                else:
+                    return await response.text(encoding="utf-8")
+        except ClientConnectionError as err:
+            raise SmlightConnectionError("Connection failed") from err
 
     async def post(self, params) -> bool:
         if self.session is None:
             self.session = ClientSession(headers=self.headers)
         data = urllib.parse.urlencode(params)
 
-        async with self.session.post(
-            self.setting_url,
-            data=data,
-            headers=self.post_headers,
-            auth=self.auth,
-        ) as response:
-            if response.status == 404:
-                return False
-            elif response.status == 401:
-                raise SmlightAuthError("Authentication Error")
-            await response.text(encoding="utf-8")
-            return response.status == 200
+        try:
+            async with self.session.post(
+                self.setting_url,
+                data=data,
+                headers=self.post_headers,
+                auth=self.auth,
+            ) as response:
+                if response.status == 404:
+                    return False
+                elif response.status == 401:
+                    raise SmlightAuthError("Authentication Error")
+                await response.text(encoding="utf-8")
+                return response.status == 200
+        except ClientConnectionError as err:
+            raise SmlightConnectionError("Connection failed") from err
 
     def set_host(self, host: str) -> None:
         self.host = host
