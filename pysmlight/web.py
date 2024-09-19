@@ -2,6 +2,7 @@
 from collections.abc import Callable
 import json
 import logging
+import re
 import time
 from typing import Any, Type
 import urllib.parse
@@ -197,7 +198,7 @@ class Api2(webClient):
     def format_notes(self, firmware: Firmware) -> str | None:
         """Format release notes for esp firmware"""
         if firmware and firmware.notes:
-            items = firmware.notes.split("\r\n")
+            items = re.split("\r\n|(?<!\r)\n", firmware.notes)
             notes = ""
             for i, v in enumerate(items):
                 if i and v and not v.startswith("-"):
