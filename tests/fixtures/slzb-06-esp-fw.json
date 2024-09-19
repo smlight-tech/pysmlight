@@ -4,7 +4,7 @@
         "rev": "20240229",
         "ver": "v2.0.18",
         "dev": false,
-        "notes": "<span>- Support SLZB-06p10 model (</span><a href='https://smlight.tech/product/slzb-06p10/' target='_blank' aria-current='true'><span>link</span></a><span>)</span>",
+        "notes": "<span>- Support SLZB-06p10 model (</span><a href='https://smlight.tech/product/slzb-06p10/' target='_blank' aria-current='true'><span>link</span></a><span>)</span>\nmore line\r\ntests",
         "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/core/slzb-06-v2.0.18-ota.bin"
       },
       {

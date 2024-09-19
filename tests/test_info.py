@@ -196,3 +196,5 @@ async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
         assert firmware.rev == "20240229"
         assert firmware.ver == "v2.0.18"
         assert firmware.type is None
+        assert firmware.notes
+        assert len(firmware.notes.split("\n")) == 5
