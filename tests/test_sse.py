@@ -4,7 +4,6 @@ import json
 import logging
 from unittest.mock import Mock, call, patch
 
-import aiohttp
 from aiohttp import ClientSession, web
 from aresponses import ResponsesMockServer
 
@@ -97,11 +96,7 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
         with patch("pysmlight.Api2.get", return_value=None):
             unload.append(await client.scan_wifi(wifi_cb))
 
-        try:
-            await client.sse.sse_stream()
-        except aiohttp.ClientConnectionError:
-            # avoid SSE client try to reconnect
-            pass
+        await client.sse.sse_stream()
 
         assert log_message_handler.call_count == 1
         assert all_message_handler.call_count == 4

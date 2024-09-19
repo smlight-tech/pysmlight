@@ -1,10 +1,15 @@
 """ Tests for retrieving device information from SLZB-06x devices. """
 import json
+from unittest.mock import patch
 
 from aiohttp import ClientSession
+from aiohttp.client_exceptions import ClientConnectionError
 from aresponses import ResponsesMockServer
+import pytest
 
 from pysmlight import Api2, Info
+from pysmlight.const import Settings
+from pysmlight.exceptions import SmlightConnectionError
 
 from . import load_fixture
 
@@ -44,6 +49,40 @@ async def test_info_device_info(aresponses: ResponsesMockServer) -> None:
         assert info.zb_type == 0
         assert info.legacy_api == 0
         assert info.hostname == "SLZB-06P10"
+
+
+@pytest.mark.asyncio
+@patch("aiohttp.ClientSession.get")
+async def test_info_get_connector_error(mock_get) -> None:
+    """Test getting SLZB device information."""
+
+    async def mock_raise(*args, **kwargs):
+        raise ClientConnectionError("Mocked connection error")
+
+    mock_get.return_value.__aenter__.side_effect = mock_raise
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+
+        with pytest.raises(SmlightConnectionError):
+            await client.get_info()
+        with pytest.raises(SmlightConnectionError):
+            await client.get_sensors()
+
+
+@pytest.mark.asyncio
+@patch("aiohttp.ClientSession.post")
+async def test_info_post_connector_error(mock_post) -> None:
+    """Test getting SLZB device information."""
+
+    async def mock_raise(*args, **kwargs):
+        raise ClientConnectionError("Mocked connection error")
+
+    mock_post.return_value.__aenter__.side_effect = mock_raise
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        _page, _toggle = Settings.NIGHT_MODE.value
+        with pytest.raises(SmlightConnectionError):
+            await client.set_toggle(_page, _toggle, True)
 
 
 async def test_info_sensors(aresponses: ResponsesMockServer) -> None:
