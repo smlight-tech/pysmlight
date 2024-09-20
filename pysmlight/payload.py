@@ -49,7 +49,3 @@ class Payload:
         else:
             text = re.sub(r"\[|\]", "", str)
         return text
-
-    @property
-    def dump(self):
-        return self.json
