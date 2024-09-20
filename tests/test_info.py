@@ -165,13 +165,14 @@ async def test_info_legacy_info2(aresponses: ResponsesMockServer) -> None:
         "/ha_info",
         "GET",
         aresponses.Response(
-            status=404,
+            status=200,
             headers={"Content-Type": "application/json"},
+            text="URL NOT FOUND",
         ),
     )
     aresponses.add(
         host,
-        "/api2",
+        "/api",
         "GET",
         aresponses.Response(status=200, headers=headers, text="Some html"),
     )
