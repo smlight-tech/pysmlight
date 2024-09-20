@@ -3,7 +3,6 @@ from collections.abc import Callable
 import json
 import logging
 import re
-import time
 from typing import Any, Type
 import urllib.parse
 
@@ -17,8 +16,6 @@ from .payload import Payload
 from .sse import sseClient
 
 _LOGGER = logging.getLogger(__name__)
-
-start = time.time()
 
 
 class webClient:
