@@ -109,7 +109,7 @@ class webClient:
                 auth=self.auth,
             ) as response:
                 if response.status == 404:
-                    return False
+                    raise SmlightConnectionError("endpoint not found")
                 elif response.status == 401:
                     raise SmlightAuthError("Authentication Error")
                 await response.text(encoding="utf-8")
@@ -219,9 +219,7 @@ class Api2(webClient):
         params = {"action": Actions.API_GET_PAGE.value, "page": page.value}
         res = await self.get(params)
         data = json.loads(res)
-        if data:
-            return data
-        return None
+        return data if data else None
 
     async def get_param(self, param: str) -> str | None:
         if param in PARAM_LIST:
