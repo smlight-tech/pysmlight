@@ -105,6 +105,7 @@ class Events(Enum):
     ZB_FW_prgs = auto()
     ZB_ENERGY_SCAN_DONE = auto()
     WHTNW = auto()
+    REBOOT = auto()
     CATCH_ALL = 99
 
 
@@ -139,3 +140,17 @@ class WifiMode(Enum):
     WIFI_MODE_AP = 2  # WiFi soft-AP mode
     WIFI_MODE_APSTA = 3  # WiFi station + soft-AP mode
     WIFI_MODE_MAX = 4
+
+
+class RebootReasons(IntEnum):
+    ESP_RST_UNKNOWN = 0  # Reset reason can not be determined
+    ESP_RST_POWERON = 1  # Reset due to power-on event
+    ESP_RST_EXT = 2  # Reset by external pin (not applicable for ESP32)
+    ESP_RST_SW = 3  # Software reset via esp_restart
+    ESP_RST_PANIC = 4  # Software reset due to exception/panic
+    ESP_RST_INT_WDT = 5  # Reset (software or hardware) due to interrupt watchdog
+    ESP_RST_TASK_WDT = 6  # Reset due to task watchdog
+    ESP_RST_WDT = 7  # Reset due to other watchdogs
+    ESP_RST_DEEPSLEEP = 8  # Reset after exiting deep sleep mode
+    ESP_RST_BROWNOUT = 9  # Brownout reset (software or hardware)
+    ESP_RST_SDIO = 10  # Reset over SDIO

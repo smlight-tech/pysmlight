@@ -1,9 +1,12 @@
 """ Tests for authenticating with SLZB-06x devices. """
+from unittest.mock import patch
+
 from aiohttp import ClientSession
+from aiohttp.client_exceptions import ClientConnectionError
 from aresponses import ResponsesMockServer
 import pytest
 
-from pysmlight.exceptions import SmlightAuthError
+from pysmlight.exceptions import SmlightAuthError, SmlightConnectionError
 from pysmlight.web import Api2, webClient
 
 host = "slzb-06.local"
@@ -81,3 +84,19 @@ async def test_with_async(aresponses: ResponsesMockServer) -> None:
         client.set_host(host)
         assert client.host == host
         assert await client.check_auth_needed() is False
+
+
+@pytest.mark.asyncio
+@patch("aiohttp.ClientSession.get")
+async def test_auth_connector_error(mock_get) -> None:
+    """Test auth connect failed."""
+
+    async def mock_raise(*args, **kwargs):
+        raise ClientConnectionError("Mocked connection error")
+
+    mock_get.return_value.__aenter__.side_effect = mock_raise
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+
+        with pytest.raises(SmlightConnectionError):
+            await client.check_auth_needed()

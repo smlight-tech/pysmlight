@@ -5,7 +5,7 @@ import logging
 from typing import Callable
 
 import aiohttp
-from aiohttp.client_exceptions import SocketTimeoutError
+from aiohttp.client_exceptions import ClientConnectionError, SocketTimeoutError
 from aiohttp_sse_client2.client import EventSource, MessageEvent
 
 from .const import Events, Pages, Settings
@@ -38,7 +38,10 @@ class sseClient:
         )
 
     async def client(self) -> None:
-        """Run SSE Client"""
+        """Run SSE Client
+
+        SSE client will attempt reconnection on connection error with exponental backoff
+        """
 
         # Increase timeout for legacy API which dont have PING events
         if self.legacy_api:
@@ -53,14 +56,14 @@ class sseClient:
     async def sse_stream(self) -> None:
         """Process incoming events on the message stream"""
         async with EventSource(
-            self.url, session=self.session, timeout=self.timeout
+            self.url, session=self.session, timeout=self.timeout, max_connect_retry=8
         ) as event_source:
             try:
                 async for event in event_source:
                     _LOGGER.debug(event)
                     await self._message_handler(event)
-            except ConnectionError:
-                _LOGGER.debug("Client Connection error")
+            except (ClientConnectionError, ConnectionError) as err:
+                _LOGGER.debug("Client Connection error: %s", err)
             else:
                 _LOGGER.debug("Connection closed cleanly")
 
