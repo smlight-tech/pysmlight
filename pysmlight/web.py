@@ -31,15 +31,6 @@ class webClient:
 
         self.set_urls()
 
-    async def async_init(self, auth: BasicAuth | None = None) -> None:
-        if auth is not None:
-            self.auth = auth
-        if self.session is None:
-            self.close_session = True
-            self.session = ClientSession(headers=self.headers, auth=self.auth)
-
-        _LOGGER.debug("Session created")
-
     async def authenticate(self, user: str, password: str) -> bool:
         """Pass in credentials and check auth is successful"""
         self.auth = BasicAuth(user, password)
@@ -137,7 +128,9 @@ class webClient:
             self.close_session = False
 
     async def __aenter__(self) -> "webClient":
-        await self.async_init()
+        if self.session is None:
+            self.close_session = True
+            self.session = ClientSession(headers=self.headers)
         return self
 
     async def __aexit__(
