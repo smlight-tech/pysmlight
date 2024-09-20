@@ -9,7 +9,7 @@ import pytest
 
 from pysmlight import Api2, Info
 from pysmlight.const import Settings
-from pysmlight.exceptions import SmlightConnectionError
+from pysmlight.exceptions import SmlightAuthError, SmlightConnectionError
 
 from . import load_fixture
 
@@ -49,6 +49,24 @@ async def test_info_device_info(aresponses: ResponsesMockServer) -> None:
         assert info.zb_type == 0
         assert info.legacy_api == 0
         assert info.hostname == "SLZB-06P10"
+
+
+async def test_info_get_auth_fail(aresponses: ResponsesMockServer) -> None:
+    """Test getting SLZB device information."""
+    aresponses.add(
+        host,
+        "/ha_info",
+        "GET",
+        aresponses.Response(
+            status=401,
+            headers={"Content-Type": "application/json"},
+            text="wrong login or password",
+        ),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        with pytest.raises(SmlightAuthError):
+            await client.get_info()
 
 
 @pytest.mark.asyncio
