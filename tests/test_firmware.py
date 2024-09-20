@@ -7,6 +7,8 @@ from aresponses import ResponsesMockServer
 from pysmlight import Api2, Firmware
 from pysmlight.const import Actions
 
+from . import load_fixture
+
 host = "slzb-06.local"
 
 MOCK_FIRMWARE_ESP = Firmware(
@@ -90,3 +92,55 @@ async def test_format_release_notes() -> None:
         firmware = MOCK_FIRMWARE_ZB
         formatted = client.format_notes(firmware)
         assert formatted is None
+
+
+async def test_info_get_firmware_zb(aresponses: ResponsesMockServer) -> None:
+    aresponses.add(
+        "smlight.tech",
+        "/flasher/firmware/bin/slzb06x/ota.php",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("slzb-06-zb-fw.json"),
+        ),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        fw = await client.get_firmware_version(
+            "release", device="SLZB-06M", mode="zigbee"
+        )
+        assert fw
+        assert len(fw) == 5
+        firmware = fw[0]
+        assert firmware.link
+        assert firmware.mode == "ZB"
+        assert firmware.dev is False
+        assert firmware.ver == "20240510"
+        assert firmware.type == 0
+
+
+async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
+    aresponses.add(
+        "smlight.tech",
+        "/flasher/firmware/bin/slzb06x/ota.php",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("slzb-06-esp-fw.json"),
+        ),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        fw = await client.get_firmware_version("release", mode="esp")
+        assert fw
+        firmware = fw[0]
+        assert len(firmware.link) > 20
+        assert firmware.mode == "ESP"
+        assert firmware.dev is False
+        assert firmware.rev == "20240229"
+        assert firmware.ver == "v2.0.18"
+        assert firmware.type is None
+        assert firmware.notes
+        assert len(firmware.notes.split("\n")) == 5
