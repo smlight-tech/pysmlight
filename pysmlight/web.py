@@ -189,7 +189,7 @@ class Api2(webClient):
             item = Firmware.from_dict(d)
             if not item.dev or channel == "dev":
                 item.set_mode(fw_type)
-                if fw_type == "ESP":
+                if item.notes:
                     item.notes = self.format_notes(item)
                 fw.append(item)
         return fw
@@ -197,13 +197,20 @@ class Api2(webClient):
     def format_notes(self, firmware: Firmware) -> str | None:
         """Format release notes for esp firmware"""
         if firmware and firmware.notes:
-            items = re.split("\r\n|(?<!\r)\n", firmware.notes)
+            items = (
+                re.split("\r\n|(?<!\r)\n", firmware.notes)
+                if firmware.mode == "ESP"
+                else [firmware.notes]
+            )
             notes = ""
             for i, v in enumerate(items):
                 if i and v and not v.startswith("-"):
                     notes += f"* {v}\n"
                 else:
                     notes += f"{v}\n\n"
+
+            if firmware.dev and firmware.mode == "ZB":
+                notes = "Dev firmware.\n\n" + notes
             return notes
         return None
 

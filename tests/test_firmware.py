@@ -107,15 +107,13 @@ async def test_info_get_firmware_zb(aresponses: ResponsesMockServer) -> None:
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        fw = await client.get_firmware_version(
-            "release", device="SLZB-06M", mode="zigbee"
-        )
+        fw = await client.get_firmware_version("dev", device="SLZB-06M", mode="zigbee")
         assert fw
         assert len(fw) == 5
         firmware = fw[0]
         assert firmware.link
         assert firmware.mode == "ZB"
-        assert firmware.dev is False
+        assert firmware.dev is True
         assert firmware.ver == "20240510"
         assert firmware.type == 0
 

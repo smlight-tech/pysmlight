@@ -14,7 +14,7 @@ class Firmware(DataClassDictMixin):
     link: str | None = None
     ver: str | None = None
     dev: bool = False
-    prod: bool = True
+    prod: bool = False
     baud: int | None = None
 
     def __post_init__(self):
