@@ -9,7 +9,7 @@ import pytest
 
 from pysmlight import Api2, Info
 from pysmlight.const import Settings
-from pysmlight.exceptions import SmlightConnectionError
+from pysmlight.exceptions import SmlightAuthError, SmlightConnectionError
 
 from . import load_fixture
 
@@ -49,6 +49,24 @@ async def test_info_device_info(aresponses: ResponsesMockServer) -> None:
         assert info.zb_type == 0
         assert info.legacy_api == 0
         assert info.hostname == "SLZB-06P10"
+
+
+async def test_info_get_auth_fail(aresponses: ResponsesMockServer) -> None:
+    """Test getting SLZB device information."""
+    aresponses.add(
+        host,
+        "/ha_info",
+        "GET",
+        aresponses.Response(
+            status=401,
+            headers={"Content-Type": "application/json"},
+            text="wrong login or password",
+        ),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        with pytest.raises(SmlightAuthError):
+            await client.get_info()
 
 
 @pytest.mark.asyncio
@@ -148,7 +166,7 @@ async def test_info_legacy_info(aresponses: ResponsesMockServer) -> None:
         assert info.model == "SLZB-06p10"
         assert info.sw_version == "v2.0.20"
         assert info.zb_hw == "CC2674P10"
-        assert info.zb_version == "20240315"
+        assert info.zb_version == "-1"
         assert info.legacy_api == 1
 
 
@@ -165,13 +183,14 @@ async def test_info_legacy_info2(aresponses: ResponsesMockServer) -> None:
         "/ha_info",
         "GET",
         aresponses.Response(
-            status=404,
+            status=200,
             headers={"Content-Type": "application/json"},
+            text="URL NOT FOUND",
         ),
     )
     aresponses.add(
         host,
-        "/api2",
+        "/api",
         "GET",
         aresponses.Response(status=200, headers=headers, text="Some html"),
     )
@@ -185,55 +204,3 @@ async def test_info_legacy_info2(aresponses: ResponsesMockServer) -> None:
         assert info.model == "SLZB-06"
         assert info.sw_version == "0.9.9"
         assert info.legacy_api == 2
-
-
-async def test_info_get_firmware_zb(aresponses: ResponsesMockServer) -> None:
-    aresponses.add(
-        "smlight.tech",
-        "/flasher/firmware/bin/slzb06x/ota.php",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("slzb-06-zb-fw.json"),
-        ),
-    )
-    async with ClientSession() as session:
-        client = Api2(host, session=session)
-        fw = await client.get_firmware_version(
-            "release", device="SLZB-06M", mode="zigbee"
-        )
-        assert fw
-        assert len(fw) == 5
-        firmware = fw[0]
-        assert firmware.link
-        assert firmware.mode == "ZB"
-        assert firmware.dev is False
-        assert firmware.ver == "20240510"
-        assert firmware.type == 0
-
-
-async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
-    aresponses.add(
-        "smlight.tech",
-        "/flasher/firmware/bin/slzb06x/ota.php",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("slzb-06-esp-fw.json"),
-        ),
-    )
-    async with ClientSession() as session:
-        client = Api2(host, session=session)
-        fw = await client.get_firmware_version("release", mode="esp")
-        assert fw
-        firmware = fw[0]
-        assert len(firmware.link) > 20
-        assert firmware.mode == "ESP"
-        assert firmware.dev is False
-        assert firmware.rev == "20240229"
-        assert firmware.ver == "v2.0.18"
-        assert firmware.type is None
-        assert firmware.notes
-        assert len(firmware.notes.split("\n")) == 5

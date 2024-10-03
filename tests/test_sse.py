@@ -2,14 +2,15 @@ import asyncio
 from collections.abc import Callable
 import json
 import logging
-from unittest.mock import Mock, call, patch
+from unittest.mock import AsyncMock, Mock, call, patch
 
 from aiohttp import ClientSession, web
+from aiohttp.client_exceptions import SocketTimeoutError
 from aresponses import ResponsesMockServer
 
-from pysmlight.const import Events, Settings
+from pysmlight.const import Actions, Events, Settings
 from pysmlight.models import SettingsEvent
-from pysmlight.sse import MessageEvent
+from pysmlight.sse import MessageEvent, sseClient
 from pysmlight.web import Api2
 
 _LOGGER = logging.getLogger(__name__)
@@ -112,3 +113,53 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
             remove_cb()
         unload.clear()
         assert len(client.sse.callbacks) == 1
+
+
+async def test_get_param_inetstate(aresponses: ResponsesMockServer) -> None:
+    """Test command to trigger inetState event."""
+
+    async def response_handler(request):
+        params = request.query
+        assert int(params["action"]) == Actions.API_GET_PARAM.value
+        assert params["param"] == "inetState"
+        return aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text="ok",
+        )
+
+    aresponses.add(
+        host,
+        "/api2",
+        "GET",
+        response_handler,
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        assert await client.get_param("inetState") == "ok"
+        # invalid param
+        assert await client.get_param("inet") is None
+
+
+async def test_sse_client_task():
+    async with ClientSession() as session:
+        client = sseClient(host, session)
+        client.legacy_api = True
+
+        with patch.object(
+            client, "sse_stream", new_callable=AsyncMock
+        ) as mock_sse_stream:
+            mock_sse_stream.side_effect = SocketTimeoutError
+
+            task = asyncio.create_task(client.client())
+            assert task is not None
+            assert not task.done()
+            await asyncio.sleep(0.1)
+            assert client.timeout.sock_read == 600
+            client.sse_stream.assert_called_once()
+
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass

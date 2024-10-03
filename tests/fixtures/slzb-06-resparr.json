@@ -49,7 +49,7 @@
     "wifiDhcp":"[OFF]",
     "wifiApOn":"[N]",
     "wifiApStat":"[OFF]",
-    "zbRev":"20240315",
+    "zbRev":"[ZB_FW_unk]",
     "zbChk":"19/03/2024",
     "espChk":"28/03/2024"
  }

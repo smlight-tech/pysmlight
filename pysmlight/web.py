@@ -3,7 +3,6 @@ from collections.abc import Callable
 import json
 import logging
 import re
-import time
 from typing import Any, Type
 import urllib.parse
 
@@ -18,8 +17,6 @@ from .sse import sseClient
 
 _LOGGER = logging.getLogger(__name__)
 
-start = time.time()
-
 
 class webClient:
     def __init__(self, host: str, session: ClientSession | None = None) -> None:
@@ -30,16 +27,9 @@ class webClient:
         self.post_headers = {"Content-Type": "application/x-www-form-urlencoded"}
         self.host = host
         self.session = session
+        self.close_session = False
 
         self.set_urls()
-
-    async def async_init(self, auth: BasicAuth | None = None) -> None:
-        if auth is not None:
-            self.auth = auth
-        if self.session is None:
-            self.session = ClientSession(headers=self.headers, auth=self.auth)
-
-        _LOGGER.debug("Session created")
 
     async def authenticate(self, user: str, password: str) -> bool:
         """Pass in credentials and check auth is successful"""
@@ -52,8 +42,7 @@ class webClient:
         Optionally validate authentication credentials
         Raises error on Connection or Auth failure
         """
-        if self.session is None:
-            self.session = ClientSession(headers=self.headers)
+        assert self.session is not None, "Session not created"
 
         auth: BasicAuth | None = None
         res = False
@@ -74,8 +63,8 @@ class webClient:
         return res
 
     async def get(self, params: dict[str, Any], url: str | None = None) -> str | None:
-        if self.session is None:
-            self.session = ClientSession(headers=self.headers)
+        assert self.session is not None, "Session not created"
+
         if url is None:
             url = self.url
 
@@ -99,8 +88,8 @@ class webClient:
             raise SmlightConnectionError("Connection failed") from err
 
     async def post(self, params) -> bool:
-        if self.session is None:
-            self.session = ClientSession(headers=self.headers)
+        assert self.session is not None, "Session not created"
+
         data = urllib.parse.urlencode(params)
 
         try:
@@ -111,7 +100,7 @@ class webClient:
                 auth=self.auth,
             ) as response:
                 if response.status == 404:
-                    return False
+                    raise SmlightConnectionError("endpoint not found")
                 elif response.status == 401:
                     raise SmlightAuthError("Authentication Error")
                 await response.text(encoding="utf-8")
@@ -132,12 +121,16 @@ class webClient:
         self.sensor_url = f"http://{self.host}/ha_sensors"
 
     async def close(self) -> None:
-        if self.session is not None:
+        """Close the session if it was created internally"""
+        if self.session is not None and self.close_session:
             await self.session.close()
             self.session = None
+            self.close_session = False
 
     async def __aenter__(self) -> "webClient":
-        await self.async_init()
+        if self.session is None:
+            self.close_session = True
+            self.session = ClientSession(headers=self.headers)
         return self
 
     async def __aexit__(
@@ -219,9 +212,7 @@ class Api2(webClient):
         params = {"action": Actions.API_GET_PAGE.value, "page": page.value}
         res = await self.get(params)
         data = json.loads(res)
-        if data:
-            return data
-        return None
+        return data if data else None
 
     async def get_param(self, param: str) -> str | None:
         if param in PARAM_LIST:
