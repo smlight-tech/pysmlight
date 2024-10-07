@@ -99,21 +99,22 @@ class sseClient:
             return
 
         changes = data.pop("changes", None)
-        for setting in changes:
-            base = data.copy()
-            match_cb = next(
-                (
-                    cb
-                    for k, cb in self.settings_cb.items()
-                    if (page, setting) == k.value
-                ),
-                None,
-            )
+        if changes is not None:
+            for setting in changes:
+                base = data.copy()
+                match_cb = next(
+                    (
+                        cb
+                        for k, cb in self.settings_cb.items()
+                        if (page, setting) == k.value
+                    ),
+                    None,
+                )
 
-            if match_cb:
-                base["setting"] = {setting: changes[setting]}
-                result = SettingsEvent.from_dict(base)
-                match_cb(result)
+                if match_cb:
+                    base["setting"] = {setting: changes[setting]}
+                    result = SettingsEvent.from_dict(base)
+                    match_cb(result)
 
     def register_settings_cb(
         self, setting: Settings, cb: Callable
