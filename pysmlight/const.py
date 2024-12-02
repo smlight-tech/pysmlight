@@ -76,6 +76,8 @@ Devices: dict[str, int] = {
     "SLZB-06Mg24": 2,
     "SLZB-06p7": 3,
     "SLZB-06p10": 4,
+    "SLZB-06p7V2": 5,
+    "SLZB-MR1": 6,
 }
 
 ZB_TYPES: dict[int, str] = {
