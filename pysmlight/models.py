@@ -28,6 +28,18 @@ class Firmware(DataClassDictMixin):
 
 
 @dataclass
+class Radio(DataClassDictMixin):
+    chip_index: int | None = None
+    zb_channel: int | None = None
+    zb_flash_size: int | None = None
+    zb_hw: str | None = None
+    zb_ram_size: int | None = None
+    zb_version: str | None = None
+    zb_type: int | None = None  # enum (coordinator, router, thread)
+    radioModes: list[bool] | None = None
+
+
+@dataclass
 class Info(DataClassDictMixin):
     coord_mode: int | None = None  # Enum
     device_ip: str | None = None
@@ -40,6 +52,7 @@ class Info(DataClassDictMixin):
     ram_total: int | None = None
     sw_version: str | None = None
     wifi_mode: int | None = None  # enum (off, client, AP etc)
+    radios: list[Radio] | None = None
     zb_channel: int | None = None
     zb_flash_size: int | None = None
     zb_hw: str | None = None
@@ -65,6 +78,10 @@ class Info(DataClassDictMixin):
         if self.model is not None:
             self.model = self.model.replace("P", "p")
         self.zb_version = str(self.zb_version)
+
+        if self.radios is not None:
+            for r in self.radios:
+                r.zb_version = str(r.zb_version)
 
 
 @dataclass
