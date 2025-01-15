@@ -1,7 +1,7 @@
 from enum import Enum, IntEnum, auto, unique
 
-FW_URL = "https://smlight.tech/flasher/firmware/bin/slzb06x/ota.php"
-FW_DEV_URL = "https://smlight.tech/flasher/firmware/bin/slzb06x/ota_dev.php"
+FW_URL = "https://updates.smlight.tech/services/api/slzb-06x-ota.php"
+
 MODE_LIST: dict[int, str] = {
     0: "eth",
     1: "wifi",
