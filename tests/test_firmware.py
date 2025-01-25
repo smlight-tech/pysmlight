@@ -96,8 +96,8 @@ async def test_format_release_notes() -> None:
 
 async def test_info_get_firmware_zb(aresponses: ResponsesMockServer) -> None:
     aresponses.add(
-        "smlight.tech",
-        "/flasher/firmware/bin/slzb06x/ota.php",
+        "updates.smlight.tech",
+        "/services/api/slzb-06x-ota.php",
         "GET",
         aresponses.Response(
             status=200,
@@ -120,8 +120,8 @@ async def test_info_get_firmware_zb(aresponses: ResponsesMockServer) -> None:
 
 async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
     aresponses.add(
-        "smlight.tech",
-        "/flasher/firmware/bin/slzb06x/ota.php",
+        "updates.smlight.tech",
+        "/services/api/slzb-06x-ota.php",
         "GET",
         aresponses.Response(
             status=200,
