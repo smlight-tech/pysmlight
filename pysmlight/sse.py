@@ -7,6 +7,7 @@ from typing import Callable
 import aiohttp
 from aiohttp.client_exceptions import ClientConnectionError, SocketTimeoutError
 from aiohttp_sse_client2.client import EventSource, MessageEvent
+from packaging.version import Version
 
 from .const import Events, Pages, Settings
 from .models import SettingsEvent
@@ -16,6 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 # override logging level aiohttp_sse_client2 library
 aiologger = logging.getLogger("aiohttp_sse_client2")
 aiologger.setLevel(logging.INFO)
+LEGACY_SSE_VERSION = Version("v2.6.8.dev25")
 
 
 class sseClient:
@@ -26,8 +28,10 @@ class sseClient:
         self.callbacks: dict[Events, Callable] = {}
         self.settings_cb: dict[Settings, Callable] = {}
         self.legacy_api = False
+        self.sw_version: Version | None = None
         self.session = session
-        self.url = f"http://{host}/events"
+        self.url = f"http://{host}:81"  # Introduced in firmware v2.6.8.dev26
+        self.legacy_url = f"http://{host}/events"
         self.setTimeout(30)
 
         self.register_callback(Events.SAVE_PARAMS, self._handle_settings)
@@ -55,6 +59,8 @@ class sseClient:
 
     async def sse_stream(self) -> None:
         """Process incoming events on the message stream"""
+        if self.sw_version is not None and self.sw_version <= LEGACY_SSE_VERSION:
+            self.url = self.legacy_url
         async with EventSource(
             self.url, session=self.session, timeout=self.timeout, max_connect_retry=8
         ) as event_source:
