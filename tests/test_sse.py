@@ -76,7 +76,7 @@ async def test_sse_stream(aresponses: ResponsesMockServer) -> None:
     log_message_handler = Mock()
     all_message_handler = Mock()
     settings_message_handler = Mock()
-    aresponses.add(host, "/events", "GET", mock_sse_stream)
+    aresponses.add(f"{host}:81", "/", "GET", mock_sse_stream)
     async with ClientSession() as session:
         client = Api2(host, session=session)
         unload.append(client.sse.register_callback(Events.LOG_STR, log_message_handler))
