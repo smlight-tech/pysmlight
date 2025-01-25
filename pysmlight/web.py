@@ -8,6 +8,7 @@ import urllib.parse
 
 from aiohttp import BasicAuth, ClientSession
 from aiohttp.client_exceptions import ClientConnectionError
+from packaging.version import Version
 
 from .const import FW_URL, PARAM_LIST, Actions, Commands, Devices, Events, Pages
 from .exceptions import SmlightAuthError, SmlightConnectionError
@@ -241,6 +242,8 @@ class Api2(webClient):
             return await self.get_info_old()
 
         data = json.loads(res)
+        if self.sse.sw_version is None:
+            self.sse.sw_version = Version(data["Info"]["sw_version"])
         return Info.from_dict(data["Info"])
 
     async def get_sensors(self) -> Sensors:
