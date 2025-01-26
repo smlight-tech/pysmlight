@@ -172,6 +172,7 @@ async def test_info_sensors(aresponses: ResponsesMockServer) -> None:
 
         assert sensors.esp32_temp == 39.44
         assert sensors.zb_temp == 35.76
+        assert sensors.zb_temp2 == 34.20
         assert sensors.uptime == 700
         assert sensors.socket_uptime is None
         assert sensors.ram_usage == 91

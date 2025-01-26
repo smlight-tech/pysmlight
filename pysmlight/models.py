@@ -86,8 +86,9 @@ class Info(DataClassDictMixin):
 
 @dataclass
 class Sensors(DataClassDictMixin):
-    esp32_temp: float = 0
-    zb_temp: float = 0
+    esp32_temp: float | None = None
+    zb_temp: float | None = None
+    zb_temp2: float | None = None
     uptime: int = 0  # Should be timestamp
     socket_uptime: int | None = None  # Should be timestamp
     ram_usage: int | None = None
