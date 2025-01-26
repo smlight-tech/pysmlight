@@ -29,6 +29,7 @@ class webClient:
         self.host = host
         self.session = session
         self.close_session = False
+        self.core_version: Version | None = None
 
         self.set_urls()
 
@@ -242,8 +243,12 @@ class Api2(webClient):
             return await self.get_info_old()
 
         data = json.loads(res)
+        core_version = Version(data["Info"]["sw_version"])
+        if self.core_version is None:
+            self.core_version = core_version
         if self.sse.sw_version is None:
-            self.sse.sw_version = Version(data["Info"]["sw_version"])
+            self.sse.sw_version = core_version
+
         return Info.from_dict(data["Info"])
 
     async def get_sensors(self) -> Sensors:
