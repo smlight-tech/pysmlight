@@ -1,0 +1,42 @@
+{
+    "Info": {
+      "wifi_mode": 0,
+      "ram_total": 300,
+      "fs_total": 3456,
+      "zb_ram_size": 96,
+      "zb_flash_size": 768,
+      "coord_mode": 0,
+      "device_ip": "192.168.1.62",
+      "fw_channel": "dev",
+      "hostname": "SLZB-MR1",
+      "MAC": "DD:88:FC:AA:EE:FF",
+      "model": "SLZB-MR1",
+      "sw_version": "v2.7.1",
+      "zb_hw": "EFR32MG21",
+      "zb_version": 20240510,
+      "zb_type": 0,
+      "zb_channel": 1,
+      "radios": [
+        {
+          "chip_index": 0,
+          "zb_hw": "EFR32MG21",
+          "zb_version": 20240510,
+          "zb_type": 0,
+          "zb_channel": 1,
+          "zb_ram_size": 96,
+          "zb_flash_size": 768,
+          "radioModes": [true, true, true, false, false]
+        },
+        {
+          "chip_index": 1,
+          "zb_hw": "CC2652P7",
+          "zb_version": 20240716,
+          "zb_type": 0,
+          "zb_channel": 1,
+          "zb_ram_size": 152,
+          "zb_flash_size": 704,
+          "radioModes": [true, true, true, false, false]
+        }
+      ]
+    }
+  }

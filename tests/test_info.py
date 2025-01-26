@@ -49,6 +49,56 @@ async def test_info_device_info(aresponses: ResponsesMockServer) -> None:
         assert info.zb_type == 0
         assert info.legacy_api == 0
         assert info.hostname == "SLZB-06P10"
+        assert info.radios is None
+
+
+async def test_info_device_mr_info(aresponses: ResponsesMockServer) -> None:
+    """Test getting SLZB device information for multi radios."""
+    aresponses.add(
+        host,
+        "/ha_info",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("slzb-06-info-radios.json"),
+        ),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        info: Info = await client.get_info()
+        assert info
+
+        assert info.wifi_mode == 0
+        assert info.ram_total == 300
+        assert info.fs_total == 3456
+        assert info.coord_mode == 0
+        assert info.device_ip == "192.168.1.62"
+        assert info.fw_channel == "dev"
+        assert info.MAC == "DD:88:FC:AA:EE:FF"
+        assert info.model == "SLZB-MR1"
+        assert info.sw_version == "v2.7.1"
+        assert info.legacy_api == 0
+        assert info.hostname == "SLZB-MR1"
+
+        assert info.radios is not None
+        assert len(info.radios) == 2
+        assert info.radios[0].chip_index == 0
+        assert info.radios[0].zb_channel == 1
+        assert info.radios[0].zb_flash_size == 768
+        assert info.radios[0].zb_hw == "EFR32MG21"
+        assert info.radios[0].zb_ram_size == 96
+        assert info.radios[0].zb_type == 0
+        assert info.radios[0].zb_version == "20240510"
+        assert info.radios[0].radioModes == [True, True, True, False, False]
+        assert info.radios[1].chip_index == 1
+        assert info.radios[1].zb_channel == 1
+        assert info.radios[1].zb_flash_size == 704
+        assert info.radios[1].zb_hw == "CC2652P7"
+        assert info.radios[1].zb_ram_size == 152
+        assert info.radios[1].zb_type == 0
+        assert info.radios[1].zb_version == "20240716"
+        assert info.radios[1].radioModes == [True, True, True, False, False]
 
 
 async def test_info_get_auth_fail(aresponses: ResponsesMockServer) -> None:
