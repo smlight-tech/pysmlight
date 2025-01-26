@@ -3,9 +3,10 @@ __all__ = [
     "CmdWrapper",
     "Firmware",
     "Info",
+    "Radio",
     "Sensors",
     "SettingsEvent",
 ]
 
-from pysmlight.models import SettingsEvent
+from pysmlight.models import Radio, SettingsEvent
 from pysmlight.web import Api2, CmdWrapper, Firmware, Info, Sensors
