@@ -325,11 +325,11 @@ class CmdWrapper:
     async def reboot(self) -> None:
         await self.set_cmd(Commands.CMD_ESP_RES)
 
-    async def zb_bootloader(self, idx: int = 0) -> None:
-        await self.set_cmd(Commands.CMD_ZB_BSL, f"idx:{idx}")
+    async def zb_bootloader(self) -> None:
+        await self.set_cmd(Commands.CMD_ZB_BSL)
 
-    async def zb_restart(self, idx: int = 0) -> None:
-        await self.set_cmd(Commands.CMD_ZB_RST, f"idx:{idx}")
+    async def zb_restart(self) -> None:
+        await self.set_cmd(Commands.CMD_ZB_RST)
 
     async def zb_router(self, idx: int = 0) -> None:
         await self.set_cmd(Commands.CMD_ZB_ROUTER_RECON, f"idx:{idx}")
