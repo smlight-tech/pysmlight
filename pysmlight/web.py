@@ -29,6 +29,7 @@ class webClient:
         self.host = host
         self.session = session
         self.close_session = False
+        self.core_version: Version | None = None
 
         self.set_urls()
 
@@ -242,8 +243,12 @@ class Api2(webClient):
             return await self.get_info_old()
 
         data = json.loads(res)
+        core_version = Version(data["Info"]["sw_version"])
+        if self.core_version is None:
+            self.core_version = core_version
         if self.sse.sw_version is None:
-            self.sse.sw_version = Version(data["Info"]["sw_version"])
+            self.sse.sw_version = core_version
+
         return Info.from_dict(data["Info"])
 
     async def get_sensors(self) -> Sensors:
@@ -251,15 +256,21 @@ class Api2(webClient):
         data = json.loads(res)
         return Sensors.from_dict(data["Sensors"])
 
-    async def set_cmd(self, cmd: Commands) -> bool:
+    async def set_cmd(self, cmd: Commands, extra: str | None = None) -> bool:
         params = {"action": Actions.API_CMD.value, "cmd": cmd.value}
+        if extra:
+            k, v = extra.split(":")
+            val = int(v)
+            if val > 0:
+                params[k] = val
         res = await self.get(params)
         return res == "ok"
 
     async def fw_update(
         self,
         firmware: Firmware,
-    ) -> None:
+        idx: int = 0,
+    ) -> bool:
         """Send firmware update command to device"""
         if firmware.mode == "ZB":
             params = {
@@ -269,10 +280,19 @@ class Api2(webClient):
                 "fwType": firmware.type,
                 "fwVer": firmware.ver,
                 "fwCh": int(not firmware.prod),
+                "zbChipIdx": idx,
             }
+            # backwards compatibility for SLZB-MR1
+            if (
+                idx == 1
+                and self.core_version
+                and self.core_version <= Version("v2.7.2")
+            ):
+                params["zbChipNum"] = 5
         else:
             params = {"action": Actions.API_FLASH_ESP.value, "fwUrl": firmware.link}
-        await self.get(params)
+        res = await self.get(params)
+        return res == "ok"
 
     async def set_toggle(self, page: Pages, toggle: str, value: bool) -> bool:
         state = "on" if value else "off"
@@ -305,11 +325,11 @@ class CmdWrapper:
     async def reboot(self) -> None:
         await self.set_cmd(Commands.CMD_ESP_RES)
 
-    async def zb_bootloader(self) -> None:
-        await self.set_cmd(Commands.CMD_ZB_BSL)
+    async def zb_bootloader(self, idx: int = 0) -> None:
+        await self.set_cmd(Commands.CMD_ZB_BSL, f"idx:{idx}")
 
-    async def zb_restart(self) -> None:
-        await self.set_cmd(Commands.CMD_ZB_RST)
+    async def zb_restart(self, idx: int = 0) -> None:
+        await self.set_cmd(Commands.CMD_ZB_RST, f"idx:{idx}")
 
-    async def zb_router(self) -> None:
-        await self.set_cmd(Commands.CMD_ZB_ROUTER_RECON)
+    async def zb_router(self, idx: int = 0) -> None:
+        await self.set_cmd(Commands.CMD_ZB_ROUTER_RECON, f"idx:{idx}")

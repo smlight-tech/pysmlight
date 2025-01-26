@@ -1,8 +1,8 @@
 """ Tests for retrieving firmware information for SLZB-06x devices. """
-import json
 
 from aiohttp import ClientSession
 from aresponses import ResponsesMockServer
+import pytest
 
 from pysmlight import Api2, Firmware
 from pysmlight.const import Actions
@@ -29,52 +29,128 @@ MOCK_FIRMWARE_ZB = Firmware(
 )
 
 
+@pytest.mark.asyncio
 async def test_esp_firmware_update_get(aresponses: ResponsesMockServer) -> None:
-    async def response_handler(request):
+    def response_handler(request):
         params = request.query
-        assert params["action"] == Actions.API_FLASH_ESP.value
+        assert params["action"] == str(Actions.API_FLASH_ESP.value)
         assert params["fwUrl"]
         return aresponses.Response(
             status=200,
             headers={"Content-Type": "application/json"},
-            text=json.dumps({"status": "ok"}),
+            text="ok",
         )
 
     aresponses.add(
         host,
         "/api2",
         "GET",
-        response_handler,
+        response=response_handler,
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        await client.fw_update(MOCK_FIRMWARE_ESP)
+        response = await client.fw_update(MOCK_FIRMWARE_ESP)
+        assert response
 
 
+@pytest.mark.asyncio
 async def test_zb_firmware_update_get(aresponses: ResponsesMockServer) -> None:
-    async def response_handler(request):
+    def response_handler(request):
         params = request.query
-        assert params["action"] == Actions.API_FLASH_ZB.value
+        assert params["action"] == str(Actions.API_FLASH_ZB.value)
         assert params["fwUrl"]
         assert params["fwVer"] == "20240315"
-        assert params["baud"] == 115200
-        assert params["fwType"] == 0
-        assert params["fwCh"] == 0
+        assert params["baud"] == "115200"
+        assert params["fwType"] == "0"
+        assert params["fwCh"] == "0"
         return aresponses.Response(
             status=200,
             headers={"Content-Type": "application/json"},
-            text=json.dumps({"status": "ok"}),
+            text="ok",
         )
 
     aresponses.add(
         host,
         "/api2",
         "GET",
-        response_handler,
+        response=response_handler,
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        await client.fw_update(MOCK_FIRMWARE_ZB)
+        response = await client.fw_update(MOCK_FIRMWARE_ZB)
+        assert response
+
+
+@pytest.mark.asyncio
+async def test_zb_firmware_update_idx_get(aresponses: ResponsesMockServer) -> None:
+    def response_handler(request):
+        params = request.query
+        assert params["action"] == str(Actions.API_FLASH_ZB.value)
+        assert params["fwUrl"]
+        assert params["fwVer"] == "20240315"
+        assert params["baud"] == "115200"
+        assert params["fwType"] == "0"
+        assert params["fwCh"] == "0"
+        assert params["zbChipIdx"] == "1"
+        return aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text="ok",
+        )
+
+    aresponses.add(
+        host,
+        "/api2",
+        "GET",
+        response=response_handler,
+    )
+    # info = await client.get_info()
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        response = await client.fw_update(MOCK_FIRMWARE_ZB, idx=1)
+        assert response
+
+
+@pytest.mark.asyncio
+async def test_zb_old_firmware_update_idx(aresponses: ResponsesMockServer) -> None:
+    def response_handler(request):
+        params = request.query
+        assert params["action"] == str(Actions.API_FLASH_ZB.value)
+        assert params["fwUrl"]
+        assert params["fwVer"] == "20240315"
+        assert params["baud"] == "115200"
+        assert params["fwType"] == "0"
+        assert params["fwCh"] == "0"
+        assert params["zbChipNum"] == "5"
+        return aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text="ok",
+        )
+
+    aresponses.add(
+        host,
+        "/api2",
+        "GET",
+        response=response_handler,
+    )
+    aresponses.add(
+        host,
+        "/ha_info",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("slzb-06-info.json"),
+        ),
+    )
+
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        info = await client.get_info()
+        assert info.sw_version == "v2.5.2"
+        response = await client.fw_update(MOCK_FIRMWARE_ZB, idx=1)
+        assert response
 
 
 async def test_format_release_notes() -> None:

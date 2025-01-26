@@ -41,6 +41,22 @@ async def test_cmds_zb_bsl(aresponses: ResponsesMockServer) -> None:
             assert expected[k] == int(v)
 
 
+async def test_cmds_zb_bsl_idx(aresponses: ResponsesMockServer) -> None:
+    """Test sending ZB bootloader command to SLZB devices."""
+
+    aresponses_fixture(aresponses)
+
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+
+        await client.cmds.zb_bootloader(idx=1)
+
+        data = aresponses.history[0].request.query
+        expected = {"action": 4, "cmd": 2, "idx": 1}
+        for k, v in data.items():
+            assert expected[k] == int(v)
+
+
 async def test_cmds_core_reboot(aresponses: ResponsesMockServer) -> None:
     """Test sending ZB reset command to SLZB devices."""
 
@@ -73,6 +89,22 @@ async def test_cmds_zb_reboot(aresponses: ResponsesMockServer) -> None:
             assert expected[k] == int(v)
 
 
+async def test_cmds_zb_reboot_idx(aresponses: ResponsesMockServer) -> None:
+    """Test sending ZB reset command to SLZB devices."""
+
+    aresponses_fixture(aresponses)
+
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+
+        await client.cmds.zb_restart(idx=1)
+
+        data = aresponses.history[0].request.query
+        expected = {"action": 4, "cmd": 1, "idx": 1}
+        for k, v in data.items():
+            assert expected[k] == int(v)
+
+
 async def test_cmds_zb_reconnect(aresponses: ResponsesMockServer) -> None:
     """Test sending ZB router reconnect command to SLZB devices."""
 
@@ -85,5 +117,21 @@ async def test_cmds_zb_reconnect(aresponses: ResponsesMockServer) -> None:
 
         data = aresponses.history[0].request.query
         expected = {"action": 4, "cmd": 0}
+        for k, v in data.items():
+            assert expected[k] == int(v)
+
+
+async def test_cmds_zb_reconnect_idx(aresponses: ResponsesMockServer) -> None:
+    """Test sending ZB router reconnect command to SLZB devices."""
+
+    aresponses_fixture(aresponses)
+
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+
+        await client.cmds.zb_router(idx=1)
+
+        data = aresponses.history[0].request.query
+        expected = {"action": 4, "cmd": 0, "idx": 1}
         for k, v in data.items():
             assert expected[k] == int(v)
