@@ -270,7 +270,7 @@ class Api2(webClient):
         self,
         firmware: Firmware,
         idx: int = 0,
-    ) -> None:
+    ) -> bool:
         """Send firmware update command to device"""
         if firmware.mode == "ZB":
             params = {
@@ -291,7 +291,8 @@ class Api2(webClient):
                 params["zbChipNum"] = 5
         else:
             params = {"action": Actions.API_FLASH_ESP.value, "fwUrl": firmware.link}
-        await self.get(params)
+        res = await self.get(params)
+        return res == "ok"
 
     async def set_toggle(self, page: Pages, toggle: str, value: bool) -> bool:
         state = "on" if value else "off"
