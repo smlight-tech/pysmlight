@@ -77,6 +77,34 @@ async def test_zb_firmware_update_get(aresponses: ResponsesMockServer) -> None:
         await client.fw_update(MOCK_FIRMWARE_ZB)
 
 
+async def test_zb_firmware_update_idx_get(aresponses: ResponsesMockServer) -> None:
+    async def response_handler(request):
+        params = request.query
+        assert params["action"] == Actions.API_FLASH_ZB.value
+        assert params["fwUrl"]
+        assert params["fwVer"] == "20240315"
+        assert params["baud"] == 115200
+        assert params["fwType"] == 0
+        assert params["fwCh"] == 0
+        assert params["zbChipIdx"] == 1
+        return aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=json.dumps({"status": "ok"}),
+        )
+
+    aresponses.add(
+        host,
+        "/api2",
+        "GET",
+        response_handler,
+    )
+    # info = await client.get_info()
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        await client.fw_update(MOCK_FIRMWARE_ZB, idx=1)
+
+
 async def test_format_release_notes() -> None:
     """Test formatting release notes."""
     async with ClientSession() as session:
