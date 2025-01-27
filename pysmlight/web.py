@@ -166,13 +166,20 @@ class Api2(webClient):
         return res
 
     async def get_firmware_version(
-        self, channel: str | None, *, device: str | None = None, mode: str = "esp"
+        self,
+        channel: str | None,
+        *,
+        device: str | None = None,
+        mode: str = "esp",
+        idx: int = 0,
     ) -> list[Firmware] | None:
         """Get firmware version for device and mode (esp | zigbee)"""
         fw_type = "ZB" if mode == "zigbee" else "ESP"
         params = {"type": fw_type}
         if mode == "zigbee":
             params["format"] = "slzb"
+            if device == "SLZB-MR1":
+                device = "SLZB-06p7V2" if idx else "SLZB-06M"
 
         response = await self.get(params=params, url=FW_URL)
         data = json.loads(response)
