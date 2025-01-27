@@ -79,7 +79,21 @@ class Info(DataClassDictMixin):
             self.model = self.model.replace("P", "p")
         self.zb_version = str(self.zb_version)
 
-        if self.radios is not None:
+        if self.radios is None:
+            # construct radio object for backward compatibility (v2.5.0)
+            self.radios = [
+                Radio(
+                    chip_index=0,
+                    zb_channel=self.zb_channel,
+                    zb_flash_size=self.zb_flash_size,
+                    zb_hw=self.zb_hw,
+                    zb_ram_size=self.zb_ram_size,
+                    zb_version=self.zb_version,
+                    zb_type=self.zb_type,
+                )
+            ]
+        else:
+            # if self.radios is not None:
             for r in self.radios:
                 r.zb_version = str(r.zb_version)
 
