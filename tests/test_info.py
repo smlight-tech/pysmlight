@@ -7,7 +7,7 @@ from aiohttp.client_exceptions import ClientConnectionError
 from aresponses import ResponsesMockServer
 import pytest
 
-from pysmlight import Api2, Info
+from pysmlight import Api2, Info, Radio
 from pysmlight.const import Settings
 from pysmlight.exceptions import SmlightAuthError, SmlightConnectionError
 
@@ -49,7 +49,18 @@ async def test_info_device_info(aresponses: ResponsesMockServer) -> None:
         assert info.zb_type == 0
         assert info.legacy_api == 0
         assert info.hostname == "SLZB-06P10"
-        assert info.radios is None
+        assert len(info.radios) == 1
+        assert info.radios is not None
+        assert info.radios[0] == Radio(
+            chip_index=0,
+            zb_channel=None,
+            zb_flash_size=1024,
+            zb_hw="CC2674P10",
+            zb_ram_size=296,
+            zb_version="20240315",
+            zb_type=0,
+            radioModes=None,
+        )
 
 
 async def test_info_device_mr_info(aresponses: ResponsesMockServer) -> None:
@@ -83,22 +94,26 @@ async def test_info_device_mr_info(aresponses: ResponsesMockServer) -> None:
 
         assert info.radios is not None
         assert len(info.radios) == 2
-        assert info.radios[0].chip_index == 0
-        assert info.radios[0].zb_channel == 1
-        assert info.radios[0].zb_flash_size == 768
-        assert info.radios[0].zb_hw == "EFR32MG21"
-        assert info.radios[0].zb_ram_size == 96
-        assert info.radios[0].zb_type == 0
-        assert info.radios[0].zb_version == "20240510"
-        assert info.radios[0].radioModes == [True, True, True, False, False]
-        assert info.radios[1].chip_index == 1
-        assert info.radios[1].zb_channel == 1
-        assert info.radios[1].zb_flash_size == 704
-        assert info.radios[1].zb_hw == "CC2652P7"
-        assert info.radios[1].zb_ram_size == 152
-        assert info.radios[1].zb_type == 0
-        assert info.radios[1].zb_version == "20240716"
-        assert info.radios[1].radioModes == [True, True, True, False, False]
+        assert info.radios[0] == Radio(
+            chip_index=0,
+            zb_channel=1,
+            zb_flash_size=768,
+            zb_hw="EFR32MG21",
+            zb_ram_size=96,
+            zb_version="20240510",
+            zb_type=0,
+            radioModes=[True, True, True, False, False],
+        )
+        assert info.radios[1] == Radio(
+            chip_index=1,
+            zb_channel=1,
+            zb_flash_size=704,
+            zb_hw="CC2652P7",
+            zb_ram_size=152,
+            zb_version="20240716",
+            zb_type=0,
+            radioModes=[True, True, True, False, False],
+        )
 
 
 async def test_info_get_auth_fail(aresponses: ResponsesMockServer) -> None:
