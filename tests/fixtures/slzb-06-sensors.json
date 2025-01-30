@@ -2,6 +2,7 @@
     "Sensors": {
         "esp32_temp": "39.44",
         "zb_temp": "35.76",
+        "zb_temp2": "34.20",
         "uptime": 700,
         "socket_uptime": 0,
         "ram_usage": 91,

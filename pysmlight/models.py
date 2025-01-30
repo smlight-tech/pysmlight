@@ -63,7 +63,6 @@ class Info(DataClassDictMixin):
     @classmethod
     def load_payload(cls, payload: Payload) -> "Info":
         return cls(
-            # coord_mode=payload.mode,
             device_ip=payload.device_ip,
             legacy_api=payload.legacy_api,
             MAC=payload.MAC,
@@ -79,15 +78,29 @@ class Info(DataClassDictMixin):
             self.model = self.model.replace("P", "p")
         self.zb_version = str(self.zb_version)
 
-        if self.radios is not None:
+        if self.radios is None:
+            # construct radio object for backward compatibility (v2.5.0)
+            self.radios = [
+                Radio(
+                    chip_index=0,
+                    zb_channel=self.zb_channel,
+                    zb_flash_size=self.zb_flash_size,
+                    zb_hw=self.zb_hw,
+                    zb_ram_size=self.zb_ram_size,
+                    zb_version=self.zb_version,
+                    zb_type=self.zb_type,
+                )
+            ]
+        else:
             for r in self.radios:
                 r.zb_version = str(r.zb_version)
 
 
 @dataclass
 class Sensors(DataClassDictMixin):
-    esp32_temp: float = 0
-    zb_temp: float = 0
+    esp32_temp: float | None = None
+    zb_temp: float | None = None
+    zb_temp2: float | None = None
     uptime: int = 0  # Should be timestamp
     socket_uptime: int | None = None  # Should be timestamp
     ram_usage: int | None = None
