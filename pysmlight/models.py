@@ -63,7 +63,6 @@ class Info(DataClassDictMixin):
     @classmethod
     def load_payload(cls, payload: Payload) -> "Info":
         return cls(
-            # coord_mode=payload.mode,
             device_ip=payload.device_ip,
             legacy_api=payload.legacy_api,
             MAC=payload.MAC,
@@ -93,7 +92,6 @@ class Info(DataClassDictMixin):
                 )
             ]
         else:
-            # if self.radios is not None:
             for r in self.radios:
                 r.zb_version = str(r.zb_version)
 
