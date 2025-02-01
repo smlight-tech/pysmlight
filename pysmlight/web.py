@@ -8,7 +8,7 @@ import urllib.parse
 
 from aiohttp import BasicAuth, ClientSession
 from aiohttp.client_exceptions import ClientConnectionError
-from packaging.version import Version
+from awesomeversion import AwesomeVersion
 
 from .const import FW_URL, PARAM_LIST, Actions, Commands, Devices, Events, Pages
 from .exceptions import SmlightAuthError, SmlightConnectionError
@@ -29,7 +29,7 @@ class webClient:
         self.host = host
         self.session = session
         self.close_session = False
-        self.core_version: Version | None = None
+        self.core_version: AwesomeVersion | None = None
 
         self.set_urls()
 
@@ -250,7 +250,7 @@ class Api2(webClient):
             return await self.get_info_old()
 
         data = json.loads(res)
-        core_version = Version(data["Info"]["sw_version"])
+        core_version = AwesomeVersion(data["Info"]["sw_version"])
         if self.core_version is None:
             self.core_version = core_version
         if self.sse.sw_version is None:
@@ -293,7 +293,7 @@ class Api2(webClient):
             if (
                 idx == 1
                 and self.core_version
-                and self.core_version <= Version("v2.7.2")
+                and self.core_version <= AwesomeVersion("v2.7.2")
             ):
                 params["zbChipNum"] = 5
         else:
