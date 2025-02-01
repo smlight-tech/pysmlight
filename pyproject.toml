@@ -12,6 +12,7 @@ keywords = ["smlight", "slzb-06", "zigbee"]
 python = "^3.11"
 aiohttp = ">=3.9.3"
 aiohttp_sse_client2 = "^0.3.0"
+awesomeversion ="^24.6.0"
 mashumaro = ">=3.10"
 
 [build-system]

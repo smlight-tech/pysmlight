@@ -7,7 +7,7 @@ from typing import Callable
 import aiohttp
 from aiohttp.client_exceptions import ClientConnectionError, SocketTimeoutError
 from aiohttp_sse_client2.client import EventSource, MessageEvent
-from packaging.version import Version
+from awesomeversion import AwesomeVersion
 
 from .const import Events, Pages, Settings
 from .models import SettingsEvent
@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 # override logging level aiohttp_sse_client2 library
 aiologger = logging.getLogger("aiohttp_sse_client2")
 aiologger.setLevel(logging.INFO)
-LEGACY_SSE_VERSION = Version("v2.6.8.dev25")
+LEGACY_SSE_VERSION = AwesomeVersion("v2.6.8.dev25")
 
 
 class sseClient:
@@ -28,7 +28,7 @@ class sseClient:
         self.callbacks: dict[Events, Callable] = {}
         self.settings_cb: dict[Settings, Callable] = {}
         self.legacy_api = False
-        self.sw_version: Version | None = None
+        self.sw_version: AwesomeVersion | None = None
         self.session = session
         self.url = f"http://{host}:81"  # Introduced in firmware v2.6.8.dev26
         self.legacy_url = f"http://{host}/events"
