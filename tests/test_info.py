@@ -232,7 +232,8 @@ async def test_info_legacy_info(aresponses: ResponsesMockServer) -> None:
         assert info.model == "SLZB-06p10"
         assert info.sw_version == "v2.0.20"
         assert info.zb_hw == "CC2674P10"
-        assert info.zb_version == "-1"
+        assert info.zb_version is None
+        assert info.zb_channel == 2
         assert info.legacy_api == 1
 
 
