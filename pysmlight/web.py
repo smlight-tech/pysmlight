@@ -171,6 +171,7 @@ class Api2(webClient):
         *,
         device: str | None = None,
         mode: str = "esp",
+        zb_type: int | None = None,
         idx: int = 0,
     ) -> list[Firmware] | None:
         """Get firmware version for device and mode (esp | zigbee)"""
@@ -200,6 +201,8 @@ class Api2(webClient):
                 item.set_mode(fw_type)
                 if item.notes:
                     item.notes = self.format_notes(item)
+                if zb_type is not None and item.type != zb_type:
+                    continue
                 fw.append(item)
         return fw
 
