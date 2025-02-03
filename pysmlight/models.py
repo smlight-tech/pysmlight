@@ -28,6 +28,9 @@ class Firmware(DataClassDictMixin):
         self.mode = mode
 
 
+FirmwareList = list[Firmware] | None
+
+
 @dataclass
 class Radio(DataClassDictMixin):
     chip_index: int | None = None
