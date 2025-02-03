@@ -194,6 +194,32 @@ async def test_info_get_firmware_zb(aresponses: ResponsesMockServer) -> None:
         assert firmware.type == 0
 
 
+async def test_info_get_firmware_zb_filtered(aresponses: ResponsesMockServer) -> None:
+    aresponses.add(
+        "updates.smlight.tech",
+        "/services/api/slzb-06x-ota.php",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("slzb-06-zb-fw.json"),
+        ),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        fw = await client.get_firmware_version(
+            "dev", device="SLZB-06M", mode="zigbee", zb_type=0
+        )
+        assert fw
+        assert len(fw) == 3
+        firmware = fw[0]
+        assert firmware.link
+        assert firmware.mode == "ZB"
+        assert firmware.dev is True
+        assert firmware.ver == "20240510"
+        assert firmware.type == 0
+
+
 async def test_info_get_firmware_zb2(aresponses: ResponsesMockServer) -> None:
     """Test getting ZB firmware information for second radio."""
     aresponses.add(
