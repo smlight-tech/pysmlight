@@ -74,10 +74,22 @@ class Info(DataClassDictMixin):
             zb_version=int(payload.zb_version),
         )
 
+    def check_zb_version(self, radio: Radio | None = None):
+        if radio is None:
+            radio = self
+
+        if radio.zb_version is not None:
+            if radio.zb_version == -1:
+                radio.zb_channel = 2  # custom
+                radio.zb_version = None
+            else:
+                radio.zb_version = str(radio.zb_version)
+        return radio
+
     def __post_init__(self) -> None:
         if self.model is not None:
             self.model = self.model.replace("P", "p")
-        self.zb_version = str(self.zb_version)
+        self.check_zb_version()
 
         # Factory firmware may have invalid .plus suffix, convert to valid version
         if self.sw_version and "plus" in self.sw_version:
@@ -102,7 +114,7 @@ class Info(DataClassDictMixin):
             ]
         else:
             for r in self.radios:
-                r.zb_version = str(r.zb_version)
+                r = self.check_zb_version(r)
 
 
 @dataclass
