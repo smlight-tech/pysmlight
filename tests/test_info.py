@@ -273,9 +273,14 @@ async def test_info_legacy_info2(aresponses: ResponsesMockServer) -> None:
         assert info.legacy_api == 2
 
 
-async def test_info_plus_version() -> None:
-    """Test conversion of factory firmware that may have .plus suffix."""
+async def test_info_invalid_versions() -> None:
+    """Test conversion of invalid firmware versions (per awesomeVersion)
+
+    factory firmware that may have .plus suffix
+    development firmware that may have .dev suffix."""
     info = Info(sw_version="v2.3.6.plus")
     assert info.sw_version == "v2.3.6.1"
     info = Info(sw_version="v2.3.6.plus2")
     assert info.sw_version == "v2.3.6.2"
+    info = Info(sw_version="v2.8.0.dev")
+    assert info.sw_version == "v2.8.0.dev0"
