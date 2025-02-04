@@ -95,12 +95,15 @@ class Info(DataClassDictMixin):
         self.check_zb_version()
 
         # Factory firmware may have invalid .plus suffix, convert to valid version
-        if self.sw_version and "plus" in self.sw_version:
-            self.sw_version = re.sub(
-                r"\.plus(\d*)$",
-                lambda m: f".{m.group(1) if m.group(1) else '1'}",
-                self.sw_version,
-            )
+        if self.sw_version:
+            if "plus" in self.sw_version:
+                self.sw_version = re.sub(
+                    r"\.plus(\d*)$",
+                    lambda m: f".{m.group(1) if m.group(1) else '1'}",
+                    self.sw_version,
+                )
+            elif self.sw_version.endswith(".dev"):
+                self.sw_version = f"{self.sw_version}0"
 
         if self.radios is None:
             # construct radio object for backward compatibility (v2.5.0)
