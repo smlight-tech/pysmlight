@@ -92,6 +92,8 @@ class Info(DataClassDictMixin):
     def __post_init__(self) -> None:
         if self.model is not None:
             self.model = self.model.replace("P", "p")
+            self.model = self.model.replace("MG", "Mg")
+
         self.check_zb_version()
 
         # Factory firmware may have invalid .plus suffix, convert to valid version
