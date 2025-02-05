@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import re
 
 from mashumaro import DataClassDictMixin
 
@@ -64,7 +65,20 @@ class Info(DataClassDictMixin):
     def __post_init__(self) -> None:
         if self.model is not None:
             self.model = self.model.replace("P", "p")
+            self.model = self.model.replace("MG", "Mg")
+
         self.zb_version = str(self.zb_version)
+
+        # Factory firmware may have invalid .plus suffix, convert to valid version
+        if self.sw_version:
+            if "plus" in self.sw_version:
+                self.sw_version = re.sub(
+                    r"\.plus(\d*)$",
+                    lambda m: f".{m.group(1) if m.group(1) else '1'}",
+                    self.sw_version,
+                )
+            elif self.sw_version.endswith(".dev"):
+                self.sw_version = f"{self.sw_version}0"
 
 
 @dataclass
