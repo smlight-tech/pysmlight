@@ -253,7 +253,10 @@ class Api2(webClient):
             return await self.get_info_old()
 
         data = json.loads(res)
-        core_version = AwesomeVersion(data["Info"]["sw_version"])
+
+        info = Info.from_dict(data["Info"])
+        core_version = AwesomeVersion(info.sw_version)
+
         if self.core_version is None:
             self.core_version = core_version
         if self.sse.sw_version is None:
