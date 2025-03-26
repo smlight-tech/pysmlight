@@ -107,7 +107,7 @@ class Info(DataClassDictMixin):
             elif self.sw_version.endswith(".dev"):
                 self.sw_version = f"{self.sw_version}0"
 
-        if len(self.radios) == 0:
+        if not self.radios:
             # construct radio object for backward compatibility (v2.5.0)
             self.radios = [
                 Radio(
