@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import re
 
 from mashumaro import DataClassDictMixin
@@ -56,7 +56,7 @@ class Info(DataClassDictMixin):
     ram_total: int | None = None
     sw_version: str | None = None
     wifi_mode: int | None = None  # enum (off, client, AP etc)
-    radios: list[Radio] | None = None
+    radios: list[Radio] = field(default_factory=list)
     zb_channel: int | None = None
     zb_flash_size: int | None = None
     zb_hw: str | None = None
@@ -107,7 +107,7 @@ class Info(DataClassDictMixin):
             elif self.sw_version.endswith(".dev"):
                 self.sw_version = f"{self.sw_version}0"
 
-        if self.radios is None:
+        if len(self.radios) == 0:
             # construct radio object for backward compatibility (v2.5.0)
             self.radios = [
                 Radio(
