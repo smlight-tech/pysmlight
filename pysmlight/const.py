@@ -80,6 +80,8 @@ Devices: dict[str, int] = {
     "SLZB-MR1": 6,
     "SLZB-MR2": 9,
     "SLZB-MR3": 10,
+    "SLZB-MRW10": 11,
+    "SLZB-06Mg26": 12,
 }
 
 ZB_TYPES: dict[int, str] = {
