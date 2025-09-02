@@ -10,7 +10,16 @@ from aiohttp import BasicAuth, ClientSession
 from aiohttp.client_exceptions import ClientConnectionError
 from awesomeversion import AwesomeVersion
 
-from .const import FW_URL, PARAM_LIST, Actions, Commands, Devices, Events, Pages
+from .const import (
+    FW_URL,
+    PARAM_LIST,
+    Actions,
+    Commands,
+    Devices,
+    Events,
+    Pages,
+    U_Devices,
+)
 from .exceptions import SmlightAuthError, SmlightConnectionError
 from .models import Firmware, Info, Sensors
 from .payload import Payload
@@ -175,13 +184,16 @@ class Api2(webClient):
         idx: int = 0,
     ) -> list[Firmware] | None:
         """Get firmware version for device and mode (esp | zigbee)"""
-        fw_type = "ZB" if mode == "zigbee" else "ESP"
-        params = {"type": fw_type}
+        params = {}
+        fw_type = "ESP"
         if mode == "zigbee":
+            fw_type = "ZB"
             params["format"] = "slzb"
             if device == "SLZB-MR1":
                 device = "SLZB-06p7V2" if idx else "SLZB-06M"
-
+        elif mode == "esp32":
+            fw_type = "ESPs3" if self.device_is_u(device) else "ESP"
+        params["type"] = fw_type
         response = await self.get(params=params, url=FW_URL)
         data = json.loads(response)
 
@@ -327,6 +339,14 @@ class Api2(webClient):
         params = {"action": Actions.API_STARTWIFISCAN.value}
         await self.get(params)
         return remove_cb
+
+    def device_is_u(self, model: str) -> bool:
+        device_id = Devices.get(model, None)
+        return (
+            device_id in [udev.value for udev in U_Devices]
+            if device_id is not None
+            else False
+        )
 
 
 class CmdWrapper:
