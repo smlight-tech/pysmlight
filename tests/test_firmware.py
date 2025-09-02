@@ -1,4 +1,4 @@
-""" Tests for retrieving firmware information for SLZB-06x devices. """
+"""Tests for retrieving firmware information for SLZB-06x devices."""
 
 from aiohttp import ClientSession
 from aresponses import ResponsesMockServer

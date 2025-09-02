@@ -1,8 +1,9 @@
 """Client to receive Server Sent Events (SSE) from the SMLIGHT API."""
+
 import asyncio
+from collections.abc import Callable
 import json
 import logging
-from typing import Callable
 
 import aiohttp
 from aiohttp.client_exceptions import ClientConnectionError, SocketTimeoutError

@@ -1,4 +1,5 @@
-""" Tests for retrieving device information from SLZB-06x devices. """
+"""Tests for retrieving device information from SLZB-06x devices."""
+
 import json
 from unittest.mock import patch
 
