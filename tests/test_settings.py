@@ -1,4 +1,5 @@
 """Test writing settings on SLZB devices."""
+
 import urllib
 
 from aiohttp import ClientSession

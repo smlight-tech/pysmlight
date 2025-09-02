@@ -1,4 +1,5 @@
-""" Handle device info for legacy firmware so can offer upgrade."""
+"""Handle device info for legacy firmware so can offer upgrade."""
+
 import re
 from typing import Any
 

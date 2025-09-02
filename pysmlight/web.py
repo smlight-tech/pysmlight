@@ -3,7 +3,7 @@ from collections.abc import Callable
 import json
 import logging
 import re
-from typing import Any, Type
+from typing import Any
 import urllib.parse
 
 from aiohttp import BasicAuth, ClientSession
@@ -137,7 +137,7 @@ class webClient:
 
     async def __aexit__(
         self,
-        exc_type: Type[BaseException] | None,
+        exc_type: type[BaseException] | None,
         exc: BaseException | None,
         tb: object | None,
     ) -> None:

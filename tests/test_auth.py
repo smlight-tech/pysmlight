@@ -1,4 +1,5 @@
-""" Tests for authenticating with SLZB-06x devices. """
+"""Tests for authenticating with SLZB-06x devices."""
+
 from unittest.mock import patch
 
 from aiohttp import ClientSession
