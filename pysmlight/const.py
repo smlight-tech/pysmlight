@@ -86,6 +86,17 @@ Devices: dict[str, int] = {
     "SLZB-MR1U": 14,
 }
 
+
+class U_Devices(Enum):
+    """
+    Represent devices based on ESP32-S3 core.
+
+    Model id should match "Devices" dict.
+    """
+
+    SLZB_MR1U = 14
+
+
 ZB_TYPES: dict[int, str] = {
     -1: "unknown",
     0: "coordinator",
