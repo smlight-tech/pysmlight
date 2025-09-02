@@ -260,7 +260,7 @@ async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        fw = await client.get_firmware_version("release", mode="esp")
+        fw = await client.get_firmware_version("release", mode="esp32")
         assert fw
         firmware = fw[0]
         assert len(firmware.link) > 20
@@ -271,3 +271,31 @@ async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
         assert firmware.type is None
         assert firmware.notes
         assert len(firmware.notes.split("\n")) == 5
+
+
+async def test_info_get_firmware_espu(aresponses: ResponsesMockServer) -> None:
+    aresponses.add(
+        "updates.smlight.tech",
+        "/services/api/slzb-06x-ota.php",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("slzb-06U-esp-fw.json"),
+        ),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        fw = await client.get_firmware_version(
+            "release", device="SLZB-MR1U", mode="esp32"
+        )
+        assert fw
+        firmware = fw[0]
+        assert len(firmware.link) > 20
+        assert firmware.mode == "ESPs3"
+        assert firmware.dev is False
+        assert firmware.rev == "20250829"
+        assert firmware.ver == "v3.0.0"
+        assert firmware.type is None
+        assert firmware.notes
+        assert len(firmware.notes.split("\n")) == 3

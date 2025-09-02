@@ -1,0 +1,25 @@
+{
+    "fw": [
+		{
+            "rev": "20250829",
+            "ver": "v3.0.0",
+            "dev": false,
+            "notes": "<p style=\"margin: 0 0 6px;\"><strong>USB Passthrough is available in this firmware:</strong></p><ul style=\"margin: 0; padding-left: 20px;\"><li>✅ EFR32/OS OTA updates and USB passthrough now work together (tested with SLZB-07, connected over USB)</li><li>🌐 USB device is available at <code>tcp://IP-ADDRESS:8638</code></li><li>ℹ️ Support for multiple USB devices is in development - stay tuned</li></ul>",
+            "link": "https://updates.smlight.tech/firmware/slzb06x/core/slzb-os-u-v3.0.0-ota.bin"
+        },
+        {
+            "rev": "20250828",
+            "ver": "v2.9.9",
+            "dev": false,
+            "notes": "<h4>⚠️ Important Info</h4><br><ul><li>✅ Fixed problems with EFR32 and SLZB-OS OTA updates.</li><li>⚠️ USB temporarily <b>disabled</b> in this 2.9.9 version.</li><li>➡️ Working on next release with both EFR32 OTA updates and USB passthrough.</li></ul><br><h4>🔧 How to Update</h4><ul><li>If you are on <b>2.9.6</b> → use <a href=\"https://smlight.tech/flasher/#SLZB-06xU-MRxU\" target=\"_blank\" rel=\"noopener noreferrer\">Web Flasher</a>.</li><li>If you are on <b>any other version</b> → update via Web Interface (OTA) or Web Flasher.</li><br></ul>",
+            "link": "https://updates.smlight.tech/firmware/slzb06x/core/slzb-os-u-v2.9.9-ota.bin"
+        },
+        {
+            "rev": "20250828a",
+            "ver": "v2.9.6",
+            "dev": false,
+            "notes": "<h4>Initial release supporrting USB passthrough</h4><br><ul><li>✅ USB passthrough works in this version.</li><li>⚠️ [upd 28 Aug 2025] Some users reported problems with EFR32 and SLZB-OS updates (OTA may fail).</li><li>➡️ OTA updates fixed (however USB temporarily disabled) in later version (2.9.9).</li></ul><br><h3>🔧 How to Update</h3><ul><li>If you are updating from <b>2.9.6</b> → use <a href=\"https://smlight.tech/flasher/#SLZB-06xU-MRxU\" target=\"_blank\" rel=\"noopener noreferrer\">Web Flasher</a>.</li></ul>",
+            "link": "https://updates.smlight.tech/firmware/slzb06x/core/slzb-os-u-v2.9.6-ota.bin"
+        }
+    ]
+}
