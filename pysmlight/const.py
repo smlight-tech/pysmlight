@@ -84,6 +84,7 @@ Devices: dict[str, int] = {
     "SLZB-06Mg26": 12,
     "SLZB-MR4": 13,
     "SLZB-MR1U": 14,
+    "SLZB-06U": 15,
 }
 
 
@@ -95,6 +96,18 @@ class U_Devices(Enum):
     """
 
     SLZB_MR1U = 14
+    SLZB_06U = 15
+
+
+# Map radio's for MRx/U devices
+MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
+    "SLZB-MR1": ("SLZB-06M", "SLZB-06p7V2"),
+    "SLZB-MR2": ("SLZB-06M", "SLZB-06"),
+    "SLZB-MR3": ("SLZB-06Mg24", "SLZB-06p10"),
+    "SLZB-MR4": ("SLZB-06Mg26", "SLZB-06p10"),
+    "SLZB-MR1U": ("SLZB-06M", "SLZB-06p7V2"),
+    "SLZB-06U": ("SLZB-06",),
+}
 
 
 ZB_TYPES: dict[int, str] = {
