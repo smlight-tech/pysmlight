@@ -10,7 +10,16 @@ from aiohttp import BasicAuth, ClientSession
 from aiohttp.client_exceptions import ClientConnectionError
 from awesomeversion import AwesomeVersion
 
-from .const import FW_URL, PARAM_LIST, Actions, Commands, Devices, Events, Pages
+from .const import (
+    FW_URL,
+    PARAM_LIST,
+    Actions,
+    Commands,
+    Devices,
+    Events,
+    Pages,
+    U_Devices,
+)
 from .exceptions import SmlightAuthError, SmlightConnectionError
 from .models import Firmware, Info, Sensors
 from .payload import Payload
@@ -327,6 +336,14 @@ class Api2(webClient):
         params = {"action": Actions.API_STARTWIFISCAN.value}
         await self.get(params)
         return remove_cb
+
+    def device_is_u(self, model: str) -> bool:
+        device_id = Devices.get(model, None)
+        return (
+            device_id in [udev.value for udev in U_Devices]
+            if device_id is not None
+            else False
+        )
 
 
 class CmdWrapper:
