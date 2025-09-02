@@ -184,13 +184,16 @@ class Api2(webClient):
         idx: int = 0,
     ) -> list[Firmware] | None:
         """Get firmware version for device and mode (esp | zigbee)"""
-        fw_type = "ZB" if mode == "zigbee" else "ESP"
-        params = {"type": fw_type}
+        params = {}
+        fw_type = "ESP"
         if mode == "zigbee":
+            fw_type = "ZB"
             params["format"] = "slzb"
             if device == "SLZB-MR1":
                 device = "SLZB-06p7V2" if idx else "SLZB-06M"
-
+        elif mode == "esp32":
+            fw_type = "ESPs3" if self.device_is_u(device) else "ESP"
+        params["type"] = fw_type
         response = await self.get(params=params, url=FW_URL)
         data = json.loads(response)
 
