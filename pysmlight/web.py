@@ -164,10 +164,14 @@ class Api2(webClient):
         self.cmds = CmdWrapper(self.set_cmd)
         super().__init__(host, session=session)
 
-        if session is not None:
-            self.sse = sseClient(host, session)
-        elif sse:
+        if session is None:
+            self.session = ClientSession(headers=self.headers)
+            self.close_session = True
+
+        if sse:
             self.sse = sse
+        else:
+            self.sse = sseClient(host, session)
 
     async def get_device_payload(self) -> Payload:
         data = await self.get_page(Pages.API2_PAGE_DASHBOARD)
