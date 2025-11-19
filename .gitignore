@@ -3,3 +3,5 @@ dist/
 .venv/
 .coverage
 old/
+.python-version
+pysmlight/_version.py

@@ -10,9 +10,9 @@ jobs:
     uses: zigpy/workflows/.github/workflows/ci.yml@main
     with:
       CODE_FOLDER: pysmlight
-      PYTHON_VERSION_DEFAULT: 3.11.8
+      PYTHON_VERSION_DEFAULT: 3.13
       PRE_COMMIT_CACHE_PATH:  ~/.cache/pre-commit
       MINIMUM_COVERAGE_PERCENTAGE: 70
-      PYTHON_MATRIX: '"3.11.8", "3.12"'
+      PYTHON_MATRIX: '"3.13", "3.12"'
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
