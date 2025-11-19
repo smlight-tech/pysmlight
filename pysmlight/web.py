@@ -3,7 +3,7 @@ from collections.abc import Callable
 import json
 import logging
 import re
-from typing import Any
+from typing import Any, Self
 import urllib.parse
 
 from aiohttp import BasicAuth, ClientSession
@@ -138,7 +138,7 @@ class webClient:
             self.session = None
             self.close_session = False
 
-    async def __aenter__(self) -> "webClient":
+    async def __aenter__(self) -> Self:
         if self.session is None:
             self.close_session = True
             self.session = ClientSession(headers=self.headers)
