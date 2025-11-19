@@ -18,15 +18,15 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: '>=3.12'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build poetry
+        pip install build
 
     - name: Build package
-      run: poetry build
+      run: python -m build
 
     - name: upload release dist
       uses: actions/upload-artifact@v4
