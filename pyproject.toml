@@ -26,14 +26,16 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = [
+ci = [
     "pytest>=8.3.5",
     "aresponses>=3.0.0",
     "pytest-asyncio",
     "pytest-cov",
     "pytest-timeout",
     "coverage[toml]",
-    "freezegun",
+    "pytest-github-actions-annotate-failures",
+    "pytest-xdist",
+    "pre-commit",
     "ruff>=0.6.9",
     "mypy>=1.11.2",
 ]
