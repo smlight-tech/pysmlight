@@ -1,32 +1,61 @@
-[tool.poetry]
+[project]
 name = "pysmlight"
-version = "0.2.9"
-repository = "https://github.com/smlight-workspace/pysmlight"
-license = "Apache-2.0"
+dynamic = ["version"]
 description = "A library implementing API control of the SMLIGHT SLZB-06 LAN Coordinators."
-authors = ["Tim Lunn <tl@smlight.tech>"]
+authors = [
+    {name = "Tim Lunn", email = "tl@smlight.tech"}
+]
 readme = "README.md"
+license = {text = "Apache-2.0"}
 keywords = ["smlight", "slzb-06", "zigbee"]
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-aiohttp = ">=3.9.3"
-aiohttp_sse_client2 = "^0.3.0"
-awesomeversion =">=24.6.0"
-mashumaro = ">=3.10"
+dependencies = [
+    "aiohttp>=3.9.3",
+    "aiohttp_sse_client2>=0.3.0",
+    "awesomeversion>=24.6.0",
+    "mashumaro>=3.10",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.5"
-aresponses = "^3.0.0"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "aresponses>=3.0.0",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-timeout",
+    "coverage[toml]",
+    "freezegun",
+    "ruff>=0.6.9",
+    "mypy>=1.11.2",
+]
+
+[project.urls]
+Repository = "https://github.com/smlight-workspace/pysmlight"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "pysmlight/_version.py"
 
 [tool.ruff]
 target-version = "py311"
 line-length = 88
 src = ["pysmlight", "tests"]
+extend-exclude = ["pysmlight/_version.py"]
 
 [tool.ruff.lint]
 select = [
@@ -72,4 +101,7 @@ show_error_context = true
 disable_error_code = [
 	"attr-defined",
 	"arg-type",
+]
+exclude = [
+	"pysmlight/_version.py",
 ]
