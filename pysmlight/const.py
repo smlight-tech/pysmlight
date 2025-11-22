@@ -85,6 +85,8 @@ Devices: dict[str, int] = {
     "SLZB-MR4": 13,
     "SLZB-MR1U": 14,
     "SLZB-06U": 15,
+    "SLZB-MR3U": 16,
+    "SLZB-MR4U": 17,
     "SMHUB-MG21": 65,
     "SMHUB-CCP1": 66,
 }
@@ -98,6 +100,8 @@ class U_Devices(Enum):
     """
 
     SLZB_MR1U = 14
+    SLZB_MR3U = 16
+    SLZB_MR4U = 17
     SLZB_06U = 15
 
 
@@ -108,6 +112,8 @@ MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
     "SLZB-MR3": ("SLZB-06Mg24", "SLZB-06p10"),
     "SLZB-MR4": ("SLZB-06Mg26", "SLZB-06p10"),
     "SLZB-MR1U": ("SLZB-06M", "SLZB-06p7V2"),
+    "SLZB-MR3U": ("SLZB-06Mg24", "SLZB-06p10"),
+    "SLZB-MR4U": ("SLZB-06Mg26", "SLZB-06p10"),
     "SLZB-06U": ("SLZB-06",),
 }
 
