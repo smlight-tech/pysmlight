@@ -12,6 +12,7 @@ from awesomeversion import AwesomeVersion
 
 from .const import (
     FW_URL,
+    MR_DEVICE_RADIO_MAP,
     PARAM_LIST,
     Actions,
     Commands,
@@ -193,8 +194,9 @@ class Api2(webClient):
         if mode == "zigbee":
             fw_type = "ZB"
             params["format"] = "slzb"
-            if device == "SLZB-MR1":
-                device = "SLZB-06p7V2" if idx else "SLZB-06M"
+            sub_devices = MR_DEVICE_RADIO_MAP.get(device)
+            if sub_devices and 0 <= idx < len(sub_devices):
+                device = sub_devices[idx]
         elif mode == "esp32":
             fw_type = "ESPs3" if self.device_is_u(device) else "ESP"
         params["type"] = fw_type
