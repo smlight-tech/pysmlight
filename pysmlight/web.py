@@ -179,6 +179,64 @@ class Api2(webClient):
         res = Payload(data)
         return res
 
+    def _resolve_zigbee_device(self, device: str, idx: int) -> str | None:
+        """Resolve the actual zigbee device model for multi-radio devices."""
+
+        sub_devices = MR_DEVICE_RADIO_MAP.get(device)
+        if sub_devices and 0 <= idx < len(sub_devices):
+            return sub_devices[idx]
+        return device
+
+    def _determine_firmware_type(self, mode: str, device: str | None) -> str:
+        """Determine the firmware type string based on mode and device."""
+        if mode == "zigbee":
+            return "ZB"
+        elif mode == "esp32":
+            return "ESPs3" if self.device_is_u(device) else "ESP"
+        return "ESP"
+
+    async def _fetch_firmware_data(
+        self, mode: str, fw_type: str, device: str | None
+    ) -> dict:
+        """Fetch firmware data from remote API."""
+        params = {"type": fw_type}
+        if mode == "zigbee":
+            params["format"] = "slzb"
+            if device is not None:
+                params["device"] = str(Devices[device])
+
+        response = await self.get(params=params, url=FW_URL)
+        return json.loads(response)
+
+    def _extract_firmware_list(
+        self, data: list[dict], mode: str, device: str | None
+    ) -> list[dict] | None:
+        """Extract the firmware list from API response data."""
+        if mode == "zigbee":
+            assert device is not None
+            return data if data else None
+        return data.get("fw")
+
+    def _filter_firmware(
+        self,
+        firmware_data: list[dict],
+        fw_type: str,
+        channel: str | None,
+        zb_type: int | None,
+    ) -> list[Firmware]:
+        """Filter and process firmware items based on channel and type."""
+        fw = []
+        for d in firmware_data:
+            item = Firmware.from_dict(d)
+            if not item.dev or channel == "dev":
+                item.set_mode(fw_type)
+                if item.notes:
+                    item.notes = self.format_notes(item)
+                if zb_type is not None and item.type != zb_type:
+                    continue
+                fw.append(item)
+        return fw
+
     async def get_firmware_version(
         self,
         channel: str | None,
@@ -189,40 +247,17 @@ class Api2(webClient):
         idx: int = 0,
     ) -> list[Firmware] | None:
         """Get firmware version for device and mode (esp | zigbee)"""
-        params = {}
-        fw_type = "ESP"
-        if mode == "zigbee":
-            fw_type = "ZB"
-            params["format"] = "slzb"
-            sub_devices = MR_DEVICE_RADIO_MAP.get(device)
-            if sub_devices and 0 <= idx < len(sub_devices):
-                device = sub_devices[idx]
-        elif mode == "esp32":
-            fw_type = "ESPs3" if self.device_is_u(device) else "ESP"
-        params["type"] = fw_type
-        response = await self.get(params=params, url=FW_URL)
-        data = json.loads(response)
+        if device is not None and mode == "zigbee":
+            device = self._resolve_zigbee_device(device, idx)
 
-        if mode == "zigbee":
-            assert device is not None
-            data = data.get(str(Devices[device]), None)
-        else:
-            data = data["fw"]
+        fw_type = self._determine_firmware_type(mode, device)
+        data = await self._fetch_firmware_data(mode, fw_type, device)
 
-        if data is None:
+        firmware_data = self._extract_firmware_list(data, mode, device)
+        if firmware_data is None:
             return None
 
-        fw = []
-        for d in data:
-            item = Firmware.from_dict(d)
-            if not item.dev or channel == "dev":
-                item.set_mode(fw_type)
-                if item.notes:
-                    item.notes = self.format_notes(item)
-                if zb_type is not None and item.type != zb_type:
-                    continue
-                fw.append(item)
-        return fw
+        return self._filter_firmware(firmware_data, fw_type, channel, zb_type)
 
     def format_notes(self, firmware: Firmware) -> str | None:
         """Format release notes for esp firmware"""
