@@ -158,7 +158,7 @@ async def test_format_release_notes() -> None:
     async with ClientSession() as session:
         client = Api2(host, session=session)
         firmware = MOCK_FIRMWARE_ESP
-        formatted = client.format_notes(firmware)
+        formatted = client._format_notes(firmware)
         assert formatted
         assert (
             formatted
@@ -166,7 +166,7 @@ async def test_format_release_notes() -> None:
         )
 
         firmware = MOCK_FIRMWARE_ZB
-        formatted = client.format_notes(firmware)
+        formatted = client._format_notes(firmware)
         assert formatted is None
 
 
@@ -299,3 +299,25 @@ async def test_info_get_firmware_espu(aresponses: ResponsesMockServer) -> None:
         assert firmware.type is None
         assert firmware.notes
         assert len(firmware.notes.split("\n")) == 3
+
+
+@pytest.mark.asyncio
+async def test_resolve_zigbee_device() -> None:
+    """Test the _resolve_zigbee_device method mapping for devices."""
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+
+        assert client._resolve_zigbee_device("SLZB-MR1", 0) == "SLZB-06M"
+        assert client._resolve_zigbee_device("SLZB-MR1", 1) == "SLZB-06p7V2"
+
+        assert client._resolve_zigbee_device("SLZB-MR3U", 0) == "SLZB-06Mg24"
+        assert client._resolve_zigbee_device("SLZB-MR3U", 1) == "SLZB-06p10"
+
+        assert client._resolve_zigbee_device("SLZB-06P7U", 0) == "SLZB-06p7V2"
+
+        # out of bounds index
+        assert client._resolve_zigbee_device("SLZB-MR1", 2) == "SLZB-MR1"
+        assert client._resolve_zigbee_device("SLZB-MR1", -1) == "SLZB-MR1"
+
+        # no mapped values
+        assert client._resolve_zigbee_device("SLZB-06P10", 0) == "SLZB-06P10"
