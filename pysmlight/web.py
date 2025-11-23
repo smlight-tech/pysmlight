@@ -273,7 +273,9 @@ class Api2(webClient):
         fw_type = self._determine_firmware_type(mode, device)
         data = await self._fetch_firmware_data(mode, fw_type, device)
 
-        firmware_data = self._extract_firmware_list(data, mode, device)
+        firmware_data = (
+            self._extract_firmware_list(data, mode, device) if data else None
+        )
         if firmware_data is None:
             return None
 

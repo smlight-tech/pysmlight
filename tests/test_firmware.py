@@ -260,7 +260,7 @@ async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        fw = await client.get_firmware_version("release")
+        fw = await client.get_firmware_version("release", mode="esp")
         assert fw
         firmware = fw[0]
         assert len(firmware.link) > 20
@@ -299,6 +299,25 @@ async def test_info_get_firmware_espu(aresponses: ResponsesMockServer) -> None:
         assert firmware.type is None
         assert firmware.notes
         assert len(firmware.notes.split("\n")) == 3
+
+
+async def test_info_get_firmware_none(aresponses: ResponsesMockServer) -> None:
+    aresponses.add(
+        "updates.smlight.tech",
+        "/services/api/slzb-06x-ota.php",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text="[]",
+        ),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        fw = await client.get_firmware_version(
+            "release", device="SLZB-TEST", mode="esp32"
+        )
+        assert fw is None
 
 
 async def test_resolve_zigbee_device() -> None:
