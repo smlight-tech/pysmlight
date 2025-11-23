@@ -105,7 +105,7 @@ class U_Devices(Enum):
     """
     Represent devices based on ESP32-S3 core.
 
-    Model id should match "Devices" dict.
+    Only required if model id does not have "U" suffix. Model id should match "Devices" dict.
     """
 
     SLZB_ULTIMA4 = 26
