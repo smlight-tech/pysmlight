@@ -94,6 +94,7 @@ Devices: dict[str, int] = {
     "SLZB-MR3U": 23,
     "SLZB-MR4U": 24,
     "SLZB-MRW10U": 25,
+    "SLZB-ULTIMA4": 26,
     "SMHUB-MG21": 65,
     "SMHUB-CCP1": 66,
     "SMHUB-MG24": 67,
@@ -107,16 +108,7 @@ class U_Devices(Enum):
     Model id should match "Devices" dict.
     """
 
-    SLZB_MR1U = 15
-    SLZB_MR2U = 22
-    SLZB_MR3U = 23
-    SLZB_MR4U = 24
-    SLZB_06U = 16
-    SLZB_06P7U = 17
-    SLZB_06P10U = 18
-    SLZB_06MU = 19
-    SLZB_06Mg24U = 20
-    SLZB_06Mg26U = 21
+    SLZB_ULTIMA4 = 26
 
 
 # Map radio's for MRx/U devices

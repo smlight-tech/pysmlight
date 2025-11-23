@@ -385,12 +385,10 @@ class Api2(webClient):
         return remove_cb
 
     def device_is_u(self, model: str) -> bool:
+        if model.endswith("U"):
+            return True
         device_id = Devices.get(model, None)
-        return (
-            device_id in [udev.value for udev in U_Devices]
-            if device_id is not None
-            else False
-        )
+        return device_id in [udev.value for udev in U_Devices] if device_id else False
 
 
 class CmdWrapper:
