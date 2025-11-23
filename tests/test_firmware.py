@@ -229,7 +229,7 @@ async def test_info_get_firmware_zb2(aresponses: ResponsesMockServer) -> None:
         aresponses.Response(
             status=200,
             headers={"Content-Type": "application/json"},
-            text=load_fixture("slzb-06-zb-fw.json"),
+            text=load_fixture("slzb-06-zb2-fw.json"),
         ),
     )
     async with ClientSession() as session:
