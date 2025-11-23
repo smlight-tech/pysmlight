@@ -301,7 +301,6 @@ async def test_info_get_firmware_espu(aresponses: ResponsesMockServer) -> None:
         assert len(firmware.notes.split("\n")) == 3
 
 
-@pytest.mark.asyncio
 async def test_resolve_zigbee_device() -> None:
     """Test the _resolve_zigbee_device method mapping for devices."""
     async with ClientSession() as session:
