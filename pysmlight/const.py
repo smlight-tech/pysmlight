@@ -78,15 +78,25 @@ Devices: dict[str, int] = {
     "SLZB-06p10": 4,
     "SLZB-06p7V2": 5,
     "SLZB-MR1": 6,
-    "SLZB-MR2": 9,
-    "SLZB-MR3": 10,
-    "SLZB-MRW10": 11,
-    "SLZB-06Mg26": 12,
-    "SLZB-MR4": 13,
-    "SLZB-MR1U": 14,
-    "SLZB-06U": 15,
+    "SLZB-MR2": 10,
+    "SLZB-MR3": 11,
+    "SLZB-MRW10": 12,
+    "SLZB-06Mg26": 13,
+    "SLZB-MR4": 14,
+    "SLZB-MR1U": 15,
+    "SLZB-06U": 16,
+    "SLZB-06p7U": 17,
+    "SLZB-06p10U": 18,
+    "SLZB-06MU": 19,
+    "SLZB-06Mg24U": 20,
+    "SLZB-06Mg26U": 21,
+    "SLZB-MR2U": 22,
+    "SLZB-MR3U": 23,
+    "SLZB-MR4U": 24,
+    "SLZB-MRW10U": 25,
     "SMHUB-MG21": 65,
     "SMHUB-CCP1": 66,
+    "SMHUB-MG24": 67,
 }
 
 
@@ -97,8 +107,16 @@ class U_Devices(Enum):
     Model id should match "Devices" dict.
     """
 
-    SLZB_MR1U = 14
-    SLZB_06U = 15
+    SLZB_MR1U = 15
+    SLZB_MR2U = 22
+    SLZB_MR3U = 23
+    SLZB_MR4U = 24
+    SLZB_06U = 16
+    SLZB_06P7U = 17
+    SLZB_06P10U = 18
+    SLZB_06MU = 19
+    SLZB_06Mg24U = 20
+    SLZB_06Mg26U = 21
 
 
 # Map radio's for MRx/U devices
@@ -108,7 +126,17 @@ MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
     "SLZB-MR3": ("SLZB-06Mg24", "SLZB-06p10"),
     "SLZB-MR4": ("SLZB-06Mg26", "SLZB-06p10"),
     "SLZB-MR1U": ("SLZB-06M", "SLZB-06p7V2"),
+    "SLZB-MR2U": ("SLZB-06M", "SLZB-06"),
+    "SLZB-MR3U": ("SLZB-06Mg24", "SLZB-06p10"),
+    "SLZB-MR4U": ("SLZB-06Mg26", "SLZB-06p10"),
     "SLZB-06U": ("SLZB-06",),
+    "SLZB-06P7U": ("SLZB-06p7V2",),
+    "SLZB-06P10U": ("SLZB-06p10",),
+    "SLZB-06MU": ("SLZB-06M",),
+    "SLZB-06Mg24U": ("SLZB-06Mg24",),
+    "SLZB-06Mg26U": ("SLZB-06Mg26",),
+    "SLZB-MRW10": ("SLZB-MRW10", "SLZB-06p10"),
+    "SLZB-MRW10U": ("SLZB-MRW10", "SLZB-06p10"),
 }
 
 
