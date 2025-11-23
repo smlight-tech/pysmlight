@@ -125,18 +125,7 @@ MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
     "SLZB-MR2": ("SLZB-06M", "SLZB-06"),
     "SLZB-MR3": ("SLZB-06Mg24", "SLZB-06p10"),
     "SLZB-MR4": ("SLZB-06Mg26", "SLZB-06p10"),
-    "SLZB-MR1U": ("SLZB-06M", "SLZB-06p7V2"),
-    "SLZB-MR2U": ("SLZB-06M", "SLZB-06"),
-    "SLZB-MR3U": ("SLZB-06Mg24", "SLZB-06p10"),
-    "SLZB-MR4U": ("SLZB-06Mg26", "SLZB-06p10"),
-    "SLZB-06U": ("SLZB-06",),
-    "SLZB-06P7U": ("SLZB-06p7V2",),
-    "SLZB-06P10U": ("SLZB-06p10",),
-    "SLZB-06MU": ("SLZB-06M",),
-    "SLZB-06Mg24U": ("SLZB-06Mg24",),
-    "SLZB-06Mg26U": ("SLZB-06Mg26",),
-    "SLZB-MRW10": ("SLZB-MRW10", "SLZB-06p10"),
-    "SLZB-MRW10U": ("SLZB-MRW10", "SLZB-06p10"),
+    "SLZB-06p7U": ("SLZB-06p7V2",),
 }
 
 

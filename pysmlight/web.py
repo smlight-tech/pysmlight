@@ -181,7 +181,8 @@ class Api2(webClient):
 
     def _resolve_zigbee_device(self, device: str, idx: int) -> str | None:
         """Resolve the actual zigbee device model for multi-radio devices."""
-
+        if device.endswith("U") and not MR_DEVICE_RADIO_MAP.get(device):
+            device = device[:-1]
         sub_devices = MR_DEVICE_RADIO_MAP.get(device)
         if sub_devices and 0 <= idx < len(sub_devices):
             return sub_devices[idx]

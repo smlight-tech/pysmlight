@@ -331,7 +331,7 @@ async def test_resolve_zigbee_device() -> None:
         assert client._resolve_zigbee_device("SLZB-MR3U", 0) == "SLZB-06Mg24"
         assert client._resolve_zigbee_device("SLZB-MR3U", 1) == "SLZB-06p10"
 
-        assert client._resolve_zigbee_device("SLZB-06P7U", 0) == "SLZB-06p7V2"
+        assert client._resolve_zigbee_device("SLZB-06p7U", 0) == "SLZB-06p7V2"
 
         # out of bounds index
         assert client._resolve_zigbee_device("SLZB-MR1", 2) == "SLZB-MR1"
