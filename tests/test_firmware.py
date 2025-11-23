@@ -260,7 +260,7 @@ async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        fw = await client.get_firmware_version("release", mode="esp32")
+        fw = await client.get_firmware_version("release")
         assert fw
         firmware = fw[0]
         assert len(firmware.link) > 20

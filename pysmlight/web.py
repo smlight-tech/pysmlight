@@ -262,7 +262,7 @@ class Api2(webClient):
         channel: str | None,
         *,
         device: str | None = None,
-        mode: str = "esp",
+        mode: str = "esp32",
         zb_type: int | None = None,
         idx: int = 0,
     ) -> list[Firmware] | None:
