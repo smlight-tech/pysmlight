@@ -8,7 +8,7 @@ from .payload import Payload
 
 @dataclass
 class Firmware(DataClassDictMixin):
-    mode: str | None = None  # ESP|ZB
+    mode: str | None = None  # ESP|ZB|ESPs3
     type: int | None = None
     notes: str | None = None
     rev: str | None = None

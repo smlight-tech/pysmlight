@@ -217,6 +217,26 @@ class Api2(webClient):
             return data if data else None
         return data.get("fw")
 
+    def _format_notes(self, firmware: Firmware) -> str | None:
+        """Format release notes for esp firmware"""
+        if firmware and firmware.notes:
+            items = (
+                re.split("\r\n|(?<!\r)\n", firmware.notes)
+                if firmware.mode == "ESP"
+                else [firmware.notes]
+            )
+            notes = ""
+            for i, v in enumerate(items):
+                if i and v and not v.startswith("-"):
+                    notes += f"* {v}\n"
+                else:
+                    notes += f"{v}\n\n"
+
+            if firmware.dev and firmware.mode == "ZB":
+                notes = "Dev firmware.\n\n" + notes
+            return notes
+        return None
+
     def _filter_firmware(
         self,
         firmware_data: list[dict],
@@ -231,7 +251,7 @@ class Api2(webClient):
             if not item.dev or channel == "dev":
                 item.set_mode(fw_type)
                 if item.notes:
-                    item.notes = self.format_notes(item)
+                    item.notes = self._format_notes(item)
                 if zb_type is not None and item.type != zb_type:
                     continue
                 fw.append(item)
@@ -258,26 +278,6 @@ class Api2(webClient):
             return None
 
         return self._filter_firmware(firmware_data, fw_type, channel, zb_type)
-
-    def format_notes(self, firmware: Firmware) -> str | None:
-        """Format release notes for esp firmware"""
-        if firmware and firmware.notes:
-            items = (
-                re.split("\r\n|(?<!\r)\n", firmware.notes)
-                if firmware.mode == "ESP"
-                else [firmware.notes]
-            )
-            notes = ""
-            for i, v in enumerate(items):
-                if i and v and not v.startswith("-"):
-                    notes += f"* {v}\n"
-                else:
-                    notes += f"{v}\n\n"
-
-            if firmware.dev and firmware.mode == "ZB":
-                notes = "Dev firmware.\n\n" + notes
-            return notes
-        return None
 
     async def get_page(self, page: Pages) -> dict | None:
         """Extract Respvaluesarr json from page response header"""
