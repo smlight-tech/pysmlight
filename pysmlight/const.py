@@ -78,27 +78,37 @@ Devices: dict[str, int] = {
     "SLZB-06p10": 4,
     "SLZB-06p7V2": 5,
     "SLZB-MR1": 6,
-    "SLZB-MR2": 9,
-    "SLZB-MR3": 10,
-    "SLZB-MRW10": 11,
-    "SLZB-06Mg26": 12,
-    "SLZB-MR4": 13,
-    "SLZB-MR1U": 14,
-    "SLZB-06U": 15,
+    "SLZB-MR2": 10,
+    "SLZB-MR3": 11,
+    "SLZB-MRW10": 12,
+    "SLZB-06Mg26": 13,
+    "SLZB-MR4": 14,
+    "SLZB-MR1U": 15,
+    "SLZB-06U": 16,
+    "SLZB-06p7U": 17,
+    "SLZB-06p10U": 18,
+    "SLZB-06MU": 19,
+    "SLZB-06Mg24U": 20,
+    "SLZB-06Mg26U": 21,
+    "SLZB-MR2U": 22,
+    "SLZB-MR3U": 23,
+    "SLZB-MR4U": 24,
+    "SLZB-MRW10U": 25,
+    "SLZB-ULTIMA4": 26,
     "SMHUB-MG21": 65,
     "SMHUB-CCP1": 66,
+    "SMHUB-MG24": 67,
 }
 
 
-class U_Devices(Enum):
+class UDevices(Enum):
     """
     Represent devices based on ESP32-S3 core.
 
-    Model id should match "Devices" dict.
+    Only required if model id does not have "U" suffix. Model id should match "Devices" dict.
     """
 
-    SLZB_MR1U = 14
-    SLZB_06U = 15
+    SLZB_ULTIMA4 = 26
 
 
 # Map radio's for MRx/U devices
@@ -107,8 +117,7 @@ MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
     "SLZB-MR2": ("SLZB-06M", "SLZB-06"),
     "SLZB-MR3": ("SLZB-06Mg24", "SLZB-06p10"),
     "SLZB-MR4": ("SLZB-06Mg26", "SLZB-06p10"),
-    "SLZB-MR1U": ("SLZB-06M", "SLZB-06p7V2"),
-    "SLZB-06U": ("SLZB-06",),
+    "SLZB-06p7U": ("SLZB-06p7V2",),
 }
 
 

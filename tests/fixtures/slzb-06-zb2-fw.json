@@ -1,0 +1,74 @@
+[
+    {
+        "type": "0",
+        "prod": false,
+        "rev": "20240716",
+        "notes": "<b>SMLIGHT latest Coordinator release for CC2652P7 chips [16-Jul-2024]</b>:<br>- +20dB TRANSMIT POWER SUPPORT;<br>- SDK 7.41 based (latest);<br>- Supports 'transmit_power' levels [0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20];<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+        "baud": 115200,
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06p7v2/znp-SLZB-06P7-EXT-20240716.bin"
+    },
+    {
+        "type": "1",
+        "prod": true,
+        "rev": "20240716",
+        "notes": "<b>SMLIGHT latest ROUTER release for CC2652P7 chips [16-Jul-2024]</b>:<br>- SDK 7.41 based (latest);<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+        "baud": 0,
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06p7v2/zr-ZR_SLZB-06P7-EXT-20240716.bin"
+    },
+    {
+        "type": "0",
+        "prod": false,
+        "rev": "20240710",
+        "notes": "<b>Public latest Coordinator release for CC2652P7 chips [10-Jul-2024]</b>:<br>- Max transmit_power limited to <b>10dB</b><br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/505' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/505</span></a><br>- SDK 7.41 based (latest);<br>- Supports 'transmit_power' levels [6;7;8;9;10];<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+        "baud": 115200,
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240710.bin"
+    },
+    {
+        "type": "0",
+        "prod": false,
+        "rev": "20240316",
+        "notes": "<b>Public Coordinator release for CC2652P7 chips [16-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/496' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/496</span></a><br>- SDK 6.10 based;<br>- Some improvements which should reduce NWK errors;<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+        "baud": 115200,
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240316.bin"
+    },
+    {
+        "type": "0",
+        "prod": false,
+        "rev": "20240315",
+        "notes": "<b>Public Patched Coordinator release for CC2652P7 chips [15-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Andrik45719/Z-Stack-firmware' target='_blank' aria-current='true'><span>https://github.com/Andrik45719/Z-Stack-firmware</span></a>;<br>- SDK 6.10 based;<br>- Patched version of Public Coordinator release for CC2652P chips [15-Mar-2024] - baudrate changed to 460kbps from 115kbps;<br>- <b>IMPORTANT!!! Baudrate: 460800</b>;<br>- May help if 'spamming' devices are in Zigbee network;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+        "baud": 460800,
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240316_patched_460800.bin"
+    },
+    {
+        "type": "0",
+        "prod": true,
+        "rev": "20240315",
+        "notes": "<b>Public Coordinator release for CC2652P7 chips [15-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/496' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/496</span></a><br>- SDK 6.10 based;<br>- Some improvements which should reduce NWK errors;<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+        "baud": 115200,
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240315.bin"
+    },
+    {
+        "type": "0",
+        "prod": false,
+        "rev": "20230507",
+        "notes": "<b>Public Coordinator release for CC2652P7 chips [07-May-2023]</b>:<br>- SDK 7.10 based;<br>- Enable child aging to fix issues like #13478 (but not for older Xiaomi devices as they do not implement child aging correctly which gets them kicked out of the network);<br>- Increase message timeout from 7 to 8 seconds to increase message delivery success rate for devices using a 7.5 seconds poll interval (#13478);<br>- Improve performance with larger network;<br>- Optimize table sizes;<br>- Increase stack_size from 1024 to 8192;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+        "baud": 115200,
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20230507.bin"
+    },
+    {
+        "type": "2",
+        "prod": true,
+        "rev": "20240405",
+        "notes": "<b>SMLIGHT latest Matter-over-Thread release for CC2652P7 chips [05-Apr-2024]</b>:<br>- Thread firmware release for SLZB-06p7;<br>- Baudrate: 460800;<br>- <a href='https://www.youtube.com/watch?v=WwYVRuVpAJI' target='_blank' aria-current='true'><span>Youtube tutorial</span></a><span> - connection Matter-over-Thread devices to Home Assistant with SLZB-06;<br>- Pairing Matter-over-Thread devices in <a href='https://smlight.tech/manual/slzb-06/guide/thread-matter/pair-thread-device.html' target='_blank' aria-current='true'><span>Home Assistant, text manual</span></a><span>;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+        "baud": 460800,
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06p7v2/CC2652P7_thread_v2_20240405_ext.bin"
+    },
+    {
+        "type": "1",
+        "prod": false,
+        "rev": "20240513",
+        "notes": "<b>SMLIGHT  ROUTER release for CC2652P7 chips [13-May-2024]</b>:<br>- SDK 7.40 based;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+        "baud": 0,
+        "link": "https://smlight.tech/flasher/firmware/bin/slzb06x/zigbee/slzb06p7v2/router_CC1352P7_4_tirtos7_ticlang_SM_EXT.bin"
+    }
+]
