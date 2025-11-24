@@ -19,7 +19,7 @@ from .const import (
     Devices,
     Events,
     Pages,
-    U_Devices,
+    UDevices,
 )
 from .exceptions import SmlightAuthError, SmlightConnectionError
 from .models import Firmware, Info, Sensors
@@ -388,7 +388,7 @@ class Api2(webClient):
         if model.endswith("U"):
             return True
         device_id = Devices.get(model, None)
-        return device_id in [udev.value for udev in U_Devices] if device_id else False
+        return device_id in [udev.value for udev in UDevices] if device_id else False
 
 
 class CmdWrapper:

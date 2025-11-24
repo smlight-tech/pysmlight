@@ -101,7 +101,7 @@ Devices: dict[str, int] = {
 }
 
 
-class U_Devices(Enum):
+class UDevices(Enum):
     """
     Represent devices based on ESP32-S3 core.
 
