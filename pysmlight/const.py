@@ -98,6 +98,9 @@ Devices: dict[str, int] = {
     "SMHUB-MG21": 65,
     "SMHUB-CCP1": 66,
     "SMHUB-MG24": 67,
+    "SMHUB-MG26": 68,
+    "SMHUB-CCP7": 69,
+    "SMHUB-CCP10": 70,
 }
 
 
