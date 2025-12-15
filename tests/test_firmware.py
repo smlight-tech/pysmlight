@@ -328,7 +328,7 @@ async def test_resolve_zigbee_device() -> None:
         assert client._resolve_zigbee_device("SLZB-MR1", 0) == "SLZB-06M"
         assert client._resolve_zigbee_device("SLZB-MR1", 1) == "SLZB-06p7V2"
 
-        assert client._resolve_zigbee_device("SLZB-MR3U", 0) == "SLZB-06Mg24"
+        assert client._resolve_zigbee_device("SLZB-MR3U", 0) == "SLZB-MR3U"
         assert client._resolve_zigbee_device("SLZB-MR3U", 1) == "SLZB-06p10"
 
         assert client._resolve_zigbee_device("SLZB-06p7U", 0) == "SLZB-06p7V2"
@@ -339,3 +339,10 @@ async def test_resolve_zigbee_device() -> None:
 
         # no mapped values
         assert client._resolve_zigbee_device("SLZB-06P10", 0) == "SLZB-06P10"
+
+
+async def test_mr3u_device_id() -> None:
+    """Test that SLZB-MR3U subdevice lookup returns device ID 23."""
+    from pysmlight.const import Devices
+
+    assert Devices.get("SLZB-MR3U") == 23

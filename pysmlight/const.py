@@ -119,6 +119,7 @@ MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
     "SLZB-MR1": ("SLZB-06M", "SLZB-06p7V2"),
     "SLZB-MR2": ("SLZB-06M", "SLZB-06"),
     "SLZB-MR3": ("SLZB-06Mg24", "SLZB-06p10"),
+    "SLZB-MR3U": ("SLZB-MR3U", "SLZB-06p10"),
     "SLZB-MR4": ("SLZB-06Mg26", "SLZB-06p10"),
     "SLZB-06p7U": ("SLZB-06p7V2",),
 }
