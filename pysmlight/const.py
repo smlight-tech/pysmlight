@@ -113,7 +113,8 @@ class UDevices(Enum):
     """
 
     SLZB_ULTIMA4 = 26
-    SLZB_ULTIMA3 = 27    
+    SLZB_ULTIMA3 = 27
+
 
 # Map radio's for MRx/U devices
 MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
