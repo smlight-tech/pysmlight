@@ -96,6 +96,7 @@ Devices: dict[str, int] = {
     "SLZB-MRW10U": 25,
     "SLZB-ULTIMA4": 26,
     "SLZB-ULTIMA3": 27,
+    "SLZB-MR5U": 28,
     "SMHUB-MG21": 65,
     "SMHUB-CCP1": 66,
     "SMHUB-MG24": 67,
@@ -113,7 +114,8 @@ class UDevices(Enum):
     """
 
     SLZB_ULTIMA4 = 26
-    SLZB_ULTIMA3 = 27    
+    SLZB_ULTIMA3 = 27
+
 
 # Map radio's for MRx/U devices
 MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
