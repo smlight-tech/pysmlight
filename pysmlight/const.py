@@ -136,6 +136,7 @@ ZB_TYPES: dict[int, str] = {
     0: "coordinator",
     1: "router",
     2: "thread",
+    3: "zwave",
 }
 
 ZB_CHANNEL: dict[int, str] = {
