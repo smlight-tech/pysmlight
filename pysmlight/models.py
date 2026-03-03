@@ -51,6 +51,7 @@ class Info(DataClassDictMixin):
     fs_total: int | None = None
     fw_channel: str | None = None  # dev, beta or release
     hostname: str | None = None
+    hw_version: str | None = None
     legacy_api: int = 0
     MAC: str | None = None
     model: str | None = None
