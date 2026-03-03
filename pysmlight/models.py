@@ -45,6 +45,7 @@ class Radio(DataClassDictMixin):
 
 @dataclass
 class Info(DataClassDictMixin):
+    addons: dict[str, bool] = field(default_factory=dict)
     coord_mode: int | None = None  # Enum
     device_ip: str | None = None
     fs_total: int | None = None
