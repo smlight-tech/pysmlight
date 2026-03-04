@@ -102,6 +102,10 @@ class Info(DataClassDictMixin):
                     self.model.endswith("U") or "ultima" in self.model.lower()
                 )
 
+            # Zwave is optional module for Ultima, remove radio instance if not present
+            if "Ultima" in self.model and not self.addons.get("zwave", False):
+                self.radios = self.radios[:2]
+
         self.check_zb_version()
 
         # Factory firmware may have invalid .plus suffix, convert to valid version
