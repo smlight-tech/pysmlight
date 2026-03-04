@@ -113,8 +113,8 @@ class UDevices(Enum):
     Only required if model id does not have "U" suffix. Model id should match "Devices" dict.
     """
 
-    SLZB_ULTIMA4 = 26
-    SLZB_ULTIMA3 = 27
+    SLZB_Ultima4 = 26
+    SLZB_Ultima3 = 27
 
 
 # Map radio's for MRx/U devices
