@@ -57,6 +57,7 @@ class Info(DataClassDictMixin):
     model: str | None = None
     ram_total: int | None = None
     sw_version: str | None = None
+    u_device: bool | None = None
     wifi_mode: int | None = None  # enum (off, client, AP etc)
     radios: list[Radio] = field(default_factory=list)
     zb_channel: int | None = None
@@ -95,6 +96,11 @@ class Info(DataClassDictMixin):
         if self.model is not None:
             self.model = self.model.replace("P", "p")
             self.model = self.model.replace("MG", "Mg")
+
+            if self.u_device is None:
+                self.u_device = (
+                    self.model.endswith("U") or "ultima" in self.model.lower()
+                )
 
         self.check_zb_version()
 
