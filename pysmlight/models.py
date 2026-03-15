@@ -3,6 +3,7 @@ import re
 
 from mashumaro import DataClassDictMixin
 
+from .const import AmbiEffect
 from .payload import Payload
 
 
@@ -168,3 +169,23 @@ class SettingsEvent(DataClassDictMixin):
     origin: str | None = None
     needReboot: bool = False
     setting: dict[str, bool | int] | None = None
+
+
+@dataclass
+class AmbilightPayload(DataClassDictMixin):
+    ultLedMode: AmbiEffect | None = None
+    ultLedColor: str | None = None
+    ultLedColor2: str | None = None
+    ultLedSpeed: int | None = None
+    ultLedBri: int | None = None
+    ultLedDir: int | None = None
+
+
+@dataclass
+class IRPayload(DataClassDictMixin):
+    code: str | None = None
+
+
+@dataclass
+class BuzzerPayload(DataClassDictMixin):
+    code: str | None = None
