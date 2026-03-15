@@ -231,3 +231,46 @@ class RebootReasons(IntEnum):
     ESP_RST_DEEPSLEEP = 8  # Reset after exiting deep sleep mode
     ESP_RST_BROWNOUT = 9  # Brownout reset (software or hardware)
     ESP_RST_SDIO = 10  # Reset over SDIO
+
+
+class AmbiEffect(IntEnum):
+    WSULT_SOLID = 0
+    WSULT_OFF = 1
+    WSULT_BLUR = 2
+    WSULT_RAINBOW = 3
+    WSULT_BREATHING = 4
+    WSULT_COLOR_WIPE = 5
+    WSULT_COMET = 6
+    WSULT_FIRE = 7
+    WSULT_TWINKLE = 8
+    WSULT_POLICE = 9
+    WSULT_CHASE = 10
+    WSULT_COLOR_CYCLE = 11
+    WSULT_GRADIENT_SCROLL = 12
+    WSULT_STROBE = 13
+    WSULT_SYS_WARNING = 14
+    WSULT_SYS_ERROR = 15
+    WSULT_SYS_OK = 16
+    WSULT_SYS_INFO = 17
+
+
+AMBI_EFFECT_LIST: list[str] = [
+    "Solid",
+    "Off",
+    "Blur",
+    "Rainbow",
+    "Breathing",
+    "Color Wipe",
+    "Comet",
+    "Fire",
+    "Twinkle",
+    "Police",
+    "Chase",
+    "Color Cycle",
+    "Gradient Scroll",
+    "Strobe",
+    "System Warning",
+    "System Error",
+    "System OK",
+    "System Info",
+]
