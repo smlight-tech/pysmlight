@@ -99,14 +99,17 @@ class webClient:
         except ClientConnectionError as err:
             raise SmlightConnectionError("Connection failed") from err
 
-    async def post(self, params) -> bool:
+    async def post(self, params, url: str | None = None) -> bool:
         assert self.session is not None, "Session not created"
+
+        if url is None:
+            url = self.setting_url
 
         data = urllib.parse.urlencode(params)
 
         try:
             async with self.session.post(
-                self.setting_url,
+                url,
                 data=data,
                 headers=self.post_headers,
                 auth=self.auth,
@@ -440,4 +443,4 @@ class ActionWrapper:
         """Send buzzer RTTTL code."""
         data = {k: v for k, v in payload.to_dict().items() if v is not None}
         params = {"action": Actions.API_BUZZER.value, **data}
-        return await self.post(params)
+        return await self.post(params, url=self.post.__self__.url)

@@ -85,7 +85,7 @@ async def test_actions_buzzer(aresponses: ResponsesMockServer) -> None:
             text="ok",
         )
 
-    aresponses.add(host, "/settings/saveParams", "POST", response_handler)
+    aresponses.add(host, "/api2", "POST", response_handler)
 
     async with ClientSession() as session:
         client = Api2(host, session=session)
