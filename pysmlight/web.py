@@ -439,5 +439,5 @@ class ActionWrapper:
     async def buzzer(self, payload: BuzzerPayload) -> bool:
         """Send buzzer RTTTL code."""
         data = {k: v for k, v in payload.to_dict().items() if v is not None}
-        params = {"pageId": Pages.API2_PAGE_BUZZER.value, **data}
+        params = {"action": Actions.API_BUZZER.value, **data}
         return await self.post(params)
