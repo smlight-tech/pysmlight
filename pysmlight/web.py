@@ -22,7 +22,7 @@ from .const import (
     UDevices,
 )
 from .exceptions import SmlightAuthError, SmlightConnectionError
-from .models import Firmware, Info, Sensors
+from .models import AmbilightPayload, BuzzerPayload, Firmware, Info, IRPayload, Sensors
 from .payload import Payload
 from .sse import sseClient
 
@@ -163,6 +163,7 @@ class Api2(webClient):
         sse: sseClient | None = None,
     ) -> None:
         self.cmds = CmdWrapper(self.set_cmd)
+        self.actions = ActionWrapper(self.post, self.get)
         super().__init__(host, session=session)
 
         if session is None:
@@ -408,3 +409,35 @@ class CmdWrapper:
 
     async def zb_router(self, idx: int = 0) -> None:
         await self.set_cmd(Commands.CMD_ZB_ROUTER_RECON, f"idx:{idx}")
+
+
+class ActionWrapper:
+    """Wrapper for handling specific page actions."""
+
+    def __init__(self, post_action: Callable, get_action: Callable) -> None:
+        self.post = post_action
+        self.get = get_action
+
+    async def ambilight(self, payload: AmbilightPayload) -> bool:
+        """Send ambilight commands."""
+        data = {k: v for k, v in payload.to_dict().items() if v is not None}
+        params = {"pageId": Pages.API2_PAGE_AMBILIGHT.value, **data}
+        return await self.post(params)
+
+    async def get_ir_code(self, payload: IRPayload) -> str | None:
+        """Get last IR code."""
+        data = {k: v for k, v in payload.to_dict().items() if v is not None}
+        params = {"pageId": Pages.API2_PAGE_IR.value, **data}
+        return await self.get(params)
+
+    async def send_ir_code(self, payload: IRPayload) -> bool:
+        """Send IR code."""
+        data = {k: v for k, v in payload.to_dict().items() if v is not None}
+        params = {"pageId": Pages.API2_PAGE_IR.value, **data}
+        return await self.post(params)
+
+    async def buzzer(self, payload: BuzzerPayload) -> bool:
+        """Send buzzer RTTTL code."""
+        data = {k: v for k, v in payload.to_dict().items() if v is not None}
+        params = {"pageId": Pages.API2_PAGE_BUZZER.value, **data}
+        return await self.post(params)
