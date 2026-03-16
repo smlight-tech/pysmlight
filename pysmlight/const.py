@@ -31,6 +31,14 @@ class Actions(Enum):
     API_WIFICONNECTSTAT = 7
     API_FLASH_ESP = 8
     API_ZHUB = 9
+    API_DEV = 10
+    API_SCRIPT = 11
+    API_IR = 12
+    API_BUZZER = 13
+    API_FILEMANAGER = 14
+    API_BEAPP = 15
+    API_WRITE_RADIO_INFO = 16
+    API_SCRIPT_INTEGRATIONS = 17
 
 
 @unique
@@ -49,6 +57,7 @@ class Commands(Enum):
     CMD_ZB_IEEE_WRITE = 11
     CMD_ZB_IEEE_READ_FACTORY = 12
     CMD_WHTNW_MARK_READ = 13
+    CMD_ZB_IEEE_READ_CUR = 14
 
 
 @unique
@@ -68,6 +77,20 @@ class Pages(IntEnum):
     API2_PAGE_FEEDBACK = 12
     API2_PAGE_ZHUB_DEVICES = 13
     API2_PAGE_ZHUB_DASHBOARD = 14
+    API2_PAGE_ZHUB_CONFIG = 15
+    API2_PAGE_SCRIPT = 16
+    API2_PAGE_ZHUB_MQTT = 17
+    API2_PAGE_DDNS = 18
+    API2_PAGE_USB = 19
+    API2_PAGE_LTE = 20
+    API2_PAGE_AMBILIGHT = 21
+    API2_PAGE_IR = 22
+    API2_PAGE_BUZZER = 23
+    API2_PAGE_MQTT_API = 24
+    API2_PAGE_APPS = 25
+    API2_PAGE_OBD = 26
+    API2_PAGE_SCRIPT_INTEGRATIONS = 27
+    API2_PAGE_OTBR = 28
 
 
 Devices: dict[str, int] = {
@@ -113,8 +136,8 @@ class UDevices(Enum):
     Only required if model id does not have "U" suffix. Model id should match "Devices" dict.
     """
 
-    SLZB_ULTIMA4 = 26
-    SLZB_ULTIMA3 = 27
+    SLZB_Ultima4 = 26
+    SLZB_Ultima3 = 27
 
 
 # Map radio's for MRx/U devices
@@ -136,6 +159,7 @@ ZB_TYPES: dict[int, str] = {
     0: "coordinator",
     1: "router",
     2: "thread",
+    3: "zwave",
 }
 
 ZB_CHANNEL: dict[int, str] = {
@@ -159,6 +183,7 @@ class Events(Enum):
     ZB_ENERGY_SCAN_DONE = auto()
     WHTNW = auto()
     REBOOT = auto()
+    IR_CODE = auto()
     CATCH_ALL = 99
 
 
@@ -207,3 +232,46 @@ class RebootReasons(IntEnum):
     ESP_RST_DEEPSLEEP = 8  # Reset after exiting deep sleep mode
     ESP_RST_BROWNOUT = 9  # Brownout reset (software or hardware)
     ESP_RST_SDIO = 10  # Reset over SDIO
+
+
+class AmbiEffect(IntEnum):
+    WSULT_SOLID = 0
+    WSULT_OFF = 1
+    WSULT_BLUR = 2
+    WSULT_RAINBOW = 3
+    WSULT_BREATHING = 4
+    WSULT_COLOR_WIPE = 5
+    WSULT_COMET = 6
+    WSULT_FIRE = 7
+    WSULT_TWINKLE = 8
+    WSULT_POLICE = 9
+    WSULT_CHASE = 10
+    WSULT_COLOR_CYCLE = 11
+    WSULT_GRADIENT_SCROLL = 12
+    WSULT_STROBE = 13
+    WSULT_SYS_WARNING = 14
+    WSULT_SYS_ERROR = 15
+    WSULT_SYS_OK = 16
+    WSULT_SYS_INFO = 17
+
+
+AMBI_EFFECT_LIST: list[str] = [
+    "Solid",
+    "Off",
+    "Blur",
+    "Rainbow",
+    "Breathing",
+    "Color Wipe",
+    "Comet",
+    "Fire",
+    "Twinkle",
+    "Police",
+    "Chase",
+    "Color Cycle",
+    "Gradient Scroll",
+    "Strobe",
+    "System Warning",
+    "System Error",
+    "System OK",
+    "System Info",
+]

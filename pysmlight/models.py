@@ -3,6 +3,7 @@ import re
 
 from mashumaro import DataClassDictMixin
 
+from .const import AmbiEffect
 from .payload import Payload
 
 
@@ -51,11 +52,13 @@ class Info(DataClassDictMixin):
     fs_total: int | None = None
     fw_channel: str | None = None  # dev, beta or release
     hostname: str | None = None
+    hw_version: str | None = None
     legacy_api: int = 0
     MAC: str | None = None
     model: str | None = None
     ram_total: int | None = None
     sw_version: str | None = None
+    u_device: bool | None = None
     wifi_mode: int | None = None  # enum (off, client, AP etc)
     radios: list[Radio] = field(default_factory=list)
     zb_channel: int | None = None
@@ -94,6 +97,15 @@ class Info(DataClassDictMixin):
         if self.model is not None:
             self.model = self.model.replace("P", "p")
             self.model = self.model.replace("MG", "Mg")
+
+            if self.u_device is None:
+                self.u_device = (
+                    self.model.endswith("U") or "ultima" in self.model.lower()
+                )
+
+            # Zwave is optional module for Ultima, remove radio instance if not present
+            if "Ultima" in self.model and not self.addons.get("zwave", False):
+                self.radios = self.radios[:2]
 
         self.check_zb_version()
 
@@ -157,3 +169,23 @@ class SettingsEvent(DataClassDictMixin):
     origin: str | None = None
     needReboot: bool = False
     setting: dict[str, bool | int] | None = None
+
+
+@dataclass
+class AmbilightPayload(DataClassDictMixin):
+    ultLedMode: AmbiEffect | None = None
+    ultLedColor: str | None = None
+    ultLedColor2: str | None = None
+    ultLedSpeed: int | None = None
+    ultLedBri: int | None = None
+    ultLedDir: int | None = None
+
+
+@dataclass
+class IRPayload(DataClassDictMixin):
+    code: str | None = None
+
+
+@dataclass
+class BuzzerPayload(DataClassDictMixin):
+    code: str | None = None

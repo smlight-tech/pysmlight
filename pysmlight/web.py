@@ -22,7 +22,7 @@ from .const import (
     UDevices,
 )
 from .exceptions import SmlightAuthError, SmlightConnectionError
-from .models import Firmware, Info, Sensors
+from .models import AmbilightPayload, BuzzerPayload, Firmware, Info, IRPayload, Sensors
 from .payload import Payload
 from .sse import sseClient
 
@@ -99,14 +99,17 @@ class webClient:
         except ClientConnectionError as err:
             raise SmlightConnectionError("Connection failed") from err
 
-    async def post(self, params) -> bool:
+    async def post(self, params, url: str | None = None) -> bool:
         assert self.session is not None, "Session not created"
+
+        if url is None:
+            url = self.setting_url
 
         data = urllib.parse.urlencode(params)
 
         try:
             async with self.session.post(
-                self.setting_url,
+                url,
                 data=data,
                 headers=self.post_headers,
                 auth=self.auth,
@@ -163,6 +166,7 @@ class Api2(webClient):
         sse: sseClient | None = None,
     ) -> None:
         self.cmds = CmdWrapper(self.set_cmd)
+        self.actions = ActionWrapper(self.post, self.get)
         super().__init__(host, session=session)
 
         if session is None:
@@ -400,11 +404,43 @@ class CmdWrapper:
     async def reboot(self) -> None:
         await self.set_cmd(Commands.CMD_ESP_RES)
 
-    async def zb_bootloader(self) -> None:
-        await self.set_cmd(Commands.CMD_ZB_BSL)
+    async def zb_bootloader(self, idx: int = 0) -> None:
+        await self.set_cmd(Commands.CMD_ZB_BSL, f"idx:{idx}")
 
-    async def zb_restart(self) -> None:
-        await self.set_cmd(Commands.CMD_ZB_RST)
+    async def zb_restart(self, idx: int = 0) -> None:
+        await self.set_cmd(Commands.CMD_ZB_RST, f"idx:{idx}")
 
     async def zb_router(self, idx: int = 0) -> None:
         await self.set_cmd(Commands.CMD_ZB_ROUTER_RECON, f"idx:{idx}")
+
+
+class ActionWrapper:
+    """Wrapper for handling specific page actions."""
+
+    def __init__(self, post_action: Callable, get_action: Callable) -> None:
+        self.post = post_action
+        self.get = get_action
+
+    async def ambilight(self, payload: AmbilightPayload) -> bool:
+        """Send ambilight commands."""
+        data = {k: v for k, v in payload.to_dict().items() if v is not None}
+        params = {"pageId": Pages.API2_PAGE_AMBILIGHT.value, **data}
+        return await self.post(params)
+
+    async def get_ir_code(self, payload: IRPayload) -> str | None:
+        """Get last IR code."""
+        data = {k: v for k, v in payload.to_dict().items() if v is not None}
+        params = {"pageId": Pages.API2_PAGE_IR.value, **data}
+        return await self.get(params)
+
+    async def send_ir_code(self, payload: IRPayload) -> bool:
+        """Send IR code."""
+        data = {k: v for k, v in payload.to_dict().items() if v is not None}
+        params = {"pageId": Pages.API2_PAGE_IR.value, **data}
+        return await self.post(params)
+
+    async def buzzer(self, payload: BuzzerPayload) -> bool:
+        """Send buzzer RTTTL code."""
+        data = {k: v for k, v in payload.to_dict().items() if v is not None}
+        params = {"action": Actions.API_BUZZER.value, **data}
+        return await self.post(params, url=self.post.__self__.url)

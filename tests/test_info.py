@@ -285,3 +285,22 @@ async def test_info_invalid_versions() -> None:
     assert info.sw_version == "v2.3.6.2"
     info = Info(sw_version="v2.8.0.dev")
     assert info.sw_version == "v2.8.0.dev0"
+
+
+async def test_info_ultima_zwave() -> None:
+    """Test Ultima only has 2 radios without zwave addon installed."""
+    info = Info.from_dict(
+        {
+            "model": "SLZB-Ultima4",
+            "addons": {"zwave": False},
+            "radios": [
+                {"zb_hw": "Radio1"},
+                {"zb_hw": "Radio2"},
+                {"zb_hw": "Radio3 (Z-Wave)"},
+            ],
+        }
+    )
+
+    assert len(info.radios) == 2
+    assert info.radios[0].zb_hw == "Radio1"
+    assert info.radios[1].zb_hw == "Radio2"
