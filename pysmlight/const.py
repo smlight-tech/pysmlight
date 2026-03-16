@@ -183,6 +183,7 @@ class Events(Enum):
     ZB_ENERGY_SCAN_DONE = auto()
     WHTNW = auto()
     REBOOT = auto()
+    IR_CODE = auto()
     CATCH_ALL = 99
 
 
