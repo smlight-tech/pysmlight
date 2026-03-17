@@ -57,6 +57,7 @@ class Info(DataClassDictMixin):
     MAC: str | None = None
     model: str | None = None
     ram_total: int | None = None
+    psram_total: int | None = None
     sw_version: str | None = None
     u_device: bool | None = None
     wifi_mode: int | None = None  # enum (off, client, AP etc)
@@ -167,10 +168,11 @@ class Sensors(DataClassDictMixin):
     zb_temp2: float | None = None
     uptime: int = 0
     socket_uptime: int | None = None
-    socket_uptime2: int | None = None
-    socket_uptime3: int | None = None
+    socket2_uptime: int | None = None
+    socket3_uptime: int | None = None
     otbr_uptime: int | None = None
     ram_usage: int | None = None
+    psram_usage: int | None = None
     fs_used: int | None = None
     ethernet: bool = False
     wifi_connected: bool = False
@@ -186,7 +188,7 @@ class Sensors(DataClassDictMixin):
     # Ultima additional sensors:
     ambilight: AmbilightPayload | None = None
     lte_detect: bool | None = None
-    lts_status: PppUSBState | None = None
+    lte_state: PppUSBState | None = None
 
     def __post_init__(self) -> None:
         if self.socket_uptime is not None and self.socket_uptime <= 0:
