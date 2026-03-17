@@ -228,6 +228,15 @@ class WifiMode(Enum):
     WIFI_MODE_MAX = 4
 
 
+class PppUSBState(IntEnum):
+    PPP_USB_STATE_IDLE = 0
+    PPP_USB_STATE_STARTING = 1
+    PPP_USB_STATE_CONNECTING = 2
+    PPP_USB_STATE_CONNECTED = 3
+    PPP_USB_STATE_ERROR = 4
+    PPP_USB_STATE_NO_SIGNAL = 5
+
+
 class RebootReasons(IntEnum):
     ESP_RST_UNKNOWN = 0  # Reset reason can not be determined
     ESP_RST_POWERON = 1  # Reset due to power-on event

@@ -3,7 +3,7 @@ import re
 
 from mashumaro import DataClassDictMixin
 
-from .const import PERIPHERAL_MODELS, AmbiEffect
+from .const import PERIPHERAL_MODELS, AmbiEffect, PppUSBState
 from .payload import Payload
 
 
@@ -144,12 +144,25 @@ class Info(DataClassDictMixin):
 
 
 @dataclass
+class AmbilightPayload(DataClassDictMixin):
+    ultLedMode: AmbiEffect | None = None
+    ultLedColor: str | None = None
+    ultLedColor2: str | None = None
+    ultLedSpeed: int | None = None
+    ultLedBri: int | None = None
+    ultLedDir: int | None = None
+
+
+@dataclass
 class Sensors(DataClassDictMixin):
     esp32_temp: float | None = None
     zb_temp: float | None = None
     zb_temp2: float | None = None
-    uptime: int = 0  # Should be timestamp
-    socket_uptime: int | None = None  # Should be timestamp
+    uptime: int = 0
+    socket_uptime: int | None = None
+    socket_uptime2: int | None = None
+    socket_uptime3: int | None = None
+    otbr_uptime: int | None = None
     ram_usage: int | None = None
     fs_used: int | None = None
     ethernet: bool = False
@@ -163,6 +176,11 @@ class Sensors(DataClassDictMixin):
     auto_zigbee: bool | None = None
     vpn_enabled: bool | None = None
 
+    # Ultima additional sensors:
+    ambilight: AmbilightPayload | None = None
+    lte_detect: bool | None = None
+    lts_status: PppUSBState | None = None
+
     def __post_init__(self) -> None:
         if self.socket_uptime is not None and self.socket_uptime <= 0:
             self.socket_uptime = None
@@ -174,16 +192,6 @@ class SettingsEvent(DataClassDictMixin):
     origin: str | None = None
     needReboot: bool = False
     setting: dict[str, bool | int] | None = None
-
-
-@dataclass
-class AmbilightPayload(DataClassDictMixin):
-    ultLedMode: AmbiEffect | None = None
-    ultLedColor: str | None = None
-    ultLedColor2: str | None = None
-    ultLedSpeed: int | None = None
-    ultLedBri: int | None = None
-    ultLedDir: int | None = None
 
 
 @dataclass
