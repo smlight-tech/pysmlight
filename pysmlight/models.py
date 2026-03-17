@@ -99,6 +99,13 @@ class Info(DataClassDictMixin):
         return radio
 
     def __post_init__(self) -> None:
+        if self.hw_version is not None:
+            try:
+                hw = int(self.hw_version)
+                self.hw_version = f"{hw // 100}.{hw % 100:02d}"
+            except ValueError:
+                pass
+
         if self.model is not None:
             self.model = self.model.replace("P", "p")
             self.model = self.model.replace("MG", "Mg")
