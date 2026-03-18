@@ -3,7 +3,7 @@ import re
 
 from mashumaro import DataClassDictMixin
 
-from .const import AmbiEffect
+from .const import PERIPHERAL_MODELS, AmbiEffect
 from .payload import Payload
 
 
@@ -80,6 +80,11 @@ class Info(DataClassDictMixin):
             zb_hw=payload.zb_hw,
             zb_version=int(payload.zb_version),
         )
+
+    @property
+    def has_peripherals(self) -> bool:
+        """Return true if the device supports peripheral features (e.g. Ambilight, buzzer, IR)."""
+        return any(s in (self.model or "") for s in PERIPHERAL_MODELS)
 
     def check_zb_version(self, radio: Radio | None = None):
         if radio is None:
