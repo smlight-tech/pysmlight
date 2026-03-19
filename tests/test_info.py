@@ -304,3 +304,18 @@ async def test_info_ultima_zwave() -> None:
     assert len(info.radios) == 2
     assert info.radios[0].zb_hw == "Radio1"
     assert info.radios[1].zb_hw == "Radio2"
+
+
+@pytest.mark.parametrize(
+    ("model", "expected"),
+    [
+        ("SLZB-Ultima4", True),
+        ("SLZB-Ultima3", True),
+        ("SLZB-06p10", False),
+        (None, False),
+    ],
+)
+def test_info_has_peripherals(model: str | None, expected: bool) -> None:
+    """Test has_peripherals returns True only for peripheral-capable models."""
+    info = Info(model=model)
+    assert info.has_peripherals is expected

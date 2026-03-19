@@ -340,6 +340,8 @@ async def test_resolve_zigbee_device() -> None:
         # no mapped values
         assert client._resolve_zigbee_device("SLZB-06P10", 0) == "SLZB-06P10"
 
+        assert client._resolve_zigbee_device("SLZB-06p10U", 0) == "SLZB-06p10"
+
 
 async def test_mr3u_device_id() -> None:
     """Test that SLZB-MR3U subdevice lookup returns device ID 23."""

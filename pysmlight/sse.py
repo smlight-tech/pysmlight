@@ -28,6 +28,7 @@ class sseClient:
         """Initialise the SSE client."""
         self.callbacks: dict[Events, Callable] = {}
         self.settings_cb: dict[Settings, Callable] = {}
+        self.page_cb: dict[Pages, Callable] = {}
         self.legacy_api = False
         self.sw_version: AwesomeVersion | None = None
         self.session = session
@@ -107,6 +108,9 @@ class sseClient:
 
         changes = data.pop("changes", None)
         if changes is not None:
+            if page_cb := self.page_cb.get(page):
+                page_cb(changes)
+
             for setting in changes:
                 base = data.copy()
                 match_cb = next(
@@ -135,6 +139,15 @@ class sseClient:
         return remove_callback
 
     def deregister_settings_cb(self, setting: Settings) -> None:
-        """Deregister callback for a setting"""
+        """Deregister callback for a specific setting"""
         if setting in self.settings_cb:
             del self.settings_cb[setting]
+
+    def register_page_cb(self, page: Pages, cb: Callable) -> Callable[[], None]:
+        """Register a callback for all changes on a specific page."""
+        self.page_cb[page] = cb
+
+        def remove_callback() -> None:
+            self.page_cb.pop(page, None)
+
+        return remove_callback
