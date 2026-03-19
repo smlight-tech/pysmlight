@@ -72,8 +72,6 @@ class sseClient:
                     await self._message_handler(event)
             except (ClientConnectionError, ConnectionError) as err:
                 _LOGGER.debug("Client Connection error: %s", err)
-            else:
-                _LOGGER.debug("Connection closed cleanly")
 
     async def _message_handler(self, event: MessageEvent) -> None:
         """Match event with callback for event type"""
