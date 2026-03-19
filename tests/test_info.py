@@ -280,3 +280,19 @@ def test_info_has_peripherals(model: str | None, expected: bool) -> None:
     """Test has_peripherals returns True only for peripheral-capable models."""
     info = Info(model=model)
     assert info.has_peripherals is expected
+
+
+@pytest.mark.parametrize(
+    ("hw_version", "expected"),
+    [
+        (104, "1.04"),
+        ("1.04", "1.04"),
+        (None, None),
+    ],
+)
+def test_info_hw_version_formatting(
+    hw_version: int | str | None, expected: str | None
+) -> None:
+    """Test hw_version is formatted correctly from raw integer or pre-formatted string."""
+    info = Info(hw_version=hw_version)
+    assert info.hw_version == expected
