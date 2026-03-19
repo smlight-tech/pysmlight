@@ -13,5 +13,5 @@ from pysmlight.web import Api2, CmdWrapper, Firmware, Info, Sensors
 
 try:
     from pysmlight._version import __version__
-except ImportError:
+except ImportError:  # pragma: no cover
     __version__ = "0.0.0.dev0"

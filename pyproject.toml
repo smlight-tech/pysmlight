@@ -107,3 +107,10 @@ disable_error_code = [
 exclude = [
 	"pysmlight/_version.py",
 ]
+
+[tool.coverage.run]
+source = ["pysmlight"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
