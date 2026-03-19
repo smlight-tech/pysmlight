@@ -141,6 +141,8 @@ class UDevices(Enum):
     SLZB_Ultima3 = 27
 
 
+PERIPHERAL_MODELS: tuple[str, ...] = ("Ultima",)
+
 # Map radio's for MRx/U devices
 MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
     "SLZB-MR1": ("SLZB-06M", "SLZB-06p7V2"),
