@@ -126,6 +126,7 @@ Devices: dict[str, int] = {
     "SMHUB-MG26": 68,
     "SMHUB-CCP7": 69,
     "SMHUB-CCP10": 70,
+    "SMHUB-ZG23": 71,
 }
 
 
@@ -148,9 +149,12 @@ MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
     "SLZB-MR3U": ("SLZB-MR3U", "SLZB-06p10"),
     "SLZB-MR4": ("SLZB-06Mg26", "SLZB-06p10"),
     "SLZB-MR5U": ("SLZB-MR3U", "SLZB-MR3U"),
+    "SLZB-MRW10": ("SLZB-MRW10", "SLZB-06p10"),
+    "SLZB-MRW10U": ("SLZB-MRW10", "SLZB-06p10"),
     "SLZB-06p7U": ("SLZB-06p7V2",),
     "SLZB-Ultima3": ("SLZB-06Mg24", "SLZB-06p10"),
     "SLZB-Ultima4": ("SLZB-06Mg26", "SLZB-06p10"),
+    "SMHUB-ZG23": ("SLZB-MRW10",),
 }
 
 
@@ -159,7 +163,9 @@ ZB_TYPES: dict[int, str] = {
     0: "coordinator",
     1: "router",
     2: "thread",
-    3: "zwave",
+    5: "Zwave-EU",
+    6: "Zwave-US",
+    7: "Zwave-ANZ",
 }
 
 ZB_CHANNEL: dict[int, str] = {
