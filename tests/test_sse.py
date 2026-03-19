@@ -8,7 +8,7 @@ from aiohttp import ClientSession, web
 from aiohttp.client_exceptions import SocketTimeoutError
 from aresponses import ResponsesMockServer
 
-from pysmlight.const import Actions, Events, Settings
+from pysmlight.const import Actions, Events, Pages, Settings
 from pysmlight.models import SettingsEvent
 from pysmlight.sse import MessageEvent, sseClient
 from pysmlight.web import Api2
@@ -139,6 +139,58 @@ async def test_get_param_inetstate(aresponses: ResponsesMockServer) -> None:
         assert await client.get_param("inetState") == "ok"
         # invalid param
         assert await client.get_param("inet") is None
+
+
+async def test_sse_page_cb(aresponses: ResponsesMockServer) -> None:
+    """Test sse page_cb is called with the changes dict for the matching page."""
+    page_message_handler = Mock()
+    aresponses.add(f"{host}:81", "/", "GET", mock_sse_stream)
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        remove_cb = client.sse.register_page_cb(
+            Pages.API2_PAGE_SETTINGS_LED, page_message_handler
+        )
+
+        await client.sse.sse_stream()
+
+        assert page_message_handler.call_count == 1
+        assert page_message_handler.call_args == call(
+            {"disableLeds": True, "nightMode": False}
+        )
+
+        # Test that the returned deregister function removes the callback
+        remove_cb()
+        assert Pages.API2_PAGE_SETTINGS_LED not in client.sse.page_cb
+
+
+async def test_sse_page_cb_no_match() -> None:
+    """Test page_cb is not invoked when the event is for a different page."""
+    async with ClientSession() as session:
+        client = sseClient(host, session)
+        page_message_handler = Mock()
+        client.register_page_cb(Pages.API2_PAGE_NETWORK, page_message_handler)
+
+        event = Mock()
+        event.data = (
+            '{"page":8,"origin":"ha","changes":{"disableLeds":true},"needReboot":false}'
+        )
+        client._handle_settings(event)
+
+        page_message_handler.assert_not_called()
+
+
+async def test_sse_page_cb_no_changes() -> None:
+    """Test page_cb is not invoked when the event carries no changes key."""
+    async with ClientSession() as session:
+        client = sseClient(host, session)
+        page_message_handler = Mock()
+        client.register_page_cb(Pages.API2_PAGE_SETTINGS_LED, page_message_handler)
+
+        event = Mock()
+        event.data = '{"page":8,"origin":"ha","needReboot":false}'
+        client._handle_settings(event)
+
+        page_message_handler.assert_not_called()
 
 
 async def test_sse_client_task():
