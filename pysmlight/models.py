@@ -226,7 +226,7 @@ class IRPayload(DataClassDictMixin):
     def to_raw_timings(self) -> list[int]:
         """Convert IRPayload code to raw pulse timings in microseconds."""
         if not self.code:
-            return []
+            raise ValueError("IRPayload code is empty")
 
         timings: list[int] = []
         current_ticks = 0

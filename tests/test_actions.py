@@ -118,7 +118,7 @@ async def test_actions_send_ir_code(aresponses: ResponsesMockServer) -> None:
         body = await req.text()
         data = parse_qs(body)
 
-        assert data["pageId"][0] == str(Pages.API2_PAGE_IR.value)
+        assert data["action"][0] == str(Actions.API_IR.value)
         assert data["code"][0] == "C2B0A9"
 
 
