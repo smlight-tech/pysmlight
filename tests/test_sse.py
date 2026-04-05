@@ -277,3 +277,37 @@ async def test_sse_client_task():
                 await task
             except asyncio.CancelledError:
                 pass
+
+
+async def test_sse_ir_code_event() -> None:
+    """Test mapping of IR_CODE event to list[int] payload for callbacks."""
+    async with ClientSession() as session:
+        client = sseClient(host, session)
+        ir_message_handler = Mock()
+        client.register_callback(Events.IR_CODE, ir_message_handler)
+
+        event = Mock()
+        event.type = "IR_CODE"
+        event.data = '{"code":"C2B0A9", "freq": 38040}'
+
+        await client._message_handler(event)
+
+        ir_message_handler.assert_called_once()
+        # Verify it passed the parsed list[int] raw timings instead of raw data
+        assert isinstance(ir_message_handler.call_args[0][0], list)
+
+
+async def test_sse_ir_code_event_bad_data() -> None:
+    """Test mapping of IR_CODE event ignores bad data safely."""
+    async with ClientSession() as session:
+        client = sseClient(host, session)
+        ir_message_handler = Mock()
+        client.register_callback(Events.IR_CODE, ir_message_handler)
+
+        event = Mock()
+        event.type = "IR_CODE"
+        event.data = "{badjson}"
+
+        await client._message_handler(event)
+
+        ir_message_handler.assert_not_called()

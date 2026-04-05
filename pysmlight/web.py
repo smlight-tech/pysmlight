@@ -436,8 +436,8 @@ class ActionWrapper:
     async def send_ir_code(self, payload: IRPayload) -> bool:
         """Send IR code."""
         data = {k: v for k, v in payload.to_dict().items() if v is not None}
-        params = {"pageId": Pages.API2_PAGE_IR.value, **data}
-        return await self.post(params)
+        params = {"action": Actions.API_IR.value, **data}
+        return await self.post(params, url=self.post.__self__.url)
 
     async def buzzer(self, payload: BuzzerPayload) -> bool:
         """Send buzzer RTTTL code."""

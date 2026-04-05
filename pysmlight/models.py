@@ -206,6 +206,49 @@ class SettingsEvent(DataClassDictMixin):
 @dataclass
 class IRPayload(DataClassDictMixin):
     code: str | None = None
+    freq: int | None = None
+
+    @classmethod
+    def from_raw_timings(
+        cls, timings: list[int], freq: int | None = None
+    ) -> "IRPayload":
+        """Create an IRPayload from raw pulse timings in microseconds."""
+        timings_hex: list[str] = []
+        for interval in timings:
+            ticks = int(interval / 50)
+            while ticks > 255:
+                timings_hex.extend(["ff", "00"])
+                ticks -= 255
+            timings_hex.append(f"{max(1, ticks):02x}")
+        freq_khz = round(freq / 1000) if freq else 38
+        return cls(code="".join(timings_hex), freq=freq_khz)
+
+    def to_raw_timings(self) -> list[int]:
+        """Convert IRPayload code to raw pulse timings in microseconds."""
+        if not self.code:
+            raise ValueError("IRPayload code is empty")
+
+        timings: list[int] = []
+        current_ticks = 0
+        skip_next = False
+
+        hex_pairs = [self.code[i : i + 2] for i in range(0, len(self.code), 2)]
+
+        for i, pair in enumerate(hex_pairs):
+            if skip_next:
+                skip_next = False
+                continue
+
+            ticks = int(pair, 16)
+
+            if ticks == 255 and i + 1 < len(hex_pairs) and hex_pairs[i + 1] == "00":
+                current_ticks += 255
+                skip_next = True
+            else:
+                timings.append((current_ticks + ticks) * 50)
+                current_ticks = 0
+
+        return timings
 
 
 @dataclass

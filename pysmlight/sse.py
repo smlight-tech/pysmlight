@@ -11,7 +11,7 @@ from aiohttp_sse_client2.client import EventSource, MessageEvent
 from awesomeversion import AwesomeVersion
 
 from .const import Events, Pages, Settings
-from .models import SettingsEvent
+from .models import IRPayload, SettingsEvent
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,7 +76,15 @@ class sseClient:
     async def _message_handler(self, event: MessageEvent) -> None:
         """Match event with callback for event type"""
         if event_type := getattr(Events, event.type, None):
-            self.callbacks.get(event_type, lambda x: None)(event)
+            if event_type == Events.IR_CODE and event_type in self.callbacks:
+                try:
+                    data = json.loads(event.data)
+                    payload = IRPayload.from_dict(data)
+                    self.callbacks[event_type](payload.to_raw_timings())
+                except (json.JSONDecodeError, KeyError, ValueError):
+                    pass
+            else:
+                self.callbacks.get(event_type, lambda x: None)(event)
         self.callbacks.get(Events.CATCH_ALL, lambda x: None)(event)
 
     def register_callback(self, event: Events, cb: Callable) -> Callable[[], None]:
