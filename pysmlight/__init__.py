@@ -6,8 +6,11 @@ __all__ = [
     "Radio",
     "Sensors",
     "SettingsEvent",
+    "BleProxyClient",
+    "BleProxyProtocol",
 ]
 
+from pysmlight.ble_proxy import BleProxyClient, BleProxyProtocol
 from pysmlight.models import Radio, SettingsEvent
 from pysmlight.web import Api2, CmdWrapper, Firmware, Info, Sensors
 
