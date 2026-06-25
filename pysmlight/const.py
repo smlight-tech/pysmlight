@@ -166,9 +166,11 @@ ZB_TYPES: dict[int, str] = {
     0: "coordinator",
     1: "router",
     2: "thread",
+    4: "zhub",
     5: "Zwave-EU",
     6: "Zwave-US",
     7: "Zwave-ANZ",
+    8: "otbr",
 }
 
 ZB_CHANNEL: dict[int, str] = {
