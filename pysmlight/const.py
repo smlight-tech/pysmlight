@@ -39,6 +39,8 @@ class Actions(Enum):
     API_BEAPP = 15
     API_WRITE_RADIO_INFO = 16
     API_SCRIPT_INTEGRATIONS = 17
+    API_AI = 18
+    API_AUDIO = 19
 
 
 @unique
@@ -91,6 +93,10 @@ class Pages(IntEnum):
     API2_PAGE_OBD = 26
     API2_PAGE_SCRIPT_INTEGRATIONS = 27
     API2_PAGE_OTBR = 28
+    API2_PAGE_AI_ASSISTANT = 29
+    API2_PAGE_ZHUB_BACKUP_RESTORE = 30
+    API2_PAGE_BACKUP_RESTORE = 31
+    API2_PAGE_BLE = 32
 
 
 Devices: dict[str, int] = {
@@ -166,9 +172,11 @@ ZB_TYPES: dict[int, str] = {
     0: "coordinator",
     1: "router",
     2: "thread",
+    4: "zhub",
     5: "Zwave-EU",
     6: "Zwave-US",
     7: "Zwave-ANZ",
+    8: "otbr",
 }
 
 ZB_CHANNEL: dict[int, str] = {
