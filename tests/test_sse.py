@@ -31,7 +31,7 @@ def prepare_events():
         {
             "event": "API2_WIFISCANSTATUS",
             "data": (
-                '{"wifi":[{"ssid":"WifiAAAA19","rssi":-90,"channel":11,' '"secure":3}]}'
+                '{"wifi":[{"ssid":"WifiAAAA19","rssi":-90,"channel":11,"secure":3}]}'
             ),
             "id": None,
         },
