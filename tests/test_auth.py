@@ -101,3 +101,38 @@ async def test_auth_connector_error(mock_get) -> None:
 
         with pytest.raises(SmlightConnectionError):
             await client.check_auth_needed()
+
+
+async def test_auth_request_headers(aresponses: ResponsesMockServer) -> None:
+    """Test that authenticated requests include the Authorization header."""
+    aresponses.add(
+        host,
+        "/api2",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+        ),
+    )
+    aresponses.add(
+        host,
+        "/settings/saveParams",
+        "POST",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text="ok",
+        ),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        client.auth = "Basic YWRtaW46YWRtaW4="
+
+        await client.get(params={"action": 0})
+        await client.post(params={"pageId": 1})
+
+        req_get = aresponses.history[0][0]
+        assert req_get.headers.get("Authorization") == "Basic YWRtaW46YWRtaW4="
+
+        req_post = aresponses.history[1][0]
+        assert req_post.headers.get("Authorization") == "Basic YWRtaW46YWRtaW4="
