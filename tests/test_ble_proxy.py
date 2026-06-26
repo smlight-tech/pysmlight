@@ -67,7 +67,7 @@ async def test_ble_proxy_protocol_valid_data() -> None:
     payload = b"\x02\x01\x06"
     packet = b"\x00\x03" + mac_bytes + addr_type + rssi + b"\x03" + payload
     protocol.datagram_received(packet, ("127.0.0.1", 12345))
-    callback.assert_called_once_with("00:11:22:33:44:55", -85, 1, payload)
+    callback.assert_called_once_with(mac_bytes, -85, 1, payload)
     on_ack.assert_not_called()
 
 
@@ -89,8 +89,8 @@ async def test_ble_proxy_protocol_bundled_data() -> None:
     protocol.datagram_received(packet, ("127.0.0.1", 12345))
 
     assert callback.call_count == 2
-    callback.assert_any_call("00:11:22:33:44:55", -85, 1, payload_1)
-    callback.assert_any_call("FF:EE:DD:CC:BB:AA", -80, 0, payload_2)
+    callback.assert_any_call(mac_bytes_1, -85, 1, payload_1)
+    callback.assert_any_call(mac_bytes_2, -80, 0, payload_2)
     on_ack.assert_not_called()
 
 
@@ -243,3 +243,24 @@ async def test_ble_proxy_client_api_methods() -> None:
         b"\x00\x05\x78\x00",
         ("127.0.0.1", 5050),
     )
+
+
+@pytest.mark.asyncio
+async def test_ble_proxy_client_api_methods_exceptions() -> None:
+    """Test BleProxyClient's API methods raise SmlightConnectionError on socket failure."""
+    from pysmlight.exceptions import SmlightConnectionError
+
+    client = BleProxyClient(
+        esp32_ip="127.0.0.1",
+        callback=Mock(),
+        esp32_port=5050,
+    )
+    mock_transport = Mock()
+    mock_transport.sendto.side_effect = OSError("Socket error")
+    client.transport = mock_transport
+
+    with pytest.raises(SmlightConnectionError):
+        client.set_scan_mode(BleProxyMode.BLE_PROXY_MODE_ACTIVE)
+
+    with pytest.raises(SmlightConnectionError):
+        client.set_active_window(timeout=120)
