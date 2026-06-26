@@ -3,7 +3,7 @@ import re
 
 from mashumaro import DataClassDictMixin
 
-from .const import PERIPHERAL_MODELS, AmbiEffect, PppUSBState
+from .const import PERIPHERAL_MODELS, AmbiEffect, BleState, PppUSBState
 from .payload import Payload
 
 
@@ -45,8 +45,15 @@ class Radio(DataClassDictMixin):
 
 
 @dataclass
+class BleFeatures(DataClassDictMixin):
+    ble_enabled: bool | None = None
+    proxy_enabled: bool | None = None
+
+
+@dataclass
 class Info(DataClassDictMixin):
     addons: dict[str, bool] = field(default_factory=dict)
+    ble: BleFeatures | None = None
     coord_mode: int | None = None  # Enum
     device_ip: str | None = None
     fs_total: int | None = None
@@ -162,6 +169,12 @@ class AmbilightPayload(DataClassDictMixin):
 
 
 @dataclass
+class BleSession(DataClassDictMixin):
+    state: BleState | None = None
+    proxy_connected: bool | None = None
+
+
+@dataclass
 class Sensors(DataClassDictMixin):
     esp32_temp: float | None = None
     zb_temp: float | None = None
@@ -184,6 +197,8 @@ class Sensors(DataClassDictMixin):
     night_mode: bool | None = None
     auto_zigbee: bool | None = None
     vpn_enabled: bool | None = None
+
+    ble: BleSession | None = None
 
     # Ultima additional sensors:
     ambilight: AmbilightPayload | None = None

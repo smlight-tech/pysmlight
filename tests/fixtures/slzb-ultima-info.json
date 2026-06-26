@@ -57,6 +57,10 @@
       "poe": false,
       "zwave": true,
       "mic": false
+    },
+    "ble": {
+      "ble_enabled": true,
+      "proxy_enabled": true
     }
   }
 }
