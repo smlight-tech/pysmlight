@@ -44,6 +44,12 @@ async def test_ble_proxy_protocol_invalid() -> None:
     protocol.datagram_received(b"\x01\x02", ("127.0.0.1", 12345))
     protocol.datagram_received(b"\x00", ("127.0.0.1", 12345))
     protocol.datagram_received(b"\x00\x03\x00\x00\x00\x00\x00", ("127.0.0.1", 12345))
+    protocol.datagram_received(b"\x00\x05", ("127.0.0.1", 12345))
+    mac_bytes = b"\x55\x44\x33\x22\x11\x00"
+    incomplete_packet = (
+        b"\x00\x03" + mac_bytes + b"\x01" + b"\xab" + b"\x0a" + b"\x02\x01\x06"
+    )
+    protocol.datagram_received(incomplete_packet, ("127.0.0.1", 12345))
     on_ack.assert_not_called()
     callback.assert_not_called()
 
