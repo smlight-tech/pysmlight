@@ -169,7 +169,7 @@ class AmbilightPayload(DataClassDictMixin):
 
 
 @dataclass
-class BleState(DataClassDictMixin):
+class BleSession(DataClassDictMixin):
     state: int | None = None
     proxy_connected: bool | None = None
 
@@ -198,7 +198,8 @@ class Sensors(DataClassDictMixin):
     auto_zigbee: bool | None = None
     vpn_enabled: bool | None = None
 
-    ble: BleState | None = None
+    ble: BleSession | None = None
+
     # Ultima additional sensors:
     ambilight: AmbilightPayload | None = None
     lte_detect: bool | None = None

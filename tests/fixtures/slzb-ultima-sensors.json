@@ -28,6 +28,10 @@
     "disable_leds": false,
     "night_mode": false,
     "auto_zigbee": false,
-    "vpn_enabled": false
+    "vpn_enabled": false,
+    "ble": {
+      "state": 2,
+      "proxy_connected": true
+    }
   }
 }
