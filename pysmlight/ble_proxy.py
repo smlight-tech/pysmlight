@@ -1,22 +1,14 @@
 import asyncio
 from collections.abc import Callable
-from enum import IntEnum
 import logging
 import struct
+
+from .const import BleProxyMode, ProxyAction
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class ProxyAction(IntEnum):
-    PING = 0
-    DISCONNECT = 1
-    ACK = 2
-    DATA = 3
-    SET_SCAN_MODE = 4
-    REQ_ACTIVE_WINDOW = 5
-
-
-# Structure of the fixed portion of the BLE proxy ring packet:
+# Structure of the fixed portion of the BLE proxy packet:
 # - api_version (uint8)
 # - api_action (uint8)
 # - address (6 bytes)
@@ -176,3 +168,15 @@ class BleProxyClient:
 
         self.stop_transport()
         self._connected_evt.clear()
+
+    def set_scan_mode(self, mode: BleProxyMode) -> None:
+        """Set scan mode."""
+        if self.transport:
+            packet = struct.pack("<BBB", 0, ProxyAction.SET_SCAN_MODE, mode)
+            self.transport.sendto(packet, (self.esp32_ip, self.esp32_port))
+
+    def set_active_window(self, timeout: int) -> None:
+        """Request active scan window with the specified timeout in milliseconds (ms)."""
+        if self.transport:
+            packet = struct.pack("<BBH", 0, ProxyAction.REQ_ACTIVE_WINDOW, timeout)
+            self.transport.sendto(packet, (self.esp32_ip, self.esp32_port))

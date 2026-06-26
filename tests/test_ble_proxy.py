@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from pysmlight.ble_proxy import BleProxyClient, BleProxyProtocol
+from pysmlight.const import BleProxyMode
 
 
 class MockServerProtocol(asyncio.DatagramProtocol):
@@ -212,3 +213,33 @@ async def test_ble_proxy_client_timeout() -> None:
     assert sleep_calls[0] == 2.0
     assert sleep_calls[1] == 4.0
     mock_logger.warning.assert_called()
+
+
+@pytest.mark.asyncio
+async def test_ble_proxy_client_api_methods() -> None:
+    """Test BleProxyClient's API methods set_scan_mode and set_active_window."""
+    client = BleProxyClient(
+        esp32_ip="127.0.0.1",
+        callback=Mock(),
+        esp32_port=5050,
+    )
+    mock_transport = Mock()
+    client.transport = mock_transport
+
+    client.set_scan_mode(BleProxyMode.BLE_PROXY_MODE_ACTIVE)
+    mock_transport.sendto.assert_called_with(
+        b"\x00\x04\x01",
+        ("127.0.0.1", 5050),
+    )
+
+    client.set_scan_mode(BleProxyMode.BLE_PROXY_MODE_PASSIVE)
+    mock_transport.sendto.assert_called_with(
+        b"\x00\x04\x00",
+        ("127.0.0.1", 5050),
+    )
+
+    client.set_active_window(timeout=120)
+    mock_transport.sendto.assert_called_with(
+        b"\x00\x05\x78\x00",
+        ("127.0.0.1", 5050),
+    )
