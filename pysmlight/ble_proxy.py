@@ -12,6 +12,18 @@ class ProxyAction(IntEnum):
     DISCONNECT = 1
     ACK = 2
     DATA = 3
+    SET_SCAN_MODE = 4
+    REQ_ACTIVE_WINDOW = 5
+
+
+# Structure of the fixed portion of the BLE proxy ring packet:
+# - api_version (uint8)
+# - api_action (uint8)
+# - address (6 bytes)
+# - address_type (uint8)
+# - rssi (int8)
+# - adv_data_len (uint8)
+BLE_PROXY_HEADER_STRUCT = struct.Struct("<BB6sBbB")
 
 
 class BleProxyProtocol(asyncio.DatagramProtocol):
@@ -27,30 +39,47 @@ class BleProxyProtocol(asyncio.DatagramProtocol):
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
         try:
-            if len(data) < 2:
-                return
+            offset = 0
+            while offset < len(data):
+                if len(data) - offset < 2:
+                    break
 
-            version = data[0]
-            if version > 0:
-                return
+                version = data[offset]
+                if version > 0:
+                    break
 
-            action = data[1]
-            if action == ProxyAction.ACK:
-                self.on_ack()
-                return
+                action = data[offset + 1]
+                if action == ProxyAction.ACK:
+                    self.on_ack()
+                    offset += 2
+                    continue
 
-            if action == ProxyAction.DATA:
-                if len(data) < 10:
-                    return
+                if action == ProxyAction.DATA:
+                    if len(data) - offset < BLE_PROXY_HEADER_STRUCT.size:
+                        break
 
-                mac_bytes = data[2:8]
-                device_mac = f"{mac_bytes[5]:02X}:{mac_bytes[4]:02X}:{mac_bytes[3]:02X}:{mac_bytes[2]:02X}:{mac_bytes[1]:02X}:{mac_bytes[0]:02X}"
-                address_type = data[8]
-                rssi = data[9]
-                if rssi > 127:
-                    rssi -= 256
-                raw_data = data[10:]
-                self.callback(device_mac, rssi, address_type, raw_data)
+                    (
+                        _,
+                        _,
+                        mac_bytes,
+                        address_type,
+                        rssi,
+                        adv_data_len,
+                    ) = BLE_PROXY_HEADER_STRUCT.unpack_from(data, offset)
+
+                    if len(data) - offset < BLE_PROXY_HEADER_STRUCT.size + adv_data_len:
+                        break
+
+                    raw_data = data[
+                        offset + BLE_PROXY_HEADER_STRUCT.size : offset
+                        + BLE_PROXY_HEADER_STRUCT.size
+                        + adv_data_len
+                    ]
+                    device_mac = f"{mac_bytes[5]:02X}:{mac_bytes[4]:02X}:{mac_bytes[3]:02X}:{mac_bytes[2]:02X}:{mac_bytes[1]:02X}:{mac_bytes[0]:02X}"
+                    self.callback(device_mac, rssi, address_type, raw_data)
+                    offset += BLE_PROXY_HEADER_STRUCT.size + adv_data_len
+                else:
+                    break
         except Exception:
             _LOGGER.exception("Error parsing SLZB Bluetooth proxy packet from %s", addr)
 

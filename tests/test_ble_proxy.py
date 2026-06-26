@@ -44,6 +44,12 @@ async def test_ble_proxy_protocol_invalid() -> None:
     protocol.datagram_received(b"\x01\x02", ("127.0.0.1", 12345))
     protocol.datagram_received(b"\x00", ("127.0.0.1", 12345))
     protocol.datagram_received(b"\x00\x03\x00\x00\x00\x00\x00", ("127.0.0.1", 12345))
+    protocol.datagram_received(b"\x00\x05", ("127.0.0.1", 12345))
+    mac_bytes = b"\x55\x44\x33\x22\x11\x00"
+    incomplete_packet = (
+        b"\x00\x03" + mac_bytes + b"\x01" + b"\xab" + b"\x0a" + b"\x02\x01\x06"
+    )
+    protocol.datagram_received(incomplete_packet, ("127.0.0.1", 12345))
     on_ack.assert_not_called()
     callback.assert_not_called()
 
@@ -58,9 +64,32 @@ async def test_ble_proxy_protocol_valid_data() -> None:
     addr_type = b"\x01"
     rssi = b"\xab"
     payload = b"\x02\x01\x06"
-    packet = b"\x00\x03" + mac_bytes + addr_type + rssi + payload
+    packet = b"\x00\x03" + mac_bytes + addr_type + rssi + b"\x03" + payload
     protocol.datagram_received(packet, ("127.0.0.1", 12345))
     callback.assert_called_once_with("00:11:22:33:44:55", -85, 1, payload)
+    on_ack.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_ble_proxy_protocol_bundled_data() -> None:
+    """Test that datagram_received successfully parses bundled advertisements."""
+    callback = Mock()
+    on_ack = Mock()
+    protocol = BleProxyProtocol(callback, on_ack)
+    mac_bytes_1 = b"\x55\x44\x33\x22\x11\x00"
+    payload_1 = b"\x02\x01\x06"
+    packet_1 = b"\x00\x03" + mac_bytes_1 + b"\x01" + b"\xab" + b"\x03" + payload_1
+
+    mac_bytes_2 = b"\xaa\xbb\xcc\xdd\xee\xff"
+    payload_2 = b"\x05\x09\x4d\x79\x44\x65\x76"
+    packet_2 = b"\x00\x03" + mac_bytes_2 + b"\x00" + b"\xb0" + b"\x07" + payload_2
+
+    packet = packet_1 + packet_2
+    protocol.datagram_received(packet, ("127.0.0.1", 12345))
+
+    assert callback.call_count == 2
+    callback.assert_any_call("00:11:22:33:44:55", -85, 1, payload_1)
+    callback.assert_any_call("FF:EE:DD:CC:BB:AA", -80, 0, payload_2)
     on_ack.assert_not_called()
 
 
@@ -74,7 +103,7 @@ async def test_ble_proxy_protocol_exception() -> None:
     addr_type = b"\x01"
     rssi = b"\xab"
     payload = b"\x02\x01\x06"
-    packet = b"\x00\x03" + mac_bytes + addr_type + rssi + payload
+    packet = b"\x00\x03" + mac_bytes + addr_type + rssi + b"\x03" + payload
     protocol.datagram_received(packet, ("127.0.0.1", 12345))
     callback.assert_called_once()
 
