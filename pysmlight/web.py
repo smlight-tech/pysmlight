@@ -6,7 +6,7 @@ import re
 from typing import Any, Self
 import urllib.parse
 
-from aiohttp import BasicAuth, ClientSession
+from aiohttp import ClientSession, encode_basic_auth
 from aiohttp.client_exceptions import ClientConnectionError
 from awesomeversion import AwesomeVersion
 
@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class webClient:
     def __init__(self, host: str, session: ClientSession | None = None) -> None:
-        self.auth: BasicAuth | None = None
+        self.auth: str | None = None
         # we can't modify headers on the passed in session from HA,
         #  if needed can be overridden at request level
         self.headers = {"Content-Type": "application/json; charset=utf-8"}
@@ -45,7 +45,7 @@ class webClient:
 
     async def authenticate(self, user: str, password: str) -> bool:
         """Pass in credentials and check auth is successful"""
-        self.auth = BasicAuth(user, password)
+        self.auth = encode_basic_auth(user, password)
         return not await self.check_auth_needed(True)
 
     async def check_auth_needed(self, authenticate: bool = False) -> bool:
@@ -56,14 +56,16 @@ class webClient:
         """
         assert self.session is not None, "Session not created"
 
-        auth: BasicAuth | None = None
+        headers = {}
         res = False
-        if authenticate:
-            auth = self.auth
+        if authenticate and self.auth:
+            headers["Authorization"] = self.auth
 
         try:
             params = {"action": Actions.API_GET_PAGE.value, "page": 1}
-            async with self.session.get(self.url, auth=auth, params=params) as response:
+            async with self.session.get(
+                self.url, headers=headers or None, params=params
+            ) as response:
                 if response.status == 401:
                     res = True
                     if authenticate:
@@ -80,9 +82,13 @@ class webClient:
         if url is None:
             url = self.url
 
+        headers = self.headers.copy()
+        if self.auth:
+            headers["Authorization"] = self.auth
+
         try:
             async with self.session.get(
-                url, headers=self.headers, params=params, auth=self.auth
+                url, headers=headers, params=params
             ) as response:
                 if response.status == 404:
                     return None
@@ -107,12 +113,15 @@ class webClient:
 
         data = urllib.parse.urlencode(params)
 
+        headers = self.post_headers.copy()
+        if self.auth:
+            headers["Authorization"] = self.auth
+
         try:
             async with self.session.post(
                 url,
                 data=data,
-                headers=self.post_headers,
-                auth=self.auth,
+                headers=headers,
             ) as response:
                 if response.status == 404:
                     raise SmlightConnectionError("endpoint not found")
