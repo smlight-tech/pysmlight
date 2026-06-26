@@ -99,7 +99,7 @@ class Info(DataClassDictMixin):
 
     def check_zb_version(self, radio: Radio) -> Radio:
         if radio.zb_version is not None:
-            if radio.zb_version == -1:
+            if radio.zb_version in (-1, "-1"):
                 radio.zb_channel = 2  # custom
                 radio.zb_version = None
             else:
