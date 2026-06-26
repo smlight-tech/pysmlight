@@ -80,6 +80,7 @@ class Info(DataClassDictMixin):
 
     @classmethod
     def load_payload(cls, payload: Payload) -> Info:
+        zb_version_val = int(payload.zb_version)
         return cls(
             device_ip=payload.device_ip,
             legacy_api=payload.legacy_api,
@@ -88,7 +89,7 @@ class Info(DataClassDictMixin):
             fw_channel="release",
             sw_version=payload.sw_version,
             zb_hw=payload.zb_hw,
-            zb_version=int(payload.zb_version),
+            zb_version=None if zb_version_val == -1 else str(zb_version_val),
         )
 
     @property
@@ -151,14 +152,8 @@ class Info(DataClassDictMixin):
                 )
             ]
 
-        # Apply version-check logic to all radios
         for r in self.radios:
             self.check_zb_version(r)
-
-        # For backward compatibility, map the processed radio.zb_version back to Info.zb_version
-        if self.radios:
-            self.zb_version = self.radios[0].zb_version
-            self.zb_channel = self.radios[0].zb_channel
 
 
 @dataclass
