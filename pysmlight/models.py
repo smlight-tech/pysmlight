@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 import re
 
@@ -77,7 +79,7 @@ class Info(DataClassDictMixin):
     zb_type: int | None = None  # enum (coordinator, router, thread)
 
     @classmethod
-    def load_payload(cls, payload: Payload) -> "Info":
+    def load_payload(cls, payload: Payload) -> Info:
         return cls(
             device_ip=payload.device_ip,
             legacy_api=payload.legacy_api,
@@ -94,10 +96,7 @@ class Info(DataClassDictMixin):
         """Return true if the device supports peripheral features (e.g. Ambilight, buzzer, IR)."""
         return any(s in (self.model or "") for s in PERIPHERAL_MODELS)
 
-    def check_zb_version(self, radio: Radio | None = None):
-        if radio is None:
-            radio = self
-
+    def check_zb_version(self, radio: Radio) -> Radio:
         if radio.zb_version is not None:
             if radio.zb_version == -1:
                 radio.zb_channel = 2  # custom
@@ -127,8 +126,6 @@ class Info(DataClassDictMixin):
             if "Ultima" in self.model and not self.addons.get("zwave", False):
                 self.radios = self.radios[:2]
 
-        self.check_zb_version()
-
         # Factory firmware may have invalid .plus suffix, convert to valid version
         if self.sw_version:
             if "plus" in self.sw_version:
@@ -153,9 +150,15 @@ class Info(DataClassDictMixin):
                     zb_type=self.zb_type,
                 )
             ]
-        else:
-            for r in self.radios:
-                r = self.check_zb_version(r)
+
+        # Apply version-check logic to all radios
+        for r in self.radios:
+            self.check_zb_version(r)
+
+        # For backward compatibility, map the processed radio.zb_version back to Info.zb_version
+        if self.radios:
+            self.zb_version = self.radios[0].zb_version
+            self.zb_channel = self.radios[0].zb_channel
 
 
 @dataclass
@@ -224,9 +227,7 @@ class IRPayload(DataClassDictMixin):
     freq: int | None = None
 
     @classmethod
-    def from_raw_timings(
-        cls, timings: list[int], freq: int | None = None
-    ) -> "IRPayload":
+    def from_raw_timings(cls, timings: list[int], freq: int | None = None) -> IRPayload:
         """Create an IRPayload from raw pulse timings in microseconds."""
         timings_hex: list[str] = []
         for interval in timings:
