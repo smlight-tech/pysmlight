@@ -301,3 +301,17 @@ AMBI_EFFECT_LIST: list[str] = [
     "System OK",
     "System Info",
 ]
+
+
+class BleState(IntEnum):
+    BLE_STATE_IDLE = 0
+    BLE_STATE_STARTING = 1
+    BLE_STATE_STARTED = 2
+    BLE_STATE_ERROR = 3
+    BLE_STATE_STOPPING = 4
+    BLE_STATE_STOPPED = 5
+
+
+class BleProxyMode(IntEnum):
+    BLE_PROXY_MODE_PASSIVE = 0
+    BLE_PROXY_MODE_ACTIVE = 1

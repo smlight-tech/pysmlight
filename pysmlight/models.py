@@ -3,7 +3,7 @@ import re
 
 from mashumaro import DataClassDictMixin
 
-from .const import PERIPHERAL_MODELS, AmbiEffect, PppUSBState
+from .const import PERIPHERAL_MODELS, AmbiEffect, BleState, PppUSBState
 from .payload import Payload
 
 
@@ -170,7 +170,7 @@ class AmbilightPayload(DataClassDictMixin):
 
 @dataclass
 class BleSession(DataClassDictMixin):
-    state: int | None = None
+    state: BleState | None = None
     proxy_connected: bool | None = None
 
 
