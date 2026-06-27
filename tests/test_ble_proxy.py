@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from pysmlight.ble_proxy import BleProxyClient, BleProxyProtocol
+from pysmlight.ble_proxy import BLE_PROXY_VERSION, BleProxyClient, BleProxyProtocol
 from pysmlight.const import BleProxyMode
 
 
@@ -264,3 +264,78 @@ async def test_ble_proxy_client_api_methods_exceptions() -> None:
 
     with pytest.raises(SmlightConnectionError):
         client.set_active_window(timeout=120)
+
+
+@pytest.mark.asyncio
+async def test_ble_proxy_protocol_recovery() -> None:
+    """Test that datagram_received successfully recovers from invalid prefix data or malformed packets."""
+    callback = Mock()
+    on_ack = Mock()
+    protocol = BleProxyProtocol(callback, on_ack)
+
+    packet_ack = b"\xff\xff" + bytes([BLE_PROXY_VERSION]) + b"\x02"
+    protocol.datagram_received(packet_ack, ("127.0.0.1", 12345))
+    on_ack.assert_called_once()
+    on_ack.reset_mock()
+
+    packet_invalid_action = (
+        bytes([BLE_PROXY_VERSION]) + b"\x99" + bytes([BLE_PROXY_VERSION]) + b"\x02"
+    )
+    protocol.datagram_received(packet_invalid_action, ("127.0.0.1", 12345))
+    on_ack.assert_called_once()
+    on_ack.reset_mock()
+
+    mac_bytes = b"\x55\x44\x33\x22\x11\x00"
+    addr_type = b"\x01"
+    rssi = b"\xab"
+    payload = b"\x02\x01\x06"
+    valid_data = (
+        bytes([BLE_PROXY_VERSION])
+        + b"\x03"
+        + mac_bytes
+        + addr_type
+        + rssi
+        + b"\x03"
+        + payload
+    )
+
+    # First data packet has size specified as 100, but only 5 bytes of data are present
+    truncated_packet = (
+        bytes([BLE_PROXY_VERSION])
+        + b"\x03"
+        + mac_bytes
+        + addr_type
+        + rssi
+        + b"\x64"
+        + b"\x00\x00\x00\x00\x00"
+    )
+    protocol.datagram_received(truncated_packet + valid_data, ("127.0.0.1", 12345))
+    callback.assert_called_once_with(mac_bytes, -85, 1, payload)
+    callback.reset_mock()
+
+    no_version_truncated = (
+        bytes([BLE_PROXY_VERSION]) + b"\x03\xff\xff\xff\xff\xff\xff\x01\x9c\x64"
+    )
+    protocol.datagram_received(no_version_truncated, ("127.0.0.1", 12345))
+    callback.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_ble_proxy_client_ping_exception() -> None:
+    """Test that BleProxyClient._send_ping catches OSError and logs warning."""
+    client = BleProxyClient(
+        esp32_ip="127.0.0.1",
+        callback=Mock(),
+        esp32_port=5050,
+    )
+    mock_transport = Mock()
+    mock_transport.sendto.side_effect = OSError("Socket error")
+    client.transport = mock_transport
+    client.local_port = 12345
+
+    from pysmlight.ble_proxy import _LOGGER as proxy_logger
+
+    with patch.object(proxy_logger, "warning") as mock_warning:
+        client._send_ping()
+        mock_warning.assert_called_once()
+        assert "Error sending ping" in mock_warning.call_args[0][0]

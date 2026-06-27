@@ -17,6 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 # - rssi (int8)
 # - adv_data_len (uint8)
 BLE_PROXY_HEADER_STRUCT = struct.Struct("<BB6sBbB")
+BLE_PROXY_VERSION = 0
 
 
 class BleProxyProtocol(asyncio.DatagramProtocol):
@@ -38,39 +39,62 @@ class BleProxyProtocol(asyncio.DatagramProtocol):
                     break
 
                 version = data[offset]
-                if version > 0:
-                    break
-
-                action = data[offset + 1]
-                if action == ProxyAction.ACK:
-                    self.on_ack()
-                    offset += 2
+                if version != BLE_PROXY_VERSION:
+                    offset = data.find(BLE_PROXY_VERSION, offset + 1)
+                    if offset == -1:
+                        break
                     continue
 
-                if action == ProxyAction.DATA:
-                    if len(data) - offset < BLE_PROXY_HEADER_STRUCT.size:
-                        break
+                action = data[offset + 1]
+                if action in (ProxyAction.ACK, ProxyAction.DATA):
+                    if action == ProxyAction.ACK:
+                        _LOGGER.debug("Received ACK packet from %s", addr)
+                        self.on_ack()
+                        offset += 2
+                        continue
 
-                    (
-                        _,
-                        _,
-                        mac_bytes,
-                        address_type,
-                        rssi,
-                        adv_data_len,
-                    ) = BLE_PROXY_HEADER_STRUCT.unpack_from(data, offset)
+                    if action == ProxyAction.DATA:
+                        if len(data) - offset < BLE_PROXY_HEADER_STRUCT.size:
+                            break
 
-                    if len(data) - offset < BLE_PROXY_HEADER_STRUCT.size + adv_data_len:
-                        break
+                        (
+                            _,
+                            _,
+                            mac_bytes,
+                            address_type,
+                            rssi,
+                            adv_data_len,
+                        ) = BLE_PROXY_HEADER_STRUCT.unpack_from(data, offset)
 
-                    raw_data = data[
-                        offset + BLE_PROXY_HEADER_STRUCT.size : offset
-                        + BLE_PROXY_HEADER_STRUCT.size
-                        + adv_data_len
-                    ]
-                    self.callback(mac_bytes, rssi, address_type, raw_data)
-                    offset += BLE_PROXY_HEADER_STRUCT.size + adv_data_len
-                else:
+                        if (
+                            len(data) - offset
+                            < BLE_PROXY_HEADER_STRUCT.size + adv_data_len
+                        ):
+                            offset = data.find(BLE_PROXY_VERSION, offset + 1)
+                            if offset == -1:
+                                break
+                            continue
+
+                        raw_data = data[
+                            offset + BLE_PROXY_HEADER_STRUCT.size : offset
+                            + BLE_PROXY_HEADER_STRUCT.size
+                            + adv_data_len
+                        ]
+                        if _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: no cover
+                            _LOGGER.debug(
+                                "Parsed ADV packet from %s: mac_bytes=%s, rssi=%d, address_type=%d, adv_len=%d",
+                                addr,
+                                mac_bytes.hex(),
+                                rssi,
+                                address_type,
+                                adv_data_len,
+                            )
+                        self.callback(mac_bytes, rssi, address_type, raw_data)
+                        offset += BLE_PROXY_HEADER_STRUCT.size + adv_data_len
+                        continue
+
+                offset = data.find(BLE_PROXY_VERSION, offset + 1)
+                if offset == -1:
                     break
         except Exception:
             _LOGGER.exception("Error parsing SLZB Bluetooth proxy packet from %s", addr)
@@ -131,8 +155,13 @@ class BleProxyClient:
 
     def _send_ping(self) -> None:
         if self.transport and self.local_port != 0:
-            ping_packet = struct.pack("<BBH", 0, ProxyAction.PING, self.local_port)
-            self.transport.sendto(ping_packet, (self.esp32_ip, self.esp32_port))
+            ping_packet = struct.pack(
+                "<BBH", BLE_PROXY_VERSION, ProxyAction.PING, self.local_port
+            )
+            try:
+                self.transport.sendto(ping_packet, (self.esp32_ip, self.esp32_port))
+            except OSError as ex:
+                _LOGGER.warning("Error sending ping to SLZB BLE Proxy: %s", ex)
 
     async def _ping_loop(self) -> None:
         try:
@@ -145,7 +174,9 @@ class BleProxyClient:
     def stop_transport(self) -> None:
         if self.transport:
             try:
-                disconnect_packet = struct.pack("<BB", 0, ProxyAction.DISCONNECT)
+                disconnect_packet = struct.pack(
+                    "<BB", BLE_PROXY_VERSION, ProxyAction.DISCONNECT
+                )
                 self.transport.sendto(
                     disconnect_packet, (self.esp32_ip, self.esp32_port)
                 )
@@ -172,7 +203,9 @@ class BleProxyClient:
     def set_scan_mode(self, mode: BleProxyMode) -> None:
         """Set scan mode."""
         if self.transport:
-            packet = struct.pack("<BBB", 0, ProxyAction.SET_SCAN_MODE, mode)
+            packet = struct.pack(
+                "<BBB", BLE_PROXY_VERSION, ProxyAction.SET_SCAN_MODE, mode
+            )
             try:
                 self.transport.sendto(packet, (self.esp32_ip, self.esp32_port))
             except OSError as ex:
@@ -183,7 +216,9 @@ class BleProxyClient:
     def set_active_window(self, timeout: int) -> None:
         """Request active scan window with the specified timeout in milliseconds (ms)."""
         if self.transport:
-            packet = struct.pack("<BBH", 0, ProxyAction.REQ_ACTIVE_WINDOW, timeout)
+            packet = struct.pack(
+                "<BBH", BLE_PROXY_VERSION, ProxyAction.REQ_ACTIVE_WINDOW, timeout
+            )
             try:
                 self.transport.sendto(packet, (self.esp32_ip, self.esp32_port))
             except OSError as ex:
