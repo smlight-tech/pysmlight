@@ -63,3 +63,44 @@ async def test_settings_toggle_post_error(
         with pytest.raises(exception):
             page, key = Settings.DISABLE_LEDS.value
             await client.set_toggle(page, key, True)
+
+
+async def test_settings_ble_proxy(aresponses: ResponsesMockServer) -> None:
+    """Test setting BLE proxy configuration."""
+    aresponses.add(
+        host,
+        "/settings/saveParams",
+        "POST",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text="ok",
+        ),
+    )
+    aresponses.add(
+        host,
+        "/api2",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text="ok",
+        ),
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        res = await client.set_ble_proxy(True)
+        assert res
+
+        req_post = aresponses.history[0][0]
+        assert req_post.content_type == "application/x-www-form-urlencoded"
+        body = urllib.parse.parse_qs(await req_post.text())
+        assert int(body["pageId"][0]) == 32  # Pages.API2_PAGE_BLE
+        assert body["bleEn"][0] == "on"
+        assert body["blePrxEn"][0] == "on"
+        assert bool(body["ha"][0]) is True
+
+        req_get = aresponses.history[1][0]
+        query = req_get.query
+        assert int(query["action"]) == 4  # Actions.API_CMD
+        assert int(query["cmd"]) == 3  # Commands.CMD_ESP_RES
