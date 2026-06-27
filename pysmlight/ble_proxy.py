@@ -158,7 +158,10 @@ class BleProxyClient:
             ping_packet = struct.pack(
                 "<BBH", BLE_PROXY_VERSION, ProxyAction.PING, self.local_port
             )
-            self.transport.sendto(ping_packet, (self.esp32_ip, self.esp32_port))
+            try:
+                self.transport.sendto(ping_packet, (self.esp32_ip, self.esp32_port))
+            except OSError as ex:
+                _LOGGER.warning("Error sending ping to SLZB BLE Proxy: %s", ex)
 
     async def _ping_loop(self) -> None:
         try:
