@@ -80,7 +80,7 @@ class BleProxyProtocol(asyncio.DatagramProtocol):
                             + BLE_PROXY_HEADER_STRUCT.size
                             + adv_data_len
                         ]
-                        if _LOGGER.isEnabledFor(logging.DEBUG):
+                        if _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: no cover
                             _LOGGER.debug(
                                 "Parsed ADV packet from %s: mac_bytes=%s, rssi=%d, address_type=%d, adv_len=%d",
                                 addr,

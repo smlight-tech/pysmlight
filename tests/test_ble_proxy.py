@@ -309,6 +309,33 @@ async def test_ble_proxy_protocol_recovery() -> None:
         + b"\x64"
         + b"\x00\x00\x00\x00\x00"
     )
-
     protocol.datagram_received(truncated_packet + valid_data, ("127.0.0.1", 12345))
     callback.assert_called_once_with(mac_bytes, -85, 1, payload)
+    callback.reset_mock()
+
+    no_version_truncated = (
+        bytes([BLE_PROXY_VERSION]) + b"\x03\xff\xff\xff\xff\xff\xff\x01\x9c\x64"
+    )
+    protocol.datagram_received(no_version_truncated, ("127.0.0.1", 12345))
+    callback.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_ble_proxy_client_ping_exception() -> None:
+    """Test that BleProxyClient._send_ping catches OSError and logs warning."""
+    client = BleProxyClient(
+        esp32_ip="127.0.0.1",
+        callback=Mock(),
+        esp32_port=5050,
+    )
+    mock_transport = Mock()
+    mock_transport.sendto.side_effect = OSError("Socket error")
+    client.transport = mock_transport
+    client.local_port = 12345
+
+    from pysmlight.ble_proxy import _LOGGER as proxy_logger
+
+    with patch.object(proxy_logger, "warning") as mock_warning:
+        client._send_ping()
+        mock_warning.assert_called_once()
+        assert "Error sending ping" in mock_warning.call_args[0][0]
