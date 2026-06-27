@@ -315,3 +315,12 @@ class BleState(IntEnum):
 class BleProxyMode(IntEnum):
     BLE_PROXY_MODE_PASSIVE = 0
     BLE_PROXY_MODE_ACTIVE = 1
+
+
+class ProxyAction(IntEnum):
+    PING = 0
+    DISCONNECT = 1
+    ACK = 2
+    DATA = 3
+    SET_SCAN_MODE = 4
+    REQ_ACTIVE_WINDOW = 5

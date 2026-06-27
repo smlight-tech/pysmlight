@@ -1,22 +1,15 @@
 import asyncio
 from collections.abc import Callable
-from enum import IntEnum
 import logging
 import struct
+
+from .const import BleProxyMode, ProxyAction
+from .exceptions import SmlightConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class ProxyAction(IntEnum):
-    PING = 0
-    DISCONNECT = 1
-    ACK = 2
-    DATA = 3
-    SET_SCAN_MODE = 4
-    REQ_ACTIVE_WINDOW = 5
-
-
-# Structure of the fixed portion of the BLE proxy ring packet:
+# Structure of the fixed portion of the BLE proxy packet:
 # - api_version (uint8)
 # - api_action (uint8)
 # - address (6 bytes)
@@ -31,7 +24,7 @@ class BleProxyProtocol(asyncio.DatagramProtocol):
 
     def __init__(
         self,
-        callback: Callable[[str, int, int, bytes], None],
+        callback: Callable[[bytes, int, int, bytes], None],
         on_ack: Callable[[], None],
     ) -> None:
         self.callback = callback
@@ -75,8 +68,7 @@ class BleProxyProtocol(asyncio.DatagramProtocol):
                         + BLE_PROXY_HEADER_STRUCT.size
                         + adv_data_len
                     ]
-                    device_mac = f"{mac_bytes[5]:02X}:{mac_bytes[4]:02X}:{mac_bytes[3]:02X}:{mac_bytes[2]:02X}:{mac_bytes[1]:02X}:{mac_bytes[0]:02X}"
-                    self.callback(device_mac, rssi, address_type, raw_data)
+                    self.callback(mac_bytes, rssi, address_type, raw_data)
                     offset += BLE_PROXY_HEADER_STRUCT.size + adv_data_len
                 else:
                     break
@@ -90,7 +82,7 @@ class BleProxyClient:
     def __init__(
         self,
         esp32_ip: str,
-        callback: Callable[[str, int, int, bytes], None],
+        callback: Callable[[bytes, int, int, bytes], None],
         esp32_port: int = 5050,
     ) -> None:
         self.esp32_ip = esp32_ip
@@ -176,3 +168,25 @@ class BleProxyClient:
 
         self.stop_transport()
         self._connected_evt.clear()
+
+    def set_scan_mode(self, mode: BleProxyMode) -> None:
+        """Set scan mode."""
+        if self.transport:
+            packet = struct.pack("<BBB", 0, ProxyAction.SET_SCAN_MODE, mode)
+            try:
+                self.transport.sendto(packet, (self.esp32_ip, self.esp32_port))
+            except OSError as ex:
+                raise SmlightConnectionError(
+                    f"Error sending scan mode to SLZB BLE Proxy: {ex}"
+                ) from ex
+
+    def set_active_window(self, timeout: int) -> None:
+        """Request active scan window with the specified timeout in milliseconds (ms)."""
+        if self.transport:
+            packet = struct.pack("<BBH", 0, ProxyAction.REQ_ACTIVE_WINDOW, timeout)
+            try:
+                self.transport.sendto(packet, (self.esp32_ip, self.esp32_port))
+            except OSError as ex:
+                raise SmlightConnectionError(
+                    f"Error requesting active scan window from SLZB BLE Proxy: {ex}"
+                ) from ex
