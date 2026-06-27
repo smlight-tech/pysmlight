@@ -382,6 +382,20 @@ class Api2(webClient):
         res = await self.post(params)
         return res
 
+    async def set_ble_proxy(self, enabled: bool) -> bool:
+        """Enable or disable BLE radio and proxy, then reboot."""
+        state = "on" if enabled else "off"
+        params = {
+            "pageId": Pages.API2_PAGE_BLE.value,
+            "bleEn": state,
+            "blePrxEn": state,
+            "ha": True,
+        }
+        success = await self.post(params)
+        if success:
+            await self.cmds.reboot()
+        return success
+
     async def scan_wifi(self, callback: Callable) -> Callable[[], None]:
         """Initiate scan of wifi networks.
 
