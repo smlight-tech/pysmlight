@@ -79,7 +79,7 @@ class sseClient:
             if event_type == Events.IR_CODE and event_type in self.callbacks:
                 try:
                     data = json.loads(event.data)
-                    payload = IRPayload.from_dict(data)
+                    payload = IRPayload(code=data.get("raw"), freq=data.get("freq"))
                     self.callbacks[event_type](payload.to_raw_timings())
                 except (json.JSONDecodeError, KeyError, ValueError):
                     pass

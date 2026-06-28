@@ -288,7 +288,7 @@ async def test_sse_ir_code_event() -> None:
 
         event = Mock()
         event.type = "IR_CODE"
-        event.data = '{"code":"C2B0A9", "freq": 38040}'
+        event.data = '{"raw":"C2B0A9", "freq": 38040}'
 
         await client._message_handler(event)
 
