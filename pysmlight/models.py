@@ -211,7 +211,7 @@ class Sensors(DataClassDictMixin):
             "otbr_uptime",
         ):
             value = getattr(self, field_name)
-            if value is not None and value <= 0:
+            if value == 0:
                 setattr(self, field_name, None)
 
 

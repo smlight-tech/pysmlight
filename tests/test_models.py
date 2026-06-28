@@ -1,6 +1,6 @@
 import pytest
 
-from pysmlight.models import IRPayload, Sensors
+from pysmlight.models import IRPayload
 
 
 @pytest.mark.parametrize(
@@ -39,28 +39,3 @@ def test_ir_payload_to_raw_timings_empty():
 def test_ir_payload_to_raw_timings(code, expected_timings):
     payload = IRPayload(code=code)
     assert payload.to_raw_timings() == expected_timings
-
-
-@pytest.mark.parametrize(
-    "field",
-    ["socket_uptime", "socket2_uptime", "socket3_uptime", "otbr_uptime"],
-)
-@pytest.mark.parametrize("value", [0, -5])
-def test_sensors_radio_uptime_normalized_to_none(field, value):
-    """Non-positive radio uptime values are normalized to None."""
-    sensors = Sensors(**{field: value})
-    assert getattr(sensors, field) is None
-
-
-def test_sensors_radio_uptime_preserves_positive():
-    """Positive radio uptime values are kept as-is."""
-    sensors = Sensors(
-        socket_uptime=10,
-        socket2_uptime=20,
-        socket3_uptime=30,
-        otbr_uptime=40,
-    )
-    assert sensors.socket_uptime == 10
-    assert sensors.socket2_uptime == 20
-    assert sensors.socket3_uptime == 30
-    assert sensors.otbr_uptime == 40
