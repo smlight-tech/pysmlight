@@ -204,8 +204,15 @@ class Sensors(DataClassDictMixin):
     lte_state: PppUSBState | None = None
 
     def __post_init__(self) -> None:
-        if self.socket_uptime is not None and self.socket_uptime <= 0:
-            self.socket_uptime = None
+        for field_name in (
+            "socket_uptime",
+            "socket2_uptime",
+            "socket3_uptime",
+            "otbr_uptime",
+        ):
+            value = getattr(self, field_name)
+            if value == 0:
+                setattr(self, field_name, None)
 
 
 @dataclass

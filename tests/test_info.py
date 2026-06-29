@@ -9,7 +9,7 @@ from aresponses import ResponsesMockServer
 import pytest
 from syrupy.assertion import SnapshotAssertion
 
-from pysmlight import Api2, Info
+from pysmlight import Api2, Info, Sensors
 from pysmlight.const import Settings
 from pysmlight.exceptions import SmlightAuthError, SmlightConnectionError
 
@@ -169,6 +169,30 @@ async def test_ultima_sensors(
         sensors = await client.get_sensors()
         assert sensors == snapshot
         assert sensors.auto_zigbee is False
+
+
+@pytest.mark.parametrize(
+    "field",
+    ["socket_uptime", "socket2_uptime", "socket3_uptime", "otbr_uptime"],
+)
+def test_sensors_radio_uptime_zero_normalized_to_none(field: str) -> None:
+    """Radio uptime value 0 is normalized to None."""
+    sensors = Sensors(**{field: 0})
+    assert getattr(sensors, field) is None
+
+
+def test_sensors_radio_uptime_preserves_positive() -> None:
+    """Positive radio uptime values are kept as-is."""
+    sensors = Sensors(
+        socket_uptime=10,
+        socket2_uptime=20,
+        socket3_uptime=30,
+        otbr_uptime=40,
+    )
+    assert sensors.socket_uptime == 10
+    assert sensors.socket2_uptime == 20
+    assert sensors.socket3_uptime == 30
+    assert sensors.otbr_uptime == 40
 
 
 async def test_info_legacy_info(aresponses: ResponsesMockServer) -> None:
