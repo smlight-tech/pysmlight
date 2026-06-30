@@ -173,7 +173,7 @@ async def test_ultima_sensors(
 
 @pytest.mark.parametrize(
     "field",
-    ["socket_uptime", "socket2_uptime", "socket3_uptime", "otbr_uptime"],
+    ["socket_uptime", "socket_uptime2", "socket_uptime3", "otbr_uptime"],
 )
 def test_sensors_radio_uptime_zero_normalized_to_none(field: str) -> None:
     """Radio uptime value 0 is normalized to None."""
@@ -185,14 +185,21 @@ def test_sensors_radio_uptime_preserves_positive() -> None:
     """Positive radio uptime values are kept as-is."""
     sensors = Sensors(
         socket_uptime=10,
-        socket2_uptime=20,
-        socket3_uptime=30,
+        socket_uptime2=20,
+        socket_uptime3=30,
         otbr_uptime=40,
     )
     assert sensors.socket_uptime == 10
-    assert sensors.socket2_uptime == 20
-    assert sensors.socket3_uptime == 30
+    assert sensors.socket_uptime2 == 20
+    assert sensors.socket_uptime3 == 30
     assert sensors.otbr_uptime == 40
+
+
+def test_sensors_socket_uptime_device_keys() -> None:
+    """Device payload keys map onto the iterable property names."""
+    sensors = Sensors.from_dict({"socket2_uptime": 123, "socket3_uptime": 45})
+    assert sensors.socket_uptime2 == 123
+    assert sensors.socket_uptime3 == 45
 
 
 async def test_info_legacy_info(aresponses: ResponsesMockServer) -> None:
