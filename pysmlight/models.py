@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import re
 
-from mashumaro import DataClassDictMixin
+from mashumaro import DataClassDictMixin, field_options
 
 from .const import PERIPHERAL_MODELS, AmbiEffect, BleState, PppUSBState
 from .payload import Payload
@@ -179,8 +179,12 @@ class Sensors(DataClassDictMixin):
     zb_temp2: float | None = None
     uptime: int = 0
     socket_uptime: int | None = None
-    socket2_uptime: int | None = None
-    socket3_uptime: int | None = None
+    socket_uptime2: int | None = field(
+        default=None, metadata=field_options(alias="socket2_uptime")
+    )
+    socket_uptime3: int | None = field(
+        default=None, metadata=field_options(alias="socket3_uptime")
+    )
     otbr_uptime: int | None = None
     ram_usage: int | None = None
     psram_usage: int | None = None
@@ -206,8 +210,8 @@ class Sensors(DataClassDictMixin):
     def __post_init__(self) -> None:
         for field_name in (
             "socket_uptime",
-            "socket2_uptime",
-            "socket3_uptime",
+            "socket_uptime2",
+            "socket_uptime3",
             "otbr_uptime",
         ):
             value = getattr(self, field_name)
