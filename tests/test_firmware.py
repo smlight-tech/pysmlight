@@ -30,11 +30,11 @@ MOCK_FIRMWARE_ZB = Firmware(
 
 
 @pytest.mark.asyncio
-async def test_esp_firmware_update_get(aresponses: ResponsesMockServer) -> None:
-    def response_handler(request):
-        params = request.query
+async def test_esp_firmware_update(aresponses: ResponsesMockServer) -> None:
+    async def response_handler(request):
+        params = await request.post()
         assert params["action"] == str(Actions.API_FLASH_ESP.value)
-        assert params["fwUrl"]
+        assert params["fwUrl"] == MOCK_FIRMWARE_ESP.link
         return aresponses.Response(
             status=200,
             headers={"Content-Type": "application/json"},
@@ -44,7 +44,7 @@ async def test_esp_firmware_update_get(aresponses: ResponsesMockServer) -> None:
     aresponses.add(
         host,
         "/api2",
-        "GET",
+        "POST",
         response=response_handler,
     )
     async with ClientSession() as session:
@@ -54,11 +54,11 @@ async def test_esp_firmware_update_get(aresponses: ResponsesMockServer) -> None:
 
 
 @pytest.mark.asyncio
-async def test_zb_firmware_update_get(aresponses: ResponsesMockServer) -> None:
-    def response_handler(request):
-        params = request.query
+async def test_zb_firmware_update(aresponses: ResponsesMockServer) -> None:
+    async def response_handler(request):
+        params = await request.post()
         assert params["action"] == str(Actions.API_FLASH_ZB.value)
-        assert params["fwUrl"]
+        assert params["fwUrl"] == MOCK_FIRMWARE_ZB.link
         assert params["fwVer"] == "20240315"
         assert params["baud"] == "115200"
         assert params["fwType"] == "0"
@@ -72,7 +72,7 @@ async def test_zb_firmware_update_get(aresponses: ResponsesMockServer) -> None:
     aresponses.add(
         host,
         "/api2",
-        "GET",
+        "POST",
         response=response_handler,
     )
     async with ClientSession() as session:
@@ -82,11 +82,11 @@ async def test_zb_firmware_update_get(aresponses: ResponsesMockServer) -> None:
 
 
 @pytest.mark.asyncio
-async def test_zb_firmware_update_idx_get(aresponses: ResponsesMockServer) -> None:
-    def response_handler(request):
-        params = request.query
+async def test_zb_firmware_update_idx(aresponses: ResponsesMockServer) -> None:
+    async def response_handler(request):
+        params = await request.post()
         assert params["action"] == str(Actions.API_FLASH_ZB.value)
-        assert params["fwUrl"]
+        assert params["fwUrl"] == MOCK_FIRMWARE_ZB.link
         assert params["fwVer"] == "20240315"
         assert params["baud"] == "115200"
         assert params["fwType"] == "0"
@@ -101,7 +101,7 @@ async def test_zb_firmware_update_idx_get(aresponses: ResponsesMockServer) -> No
     aresponses.add(
         host,
         "/api2",
-        "GET",
+        "POST",
         response=response_handler,
     )
     # info = await client.get_info()
@@ -113,10 +113,10 @@ async def test_zb_firmware_update_idx_get(aresponses: ResponsesMockServer) -> No
 
 @pytest.mark.asyncio
 async def test_zb_old_firmware_update_idx(aresponses: ResponsesMockServer) -> None:
-    def response_handler(request):
-        params = request.query
+    async def response_handler(request):
+        params = await request.post()
         assert params["action"] == str(Actions.API_FLASH_ZB.value)
-        assert params["fwUrl"]
+        assert params["fwUrl"] == MOCK_FIRMWARE_ZB.link
         assert params["fwVer"] == "20240315"
         assert params["baud"] == "115200"
         assert params["fwType"] == "0"
@@ -131,7 +131,7 @@ async def test_zb_old_firmware_update_idx(aresponses: ResponsesMockServer) -> No
     aresponses.add(
         host,
         "/api2",
-        "GET",
+        "POST",
         response=response_handler,
     )
     aresponses.add(
