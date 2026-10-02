@@ -2,6 +2,9 @@ __all__ = [
     "Api2",
     "CmdWrapper",
     "Firmware",
+    "FirmwareCatalog",
+    "FwChannel",
+    "FwMode",
     "Info",
     "Radio",
     "Sensors",
@@ -12,6 +15,7 @@ __all__ = [
 ]
 
 from pysmlight.ble_proxy import BleProxyClient, BleProxyProtocol
+from pysmlight.catalog import FirmwareCatalog, FwChannel, FwMode
 from pysmlight.const import BleProxyMode
 from pysmlight.models import Radio, SettingsEvent
 from pysmlight.web import Api2, CmdWrapper, Firmware, Info, Sensors

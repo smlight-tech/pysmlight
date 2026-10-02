@@ -2,7 +2,6 @@
 from collections.abc import Callable
 import json
 import logging
-import re
 from typing import Any, Self
 import urllib.parse
 
@@ -10,17 +9,14 @@ from aiohttp import ClientSession, encode_basic_auth
 from aiohttp.client_exceptions import ClientConnectionError
 from awesomeversion import AwesomeVersion
 
+from .catalog import FirmwareCatalog, FwChannel, FwMode
 from .const import (
-    FW_URL,
-    MR_DEVICE_RADIO_MAP,
     PARAM_LIST,
     SEL_FW_CHANNEL,
     Actions,
     Commands,
-    Devices,
     Events,
     Pages,
-    UDevices,
 )
 from .exceptions import SmlightAuthError, SmlightConnectionError
 from .models import AmbilightPayload, BuzzerPayload, Firmware, Info, IRPayload, Sensors
@@ -188,113 +184,32 @@ class Api2(webClient):
         else:
             self.sse = sseClient(host, session)
 
+        self.catalog = FirmwareCatalog(session=self.session)
+        self.u_device: bool | None = None
+
     async def get_device_payload(self) -> Payload:
         data = await self.get_page(Pages.API2_PAGE_DASHBOARD)
         res = Payload(data)
         return res
 
-    def _resolve_zigbee_device(self, device: str, idx: int) -> str | None:
-        """Resolve the actual zigbee device model for multi-radio devices."""
-        if device.endswith("U") and not MR_DEVICE_RADIO_MAP.get(device):
-            device = device[:-1]
-        sub_devices = MR_DEVICE_RADIO_MAP.get(device)
-        if sub_devices and 0 <= idx < len(sub_devices):
-            return sub_devices[idx]
-        return device
-
-    def _determine_firmware_type(self, mode: str, device: str | None) -> str:
-        """Determine the firmware type string based on mode and device."""
-        if mode == "zigbee":
-            return "ZB"
-        elif mode == "esp32":
-            return "ESPs3" if self.device_is_u(device) else "ESP"
-        return "ESP"
-
-    async def _fetch_firmware_data(
-        self, mode: str, fw_type: str, device: str | None
-    ) -> dict:
-        """Fetch firmware data from remote API."""
-        params = {"type": fw_type}
-        if mode == "zigbee":
-            params["format"] = "slzb"
-            if device is not None:
-                params["device"] = str(Devices[device])
-
-        response = await self.get(params=params, url=FW_URL)
-        return json.loads(response)
-
-    def _extract_firmware_list(
-        self, data: list[dict], mode: str, device: str | None
-    ) -> list[dict] | None:
-        """Extract the firmware list from API response data."""
-        if mode == "zigbee":
-            assert device is not None
-            return data if data else None
-        return data.get("fw")
-
-    def _format_notes(self, firmware: Firmware) -> str | None:
-        """Format release notes for esp firmware"""
-        if firmware and firmware.notes:
-            items = (
-                re.split("\r\n|(?<!\r)\n", firmware.notes)
-                if firmware.mode == "ESP"
-                else [firmware.notes]
-            )
-            notes = ""
-            for i, v in enumerate(items):
-                if i and v and not v.startswith("-"):
-                    notes += f"* {v}\n"
-                else:
-                    notes += f"{v}\n\n"
-
-            if firmware.dev and firmware.mode == "ZB":
-                notes = "Dev firmware.\n\n" + notes
-            return notes
-        return None
-
-    def _filter_firmware(
-        self,
-        firmware_data: list[dict],
-        fw_type: str,
-        channel: str | None,
-        zb_type: int | None,
-    ) -> list[Firmware]:
-        """Filter and process firmware items based on channel and type."""
-        fw = []
-        for d in firmware_data:
-            item = Firmware.from_dict(d)
-            if not item.dev or channel == "dev":
-                item.set_mode(fw_type)
-                if item.notes:
-                    item.notes = self._format_notes(item)
-                if zb_type is not None and item.type != zb_type:
-                    continue
-                fw.append(item)
-        return fw
-
     async def get_firmware_version(
         self,
-        channel: str | None,
+        channel: FwChannel | None,
         *,
         device: str | None = None,
-        mode: str = "esp32",
+        mode: FwMode = "esp32",
         zb_type: int | None = None,
         idx: int = 0,
-    ) -> list[Firmware] | None:
+    ) -> list[Firmware]:
         """Get firmware version for device and mode (esp | zigbee)"""
-        if device is not None and mode == "zigbee":
-            device = self._resolve_zigbee_device(device, idx)
-
-        fw_type = self._determine_firmware_type(mode, device)
-        data = await self._fetch_firmware_data(mode, fw_type, device)
-
-        firmware_data = (
-            self._extract_firmware_list(data, mode, device) if data else None
+        return await self.catalog.get_firmware_version(
+            channel,
+            device=device,
+            mode=mode,
+            zb_type=zb_type,
+            idx=idx,
+            u_device=self.u_device,
         )
-        if firmware_data is None:
-            return None
-
-        return self._filter_firmware(firmware_data, fw_type, channel, zb_type)
 
     async def get_page(self, page: Pages) -> dict | None:
         """Extract Respvaluesarr json from page response header"""
@@ -326,6 +241,7 @@ class Api2(webClient):
 
         info = Info.from_dict(data["Info"])
         core_version = AwesomeVersion(info.sw_version)
+        self.u_device = info.u_device
 
         if self.core_version is None:
             self.core_version = core_version
@@ -400,15 +316,12 @@ class Api2(webClient):
     async def set_fw_channel(self, channel: int | str) -> bool:
         """Set firmware channel."""
         if isinstance(channel, str):
-            for k, v in SEL_FW_CHANNEL.items():
-                if v == channel:
-                    channel = k
-                    break
-            else:
-                try:
-                    channel = int(channel)
-                except ValueError as err:
-                    raise ValueError(f"Invalid firmware channel: {channel}") from err
+            by_name = {name: key for key, name in SEL_FW_CHANNEL.items()}
+            if channel not in by_name:
+                raise ValueError(f"Invalid firmware channel: {channel}")
+            channel = by_name[channel]
+        elif type(channel) is not int or channel not in SEL_FW_CHANNEL:
+            raise ValueError(f"Invalid firmware channel: {channel}")
 
         params = {
             "pageId": Pages.API2_PAGE_SETTINGS_OTA.value,
@@ -432,12 +345,6 @@ class Api2(webClient):
         params = {"action": Actions.API_STARTWIFISCAN.value}
         await self.get(params)
         return remove_cb
-
-    def device_is_u(self, model: str) -> bool:
-        if model.endswith("U"):
-            return True
-        device_id = Devices.get(model, None)
-        return device_id in [udev.value for udev in UDevices] if device_id else False
 
 
 class CmdWrapper:

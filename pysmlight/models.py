@@ -70,6 +70,8 @@ class Info(DataClassDictMixin):
     sel_fw_channel: str | None = None
     sw_version: str | None = None
     u_device: bool | None = None
+    mr_device: bool | None = None
+    ult_device: bool | None = None
     wifi_mode: int | None = None  # enum (off, client, AP etc)
     radios: list[Radio] = field(default_factory=list)
     zb_channel: int | None = None

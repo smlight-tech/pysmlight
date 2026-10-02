@@ -145,3 +145,11 @@ async def test_settings_fw_channel(aresponses: ResponsesMockServer) -> None:
 
         with pytest.raises(ValueError, match="Invalid firmware channel:"):
             await client.set_fw_channel("invalid_channel")
+
+
+@pytest.mark.parametrize("channel", ["7", 5, "beta"])
+async def test_settings_fw_channel_rejects_invalid_values(channel: int | str) -> None:
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        with pytest.raises(ValueError, match="Invalid firmware channel:"):
+            await client.set_fw_channel(channel)
