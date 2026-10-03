@@ -150,22 +150,6 @@ class UDevices(Enum):
 
 PERIPHERAL_MODELS: tuple[str, ...] = ("Ultima",)
 
-# Map radio's for MRx/U devices
-MR_DEVICE_RADIO_MAP: dict[str, tuple[str, ...]] = {
-    "SLZB-MR1": ("SLZB-06M", "SLZB-06p7V2"),
-    "SLZB-MR2": ("SLZB-06M", "SLZB-06"),
-    "SLZB-MR3": ("SLZB-06Mg24", "SLZB-06p10"),
-    "SLZB-MR3U": ("SLZB-MR3U", "SLZB-06p10"),
-    "SLZB-MR4": ("SLZB-06Mg26", "SLZB-06p10"),
-    "SLZB-MR5U": ("SLZB-MR3U", "SLZB-MR3U"),
-    "SLZB-MRW10": ("SLZB-MRW10", "SLZB-06p10"),
-    "SLZB-MRW10U": ("SLZB-MRW10", "SLZB-06p10"),
-    "SLZB-06p7U": ("SLZB-06p7V2",),
-    "SLZB-Ultima3": ("SLZB-06Mg24", "SLZB-06p10"),
-    "SLZB-Ultima4": ("SLZB-06Mg26", "SLZB-06p10"),
-    "SMHUB-ZG23": ("SLZB-MRW10",),
-}
-
 
 ZB_TYPES: dict[int, str] = {
     -1: "unknown",
@@ -184,6 +168,12 @@ ZB_CHANNEL: dict[int, str] = {
     0: "stable",
     1: "dev",
     2: "custom",  # custom for 06M
+}
+
+SEL_FW_CHANNEL: dict[int, str] = {
+    0: "any",
+    1: "release",
+    2: "dev",
 }
 
 

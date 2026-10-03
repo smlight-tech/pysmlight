@@ -4,7 +4,7 @@ from aiohttp import ClientSession
 from aresponses import ResponsesMockServer
 import pytest
 
-from pysmlight import Api2, Firmware
+from pysmlight import Api2, Firmware, FirmwareCatalog
 from pysmlight.const import Actions
 
 from . import load_fixture
@@ -155,19 +155,16 @@ async def test_zb_old_firmware_update_idx(aresponses: ResponsesMockServer) -> No
 
 async def test_format_release_notes() -> None:
     """Test formatting release notes."""
-    async with ClientSession() as session:
-        client = Api2(host, session=session)
-        firmware = MOCK_FIRMWARE_ESP
-        formatted = client._format_notes(firmware)
-        assert formatted
-        assert (
-            formatted
-            == "CHANGELOG v2.5.2\n\n* Fixed bug with the lights\n* More fixes\n"
-        )
+    firmware = MOCK_FIRMWARE_ESP
+    formatted = FirmwareCatalog.format_release_notes(firmware)
+    assert formatted
+    assert (
+        formatted == "CHANGELOG v2.5.2\n\n* Fixed bug with the lights\n* More fixes\n"
+    )
 
-        firmware = MOCK_FIRMWARE_ZB
-        formatted = client._format_notes(firmware)
-        assert formatted is None
+    firmware = MOCK_FIRMWARE_ZB
+    formatted = FirmwareCatalog.format_release_notes(firmware)
+    assert formatted is None
 
 
 async def test_info_get_firmware_zb(aresponses: ResponsesMockServer) -> None:
@@ -249,6 +246,16 @@ async def test_info_get_firmware_zb2(aresponses: ResponsesMockServer) -> None:
 
 async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
     aresponses.add(
+        host,
+        "/ha_info",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("slzb-06-info.json"),
+        ),
+    )
+    aresponses.add(
         "updates.smlight.tech",
         "/services/api/slzb-06x-ota.php",
         "GET",
@@ -260,7 +267,8 @@ async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        fw = await client.get_firmware_version("release", mode="esp")
+        info = await client.get_info()
+        fw = await client.get_firmware_version("release", device=info.model)
         assert fw
         firmware = fw[0]
         assert len(firmware.link) > 20
@@ -275,6 +283,16 @@ async def test_info_get_firmware_esp(aresponses: ResponsesMockServer) -> None:
 
 async def test_info_get_firmware_espu(aresponses: ResponsesMockServer) -> None:
     aresponses.add(
+        host,
+        "/ha_info",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("slzb-ultima-info.json"),
+        ),
+    )
+    aresponses.add(
         "updates.smlight.tech",
         "/services/api/slzb-06x-ota.php",
         "GET",
@@ -286,9 +304,8 @@ async def test_info_get_firmware_espu(aresponses: ResponsesMockServer) -> None:
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        fw = await client.get_firmware_version(
-            "release", device="SLZB-MR1U", mode="esp32"
-        )
+        info = await client.get_info()
+        fw = await client.get_firmware_version("release", device=info.model)
         assert fw
         firmware = fw[0]
         assert len(firmware.link) > 20
@@ -301,48 +318,92 @@ async def test_info_get_firmware_espu(aresponses: ResponsesMockServer) -> None:
         assert len(firmware.notes.split("\n")) == 3
 
 
-async def test_info_get_firmware_none(aresponses: ResponsesMockServer) -> None:
-    aresponses.add(
-        "updates.smlight.tech",
-        "/services/api/slzb-06x-ota.php",
-        "GET",
-        aresponses.Response(
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("channel", "ch"), [("release", "0"), ("dev", "1")])
+async def test_api2_zigbee_channel_passthrough(
+    aresponses: ResponsesMockServer, channel: str, ch: str
+) -> None:
+    async def handler(request):
+        assert request.method == "GET"
+        assert dict(request.query) == {
+            "type": "ZB",
+            "format": "slzb",
+            "device": "0",
+            "idx": "0",
+            "ch": ch,
+        }
+        assert "curFw" not in request.query
+        return aresponses.Response(
             status=200,
             headers={"Content-Type": "application/json"},
-            text="[]",
-        ),
+            text=load_fixture("slzb-06-zb-fw.json"),
+        )
+
+    aresponses.add(
+        "updates.smlight.tech", "/services/api/slzb-06x-ota.php", "GET", handler
     )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-        fw = await client.get_firmware_version(
-            "release", device="SLZB-TEST", mode="esp32"
+        firmware = await client.get_firmware_version(
+            channel, device="SLZB-06", mode="zigbee"
         )
-        assert fw is None
+    assert firmware is not None
+    assert len(firmware) == 5
 
 
-async def test_resolve_zigbee_device() -> None:
-    """Test the _resolve_zigbee_device method mapping for devices."""
+@pytest.mark.asyncio
+async def test_api2_zigbee_type_filter(aresponses: ResponsesMockServer) -> None:
+    async def handler(request):
+        assert dict(request.query) == {
+            "type": "ZB",
+            "format": "slzb",
+            "device": "0",
+            "idx": "0",
+            "ch": "1",
+        }
+        return aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("slzb-06-zb-fw.json"),
+        )
+
+    aresponses.add(
+        "updates.smlight.tech", "/services/api/slzb-06x-ota.php", "GET", handler
+    )
     async with ClientSession() as session:
         client = Api2(host, session=session)
-
-        assert client._resolve_zigbee_device("SLZB-MR1", 0) == "SLZB-06M"
-        assert client._resolve_zigbee_device("SLZB-MR1", 1) == "SLZB-06p7V2"
-
-        assert client._resolve_zigbee_device("SLZB-MR3U", 0) == "SLZB-MR3U"
-        assert client._resolve_zigbee_device("SLZB-MR3U", 1) == "SLZB-06p10"
-
-        assert client._resolve_zigbee_device("SLZB-06p7U", 0) == "SLZB-06p7V2"
-
-        # out of bounds index
-        assert client._resolve_zigbee_device("SLZB-MR1", 2) == "SLZB-MR1"
-        assert client._resolve_zigbee_device("SLZB-MR1", -1) == "SLZB-MR1"
-
-        # no mapped values
-        assert client._resolve_zigbee_device("SLZB-06P10", 0) == "SLZB-06P10"
-
-        assert client._resolve_zigbee_device("SLZB-06p10U", 0) == "SLZB-06p10"
+        firmware = await client.get_firmware_version(
+            "dev", device="SLZB-06", mode="zigbee", zb_type=0
+        )
+    assert firmware is not None
+    assert len(firmware) == 3
+    assert {item.type for item in firmware} == {0}
 
 
+@pytest.mark.asyncio
+async def test_info_get_firmware_none(aresponses: ResponsesMockServer) -> None:
+    async def handler(request):
+        assert dict(request.query) == {
+            "type": "ZB",
+            "format": "slzb",
+            "device": "0",
+            "idx": "0",
+            "ch": "0",
+        }
+        return aresponses.Response(status=200, text="[]")
+
+    aresponses.add(
+        "updates.smlight.tech", "/services/api/slzb-06x-ota.php", "GET", handler
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        firmware = await client.get_firmware_version(
+            "release", device="SLZB-06", mode="zigbee"
+        )
+    assert firmware == []
+
+
+@pytest.mark.asyncio
 async def test_mr3u_device_id() -> None:
     """Test that SLZB-MR3U subdevice lookup returns device ID 23."""
     from pysmlight.const import Devices
