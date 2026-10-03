@@ -202,6 +202,7 @@ class Api2(webClient):
         idx: int = 0,
     ) -> list[Firmware]:
         """Get firmware version for device and mode (esp | zigbee)"""
+        self.catalog.session = self.session
         return await self.catalog.get_firmware_version(
             channel,
             device=device,

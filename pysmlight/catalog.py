@@ -144,12 +144,16 @@ class FirmwareCatalog:
     ) -> dict[str, str]:
         if device is None:
             raise ValueError("Zigbee firmware query requires a device model")
-        if device not in Devices:
+        device_id = next(
+            (value for model, value in Devices.items() if model.casefold() == device.casefold()),
+            None,
+        )
+        if device_id is None:
             raise ValueError(f"Unknown device model: {device}")
         params = {
             "type": "ZB",
             "format": "slzb",
-            "device": str(Devices[device]),
+            "device": str(device_id),
             "idx": str(idx),
         }
         if hw is not None:
