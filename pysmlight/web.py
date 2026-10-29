@@ -200,6 +200,7 @@ class Api2(webClient):
         mode: FwMode = "esp32",
         zb_type: int | None = None,
         idx: int = 0,
+        hw: int | None = None,
     ) -> list[Firmware]:
         """Get firmware version for device and mode (esp | zigbee)"""
         self.catalog.session = self.session
@@ -209,6 +210,7 @@ class Api2(webClient):
             mode=mode,
             zb_type=zb_type,
             idx=idx,
+            hw=hw,
             u_device=self.u_device,
         )
 
@@ -249,7 +251,7 @@ class Api2(webClient):
         if self.sse.sw_version is None:
             self.sse.sw_version = core_version
 
-        return Info.from_dict(data["Info"])
+        return info
 
     async def get_sensors(self) -> Sensors:
         res = await self.get(params=None, url=self.sensor_url)

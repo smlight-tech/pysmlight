@@ -8,7 +8,11 @@ from aresponses import ResponsesMockServer
 import pytest
 
 from pysmlight.catalog import FirmwareCatalog, FwChannel
-from pysmlight.exceptions import SmlightConnectionError
+from pysmlight.exceptions import (
+    SmlightCatalogError,
+    SmlightConnectionError,
+    SmlightError,
+)
 from pysmlight.models import Firmware
 
 from . import load_fixture
@@ -34,6 +38,14 @@ def test_format_release_notes() -> None:
     )
     assert FirmwareCatalog.format_release_notes(firmware) == (
         "CHANGELOG v2.5.2\n\n* Fixed bug with the lights\n* More fixes\n"
+    )
+    firmware_esps3 = Firmware(
+        ver="v3.0.0",
+        mode="ESPs3",
+        notes="CHANGELOG v3.0.0\r\nUSB Passthrough added\nBug fixes",
+    )
+    assert FirmwareCatalog.format_release_notes(firmware_esps3) == (
+        "CHANGELOG v3.0.0\n\n* USB Passthrough added\n* Bug fixes\n"
     )
     assert FirmwareCatalog.format_release_notes(Firmware(mode="ZB")) is None
     assert (
@@ -227,22 +239,37 @@ async def test_connection_error_is_wrapped() -> None:
 @pytest.mark.parametrize("channel", ["beta", "invalid"])
 async def test_invalid_channel_raises(channel: str) -> None:
     async with FirmwareCatalog() as catalog:
-        with pytest.raises(ValueError, match="Unsupported firmware channel"):
+        with pytest.raises(
+            SmlightCatalogError, match="Unsupported firmware channel"
+        ) as exc_info:
             await catalog.get_firmware_version(channel)
+        assert isinstance(exc_info.value, SmlightConnectionError)
+        assert isinstance(exc_info.value, SmlightError)
+        assert isinstance(exc_info.value, ValueError)
 
 
 @pytest.mark.asyncio
 async def test_zigbee_requires_device() -> None:
     async with FirmwareCatalog() as catalog:
-        with pytest.raises(ValueError, match="requires a device model"):
+        with pytest.raises(
+            SmlightCatalogError, match="requires a device model"
+        ) as exc_info:
             await catalog.get_firmware_version("any", mode="zigbee")
+        assert isinstance(exc_info.value, SmlightConnectionError)
+        assert isinstance(exc_info.value, SmlightError)
+        assert isinstance(exc_info.value, ValueError)
 
 
 @pytest.mark.asyncio
 async def test_zigbee_unknown_device_raises() -> None:
     async with FirmwareCatalog() as catalog:
-        with pytest.raises(ValueError, match="Unknown device model"):
+        with pytest.raises(
+            SmlightCatalogError, match="Unknown device model"
+        ) as exc_info:
             await catalog.get_firmware_version("any", device="UNKNOWN", mode="zigbee")
+        assert isinstance(exc_info.value, SmlightConnectionError)
+        assert isinstance(exc_info.value, SmlightError)
+        assert isinstance(exc_info.value, ValueError)
 
 
 @pytest.mark.asyncio

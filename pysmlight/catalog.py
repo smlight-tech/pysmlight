@@ -7,7 +7,7 @@ from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientConnectionError
 
 from .const import FW_URL, SEL_FW_CHANNEL, Devices
-from .exceptions import SmlightConnectionError
+from .exceptions import SmlightCatalogError, SmlightConnectionError
 from .models import Firmware
 
 FwChannel = Literal["any", "release", "dev"]
@@ -62,7 +62,7 @@ class FirmwareCatalog:
         if firmware.notes:
             items = (
                 firmware.notes.splitlines()
-                if firmware.mode == "ESP"
+                if firmware.mode in ("ESP", "ESPs3")
                 else [firmware.notes]
             )
             notes = ""
@@ -136,20 +136,24 @@ class FirmwareCatalog:
     @staticmethod
     def _check_channel(channel: FwChannel | None) -> None:
         if channel is not None and channel not in SEL_FW_CHANNEL.values():
-            raise ValueError(f"Unsupported firmware channel: {channel}")
+            raise SmlightCatalogError(f"Unsupported firmware channel: {channel}")
 
     @staticmethod
     def _zigbee_params(
         channel: FwChannel | None, device: str | None, idx: int, hw: int | None
     ) -> dict[str, str]:
         if device is None:
-            raise ValueError("Zigbee firmware query requires a device model")
+            raise SmlightCatalogError("Zigbee firmware query requires a device model")
         device_id = next(
-            (value for model, value in Devices.items() if model.casefold() == device.casefold()),
+            (
+                value
+                for model, value in Devices.items()
+                if model.casefold() == device.casefold()
+            ),
             None,
         )
         if device_id is None:
-            raise ValueError(f"Unknown device model: {device}")
+            raise SmlightCatalogError(f"Unknown device model: {device}")
         params = {
             "type": "ZB",
             "format": "slzb",
