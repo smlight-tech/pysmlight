@@ -200,6 +200,7 @@ class Api2(webClient):
         mode: FwMode = "esp32",
         zb_type: int | None = None,
         idx: int = 0,
+        hw: int | None = None,
     ) -> list[Firmware]:
         """Get firmware version for device and mode (esp | zigbee)"""
         self.catalog.session = self.session
@@ -209,6 +210,7 @@ class Api2(webClient):
             mode=mode,
             zb_type=zb_type,
             idx=idx,
+            hw=hw,
             u_device=self.u_device,
         )
 

@@ -404,6 +404,36 @@ async def test_info_get_firmware_none(aresponses: ResponsesMockServer) -> None:
 
 
 @pytest.mark.asyncio
+async def test_api2_zigbee_hw_passthrough(aresponses: ResponsesMockServer) -> None:
+    async def handler(request):
+        assert request.method == "GET"
+        assert dict(request.query) == {
+            "type": "ZB",
+            "format": "slzb",
+            "device": "27",
+            "idx": "1",
+            "hw": "171",
+            "ch": "0",
+        }
+        return aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("slzb-06-zb-fw.json"),
+        )
+
+    aresponses.add(
+        "updates.smlight.tech", "/services/api/slzb-06x-ota.php", "GET", handler
+    )
+    async with ClientSession() as session:
+        client = Api2(host, session=session)
+        firmware = await client.get_firmware_version(
+            "release", device="SLZB-Ultima3", mode="zigbee", idx=1, hw=171
+        )
+    assert firmware is not None
+    assert len(firmware) == 5
+
+
+@pytest.mark.asyncio
 async def test_mr3u_device_id() -> None:
     """Test that SLZB-MR3U subdevice lookup returns device ID 23."""
     from pysmlight.const import Devices
