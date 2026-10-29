@@ -243,6 +243,7 @@ async def test_invalid_channel_raises(channel: str) -> None:
             SmlightCatalogError, match="Unsupported firmware channel"
         ) as exc_info:
             await catalog.get_firmware_version(channel)
+        assert isinstance(exc_info.value, SmlightConnectionError)
         assert isinstance(exc_info.value, SmlightError)
         assert isinstance(exc_info.value, ValueError)
 
@@ -254,6 +255,7 @@ async def test_zigbee_requires_device() -> None:
             SmlightCatalogError, match="requires a device model"
         ) as exc_info:
             await catalog.get_firmware_version("any", mode="zigbee")
+        assert isinstance(exc_info.value, SmlightConnectionError)
         assert isinstance(exc_info.value, SmlightError)
         assert isinstance(exc_info.value, ValueError)
 
@@ -265,6 +267,7 @@ async def test_zigbee_unknown_device_raises() -> None:
             SmlightCatalogError, match="Unknown device model"
         ) as exc_info:
             await catalog.get_firmware_version("any", device="UNKNOWN", mode="zigbee")
+        assert isinstance(exc_info.value, SmlightConnectionError)
         assert isinstance(exc_info.value, SmlightError)
         assert isinstance(exc_info.value, ValueError)
 
