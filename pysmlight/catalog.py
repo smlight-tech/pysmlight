@@ -62,7 +62,7 @@ class FirmwareCatalog:
         if firmware.notes:
             items = (
                 firmware.notes.splitlines()
-                if firmware.mode == "ESP"
+                if firmware.mode in ("ESP", "ESPs3")
                 else [firmware.notes]
             )
             notes = ""

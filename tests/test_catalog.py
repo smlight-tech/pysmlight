@@ -35,6 +35,14 @@ def test_format_release_notes() -> None:
     assert FirmwareCatalog.format_release_notes(firmware) == (
         "CHANGELOG v2.5.2\n\n* Fixed bug with the lights\n* More fixes\n"
     )
+    firmware_esps3 = Firmware(
+        ver="v3.0.0",
+        mode="ESPs3",
+        notes="CHANGELOG v3.0.0\r\nUSB Passthrough added\nBug fixes",
+    )
+    assert FirmwareCatalog.format_release_notes(firmware_esps3) == (
+        "CHANGELOG v3.0.0\n\n* USB Passthrough added\n* Bug fixes\n"
+    )
     assert FirmwareCatalog.format_release_notes(Firmware(mode="ZB")) is None
     assert (
         FirmwareCatalog.format_release_notes(
