@@ -251,7 +251,7 @@ class Api2(webClient):
         if self.sse.sw_version is None:
             self.sse.sw_version = core_version
 
-        return Info.from_dict(data["Info"])
+        return info
 
     async def get_sensors(self) -> Sensors:
         res = await self.get(params=None, url=self.sensor_url)

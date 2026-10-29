@@ -59,7 +59,7 @@ class Info(DataClassDictMixin):
     coord_mode: int | None = None  # Enum
     device_ip: str | None = None
     fs_total: int | None = None
-    fw_channel: str | None = None  # dev, beta or release
+    fw_channel: str | None = None  # dev or release
     hostname: str | None = None
     hw_version: str | None = None
     legacy_api: int = 0
