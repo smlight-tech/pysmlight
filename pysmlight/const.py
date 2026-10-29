@@ -137,17 +137,6 @@ Devices: dict[str, int] = {
 }
 
 
-class UDevices(Enum):
-    """
-    Represent devices based on ESP32-S3 core.
-
-    Only required if model id does not have "U" suffix. Model id should match "Devices" dict.
-    """
-
-    SLZB_Ultima4 = 26
-    SLZB_Ultima3 = 27
-
-
 PERIPHERAL_MODELS: tuple[str, ...] = ("Ultima",)
 
 

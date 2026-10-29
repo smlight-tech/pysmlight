@@ -31,7 +31,7 @@ class Firmware(DataClassDictMixin):
         self.mode = mode
 
 
-FirmwareList = list[Firmware] | None
+FirmwareList = list[Firmware]
 
 
 @dataclass
