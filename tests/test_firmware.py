@@ -319,19 +319,21 @@ async def test_info_get_firmware_espu(aresponses: ResponsesMockServer) -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(("channel", "ch"), [("release", "0"), ("dev", "1")])
+@pytest.mark.parametrize(("channel", "ch"), [("release", "1"), ("dev", None)])
 async def test_api2_zigbee_channel_passthrough(
-    aresponses: ResponsesMockServer, channel: str, ch: str
+    aresponses: ResponsesMockServer, channel: str, ch: str | None
 ) -> None:
     async def handler(request):
-        assert request.method == "GET"
-        assert dict(request.query) == {
+        expected = {
             "type": "ZB",
             "format": "slzb",
             "device": "0",
             "idx": "0",
-            "ch": ch,
         }
+        if ch is not None:
+            expected["ch"] = ch
+        assert request.method == "GET"
+        assert dict(request.query) == expected
         assert "curFw" not in request.query
         return aresponses.Response(
             status=200,
@@ -359,7 +361,6 @@ async def test_api2_zigbee_type_filter(aresponses: ResponsesMockServer) -> None:
             "format": "slzb",
             "device": "0",
             "idx": "0",
-            "ch": "1",
         }
         return aresponses.Response(
             status=200,
@@ -388,7 +389,7 @@ async def test_info_get_firmware_none(aresponses: ResponsesMockServer) -> None:
             "format": "slzb",
             "device": "0",
             "idx": "0",
-            "ch": "0",
+            "ch": "1",
         }
         return aresponses.Response(status=200, text="[]")
 
@@ -413,7 +414,7 @@ async def test_api2_zigbee_hw_passthrough(aresponses: ResponsesMockServer) -> No
             "device": "27",
             "idx": "1",
             "hw": "171",
-            "ch": "0",
+            "ch": "1",
         }
         return aresponses.Response(
             status=200,
