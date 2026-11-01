@@ -1,4 +1,5 @@
 from enum import Enum, IntEnum, auto, unique
+from typing import Literal
 
 FW_URL = "https://updates.smlight.tech/services/api/slzb-06x-ota.php"
 
@@ -159,7 +160,9 @@ ZB_CHANNEL: dict[int, str] = {
     2: "custom",  # custom for 06M
 }
 
-SEL_FW_CHANNEL: dict[int, str] = {
+FwChannel = Literal["any", "release", "dev"]
+
+SEL_FW_CHANNEL: dict[int, FwChannel] = {
     0: "any",
     1: "release",
     2: "dev",

@@ -5,7 +5,7 @@ import re
 
 from mashumaro import DataClassDictMixin, field_options
 
-from .const import PERIPHERAL_MODELS, AmbiEffect, BleState, PppUSBState
+from .const import PERIPHERAL_MODELS, AmbiEffect, BleState, FwChannel, PppUSBState
 from .payload import Payload
 
 
@@ -59,7 +59,7 @@ class Info(DataClassDictMixin):
     coord_mode: int | None = None  # Enum
     device_ip: str | None = None
     fs_total: int | None = None
-    fw_channel: str | None = None  # dev or release
+    fw_channel: FwChannel | None = None  # dev or release
     hostname: str | None = None
     hw_version: str | None = None
     legacy_api: int = 0
@@ -67,7 +67,7 @@ class Info(DataClassDictMixin):
     model: str | None = None
     ram_total: int | None = None
     psram_total: int | None = None
-    sel_fw_channel: str | None = None
+    sel_fw_channel: FwChannel | None = None
     sw_version: str | None = None
     u_device: bool | None = None
     mr_device: bool | None = None
