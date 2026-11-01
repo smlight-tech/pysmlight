@@ -86,6 +86,8 @@ class FirmwareCatalog:
     ) -> list[Firmware]:
         """Parse and format firmware items returned by the updates server."""
         client_filter = channel if fw_type != "ZB" else None
+        if zb_type == 8:
+            zb_type = 2
         fw: list[Firmware] = []
         for d in firmware_data:
             item = Firmware.from_dict(d)

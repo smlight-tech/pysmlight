@@ -152,8 +152,15 @@ async def test_zigbee_query_channel(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("zb_type", "expected_count", "expected_type"),
+    [(0, 3, 0), (8, 1, 2)],
+)
 async def test_zigbee_type_filter_is_client_side(
     aresponses: ResponsesMockServer,
+    zb_type: int,
+    expected_count: int,
+    expected_type: int,
 ) -> None:
     async def handler(request):
         assert dict(request.query) == {
@@ -171,11 +178,11 @@ async def test_zigbee_type_filter_is_client_side(
     aresponses.add(FW_HOST, FW_PATH, "GET", handler)
     async with FirmwareCatalog() as catalog:
         firmware = await catalog.get_firmware_version(
-            "any", device="SLZB-Ultima3", mode="zigbee", zb_type=0
+            "any", device="SLZB-Ultima3", mode="zigbee", zb_type=zb_type
         )
     assert firmware is not None
-    assert len(firmware) == 3
-    assert {item.type for item in firmware} == {0}
+    assert len(firmware) == expected_count
+    assert {item.type for item in firmware} == {expected_type}
 
 
 @pytest.mark.asyncio
