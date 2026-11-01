@@ -6,11 +6,10 @@ from typing import Any, Literal, Self
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientConnectionError
 
-from .const import FW_URL, SEL_FW_CHANNEL, Devices
+from .const import FW_URL, SEL_FW_CHANNEL, Devices, FwChannel
 from .exceptions import SmlightCatalogError, SmlightConnectionError
 from .models import Firmware
 
-FwChannel = Literal["any", "release", "dev"]
 FwMode = Literal["esp32", "zigbee"]
 
 

@@ -315,7 +315,7 @@ class Api2(webClient):
             await self.cmds.reboot()
         return success
 
-    async def set_fw_channel(self, channel: int | str) -> bool:
+    async def set_fw_channel(self, channel: int | FwChannel) -> bool:
         """Set firmware channel."""
         if isinstance(channel, str):
             by_name = {name: key for key, name in SEL_FW_CHANNEL.items()}
