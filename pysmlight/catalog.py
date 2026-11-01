@@ -92,8 +92,6 @@ class FirmwareCatalog:
             item.set_mode(fw_type)
             if client_filter == "release" and item.dev:
                 continue
-            if client_filter == "dev" and not item.dev:
-                continue
             if zb_type is not None and item.type != zb_type:
                 continue
             if item.notes:
@@ -163,8 +161,6 @@ class FirmwareCatalog:
         if hw is not None:
             params["hw"] = str(hw)
         if channel == "release":
-            params["ch"] = "0"
-        elif channel == "dev":
             params["ch"] = "1"
         return params
 

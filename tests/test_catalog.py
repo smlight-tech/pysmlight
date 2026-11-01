@@ -58,7 +58,7 @@ def test_format_release_notes() -> None:
 
 @pytest.mark.parametrize(
     ("channel", "expected_count"),
-    [("release", 1), ("dev", 1), ("any", 2), (None, 2)],
+    [("release", 1), ("dev", 2), ("any", 2), (None, 2)],
 )
 def test_parse_esp_channels(channel: FwChannel | None, expected_count: int) -> None:
     firmware = FirmwareCatalog().parse_firmware(
@@ -75,11 +75,11 @@ def test_parse_esp_channels(channel: FwChannel | None, expected_count: int) -> N
     ("u_device", "fixture", "channel", "expected_count", "fw_type"),
     [
         (False, "slzb-06-esp-fw.json", "release", 3, "ESP"),
-        (False, "slzb-06-esp-fw.json", "dev", 0, "ESP"),
+        (False, "slzb-06-esp-fw.json", "dev", 3, "ESP"),
         (False, "slzb-06-esp-fw.json", "any", 3, "ESP"),
         (False, "slzb-06-esp-fw.json", None, 3, "ESP"),
         (True, "slzb-06U-esp-fw.json", "release", 3, "ESPs3"),
-        (True, "slzb-06U-esp-fw.json", "dev", 0, "ESPs3"),
+        (True, "slzb-06U-esp-fw.json", "dev", 3, "ESPs3"),
         (True, "slzb-06U-esp-fw.json", "any", 3, "ESPs3"),
     ],
 )
@@ -119,7 +119,7 @@ async def test_esp_request_and_channel_filter(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("channel", "ch"),
-    [("release", "0"), ("dev", "1"), ("any", None), (None, None)],
+    [("release", "1"), ("dev", None), ("any", None), (None, None)],
 )
 async def test_zigbee_query_channel(
     aresponses: ResponsesMockServer, channel: FwChannel | None, ch: str | None
